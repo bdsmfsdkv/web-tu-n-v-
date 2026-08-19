@@ -1,0 +1,1399 @@
+/*** START PATMENT HOSTING ***/
+document.addEventListener("DOMContentLoaded", function () {
+    // Check if this is the hosting payment page
+    if (typeof ROUTE_NAME === 'undefined' || ROUTE_NAME !== 'HOSTING_PAYMENT') {
+        return; // Exit if not hosting payment page
+    }
+
+    // Variables to track selections
+    let selectedCategory = null;
+    let selectedSubcategory = null;
+    let selectedSubscription = null;
+    let selectedDuration = null;
+    let appliedCoupon = null; // Store applied coupon data
+
+    // Initialize
+    initializeHostingPage();
+
+    function initializeHostingPage() {
+        resetAllSelections();
+        
+        // Check URL parameters for auto-selection
+        const urlParams = new URLSearchParams(window.location.search);
+        const subscriptionParam = urlParams.get('subscription');
+        
+        if (subscriptionParam) {
+            autoSelectBySubscription(subscriptionParam);
+        }
+        
+        setupEventListeners();
+    }
+
+    function autoSelectBySubscription(subscriptionId) {
+        // Find subscription element
+        const subscriptionInput = document.querySelector(`input[name="subscription"][value="${subscriptionId}"]`);
+        if (!subscriptionInput) return;
+
+        // Get subcategory and category IDs from subscription element
+        const subcategoryId = subscriptionInput.getAttribute('data-subcategory-id');
+        const categoryInput = document.querySelector(`input[name="subcategory"][value="${subcategoryId}"]`);
+        if (!categoryInput) return;
+
+        const categoryId = categoryInput.getAttribute('data-category-id');
+
+        // Auto select category first
+        const categoryRadio = document.querySelector(`input[name="category"][value="${categoryId}"]`);
+        if (categoryRadio) {
+            // Set selected variables first
+            selectedCategory = categoryId;
+            selectedSubcategory = subcategoryId;
+            selectedSubscription = subscriptionId;
+            
+            categoryRadio.checked = true;
+            
+            // Show and configure subcategory menu
+            document.querySelector('.subcategory-menu').style.display = 'block';
+            document.querySelectorAll('.subcategory-menu [data-category-id]').forEach(el => {
+                el.style.display = 'none';
+            });
+            document.querySelectorAll(`.subcategory-menu [data-category-id="${categoryId}"]`).forEach(el => {
+                el.style.display = 'block';
+            });
+            
+            // Then select subcategory
+            setTimeout(() => {
+                const subcategoryRadio = document.querySelector(`input[name="subcategory"][value="${subcategoryId}"]`);
+                if (subcategoryRadio) {
+                    subcategoryRadio.checked = true;
+                    
+                    // Show and configure subscription menu
+                    document.querySelector('.hosting-subscription-menu').style.display = 'block';
+                    document.querySelectorAll('.hosting-subscription-menu [data-subcategory-id]').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                    document.querySelectorAll(`.hosting-subscription-menu [data-subcategory-id="${subcategoryId}"]`).forEach(el => {
+                        el.style.display = 'block';
+                    });
+                    
+                    // Finally select subscription
+                    setTimeout(() => {
+                        const subscriptionRadio = document.querySelector(`input[name="subscription"][value="${subscriptionId}"]`);
+                        if (subscriptionRadio) {
+                            subscriptionRadio.checked = true;
+                            
+                            // Show duration menu
+                            document.querySelector('.hosting-duration-menu').style.display = 'block';
+                            document.querySelectorAll('.hosting-duration-menu [data-subscription-id]').forEach(el => {
+                                el.style.display = 'none';
+                            });
+                            document.querySelectorAll(`.hosting-duration-menu [data-subscription-id="${subscriptionId}"]`).forEach(el => {
+                                el.style.display = 'block';
+                            });
+
+                            updateOrderSummary();
+                        }
+                    }, 100);
+                }
+            }, 100);
+        }
+    }
+
+    function setupEventListeners() {
+        document.querySelectorAll('input[name="category"]').forEach(radio => {
+            radio.addEventListener('change', handleCategoryChange);
+        });
+
+        document.querySelectorAll('input[name="subcategory"]').forEach(radio => {
+            radio.addEventListener('change', handleSubcategoryChange);
+        });
+
+        document.querySelectorAll('input[name="subscription"]').forEach(radio => {
+            radio.addEventListener('change', handleSubscriptionChange);
+        });
+
+        document.querySelectorAll('input[name="duration"]').forEach(radio => {
+            radio.addEventListener('change', handleDurationChange);
+        });
+
+        document.getElementById('apply_coupon_hosting').addEventListener('click', handleCouponApplication);
+    }
+
+    function handleCategoryChange(event) {
+        selectedCategory = event.target.value;
+        selectedSubcategory = null;
+        selectedSubscription = null;
+        selectedDuration = null;
+        appliedCoupon = null; // Reset coupon when category changes
+
+        // Show subcategory menu
+        document.querySelector('.subcategory-menu').style.display = 'block';
+        document.querySelector('.hosting-subscription-menu').style.display = 'none';
+        document.querySelector('.hosting-duration-menu').style.display = 'none';
+
+        // Show only subcategories for selected category
+        document.querySelectorAll('.subcategory-menu [data-category-id]').forEach(el => {
+            el.style.display = 'none';
+        });
+        document.querySelectorAll(`.subcategory-menu [data-category-id="${selectedCategory}"]`).forEach(el => {
+            el.style.display = 'block';
+        });
+
+        // Reset other selections
+        document.querySelectorAll('input[name="subcategory"]').forEach(input => input.checked = false);
+        document.querySelectorAll('input[name="subscription"]').forEach(input => input.checked = false);
+        document.querySelectorAll('input[name="duration"]').forEach(input => input.checked = false);
+
+        // Clear coupon display
+        clearCouponDisplay();
+        updateOrderSummary();
+    }
+
+    function handleSubcategoryChange(event) {
+        const categoryId = event.target.getAttribute('data-category-id');
+        
+        // Check if this subcategory belongs to selected category
+        if (categoryId != selectedCategory) {
+            return false;
+        }
+
+        selectedSubcategory = event.target.value;
+        selectedSubscription = null;
+        selectedDuration = null;
+        appliedCoupon = null; // Reset coupon when subcategory changes
+
+        // Show subscription menu
+        document.querySelector('.hosting-subscription-menu').style.display = 'block';
+        document.querySelector('.hosting-duration-menu').style.display = 'none';
+
+        // Show only subscriptions for selected subcategory
+        document.querySelectorAll('.hosting-subscription-menu [data-subcategory-id]').forEach(el => {
+            el.style.display = 'none';
+        });
+        document.querySelectorAll(`.hosting-subscription-menu [data-subcategory-id="${selectedSubcategory}"]`).forEach(el => {
+            el.style.display = 'block';
+        });
+
+        // Reset other selections
+        document.querySelectorAll('input[name="subscription"]').forEach(input => input.checked = false);
+        document.querySelectorAll('input[name="duration"]').forEach(input => input.checked = false);
+
+        // Clear coupon display
+        clearCouponDisplay();
+        updateOrderSummary();
+    }
+
+    function handleSubscriptionChange(event) {
+        const subcategoryId = event.target.getAttribute('data-subcategory-id');
+        
+        // Check if this subscription belongs to selected subcategory
+        if (subcategoryId != selectedSubcategory) {
+            return false;
+        }
+
+        selectedSubscription = event.target.value;
+        selectedDuration = null;
+
+        // Update URL with subscription parameter
+        updateURLWithSubscription(selectedSubscription);
+
+        // Show duration menu
+        document.querySelector('.hosting-duration-menu').style.display = 'block';
+
+        // Show only durations for selected subscription
+        document.querySelectorAll('.hosting-duration-menu [data-subscription-id]').forEach(el => {
+            el.style.display = 'none';
+        });
+        document.querySelectorAll(`.hosting-duration-menu [data-subscription-id="${selectedSubscription}"]`).forEach(el => {
+            el.style.display = 'block';
+        });
+
+        // Reset duration selection
+        document.querySelectorAll('input[name="duration"]').forEach(input => input.checked = false);
+
+        // Re-validate coupon if already applied
+        if (appliedCoupon) {
+            revalidateAppliedCoupon();
+        }
+
+        updateOrderSummary();
+    }
+
+    function handleDurationChange(event) {
+        const subscriptionId = event.target.getAttribute('data-subscription-id');
+        
+        // Check if this duration belongs to selected subscription
+        if (subscriptionId != selectedSubscription) {
+            return false;
+        }
+
+        selectedDuration = {
+            months: event.target.getAttribute('data-months'),
+            price: event.target.getAttribute('data-price'),
+            value: event.target.value
+        };
+
+        // Recalculate coupon discount if coupon is applied
+        if (appliedCoupon) {
+            recalculateCouponDiscount();
+        }
+
+        updateOrderSummary();
+    }
+
+    function updateURLWithSubscription(subscriptionId) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('subscription', subscriptionId);
+        
+        // Update URL without reloading the page
+        window.history.replaceState({}, '', url.toString());
+    }
+
+    function handleFormSubmit(event) {
+        if (!validateForm()) {
+            event.preventDefault();
+            return false;
+        }
+    }
+
+    function updateOrderSummary() {
+        // Reset summary
+        document.querySelector('.subscription-name').textContent = '';
+        document.querySelector('.subscription-duration').textContent = '';
+        document.querySelector('.total-price').textContent = '0đ';
+        document.querySelector('.total-payment').textContent = '0đ';
+
+        if (!selectedSubscription || !selectedDuration) {
+            return;
+        }
+
+        const subscriptionElement = document.querySelector(`input[name="subscription"][value="${selectedSubscription}"]`);
+        let subscriptionName = '';
+
+        if (subscriptionElement) {
+            subscriptionName = subscriptionElement.getAttribute('data-name') || '';
+        }
+
+        const durationElement = document.querySelector(`input[name="duration"][value="${selectedDuration.value}"]`);
+        let durationName = '';
+        if (durationElement) {
+            const selectedDuration = {
+                months: durationElement.getAttribute('data-months'),
+                name: durationElement.getAttribute('data-name'),
+                price: durationElement.getAttribute('data-price')
+            };
+            
+            const durationLabelElement = durationElement.closest('.form-check').querySelector('.f-14.fw-semibold p');
+            durationName = selectedDuration.name || `${selectedDuration.months} tháng`;
+        }
+
+        $('#dh-1').show();
+        $('#dh-2').show();
+        document.querySelector('.subscription-name').textContent = subscriptionName;
+        document.querySelector('.subscription-duration').textContent = durationName;
+        const totalPrice = parseFloat(selectedDuration.price) || 0;
+        document.querySelector('.total-price').textContent = formatPrice(totalPrice) + 'đ';
+
+        // Calculate final payment (with coupon if applied)
+        let finalPrice = totalPrice;
+        if (appliedCoupon) {
+            const discountAmount = calculateCouponDiscount(totalPrice, appliedCoupon);
+            finalPrice = totalPrice - discountAmount;
+            
+            // Update discount display
+            const discountRow = document.querySelector('.total-coupon-discount').closest('tr');
+            if (discountRow) {
+                discountRow.style.display = 'table-row';
+                document.querySelector('.total-coupon-discount').textContent = formatPrice(discountAmount) + 'đ';
+            }
+        }
+
+        // Calculate VAT if applicable
+        const vatRate = parseFloat(document.querySelector('.total-vat').closest('tr').style.display !== 'none' ? 
+            document.querySelector('.total-vat').closest('tr').querySelector('td').textContent.match(/\d+/)[0] : 0) || 0;
+        
+        if (vatRate > 0) {
+            const vatAmount = (finalPrice * vatRate) / 100;
+            document.querySelector('.total-vat').textContent = formatPrice(vatAmount) + 'đ';
+            finalPrice += vatAmount;
+        }
+
+        document.querySelector('.total-payment').textContent = formatPrice(finalPrice) + 'đ';
+    }
+
+    // FIX: Sửa validateHostingCoupon để tránh lỗi tương tự
+    function validateHostingCoupon(couponData, selectionData) {
+        // Service validation
+        if (couponData.service !== 'ALL' && couponData.service !== selectionData.service) {
+            return {
+                isValid: false,
+                title: 'Mã giảm giá không hợp lệ!',
+                message: `Mã giảm giá của quý khách chỉ áp dụng cho dịch vụ ${couponData.service} không hỗ trợ cho dịch vụ ${selectionData.service}!`
+            };
+        }
+
+        // Category validation
+        if (couponData.category !== 'ALL' && couponData.category) {
+            // Handle category as object or string
+            let categoryId = typeof couponData.category === 'object' ? couponData.category.id : couponData.category;
+            let categoryName = typeof couponData.category === 'object' ? couponData.category.name : couponData.category;
+            
+            if (categoryId != selectionData.category) {
+                // Get category name for display
+                const categoryElement = document.querySelector(`input[name="category"][value="${selectionData.category}"]`);
+                const currentCategoryName = categoryElement ? categoryElement.getAttribute('data-category-name') || 'đã chọn' : 'đã chọn';
+                
+                return {
+                    isValid: false,
+                    title: 'Chuyên mục không hợp lệ!',
+                    message: `Mã giảm giá của quý khách chỉ áp dụng cho chuyên mục ${categoryName} không hỗ trợ cho chuyên mục ${currentCategoryName}!`
+                };
+            }
+        }
+
+        // Subcategory validation
+        if (couponData.category !== 'ALL' && couponData.subcategory !== 'ALL' && couponData.subcategory) {
+            // Handle subcategory as object or string
+            let subcategoryId = typeof couponData.subcategory === 'object' ? couponData.subcategory.id : couponData.subcategory;
+            let subcategoryName = typeof couponData.subcategory === 'object' ? couponData.subcategory.name : couponData.subcategory;
+            
+            if (subcategoryId != selectionData.subcategory) {
+                // Get subcategory name for display
+                const subcategoryElement = document.querySelector(`input[name="subcategory"][value="${selectionData.subcategory}"]`);
+                const currentSubcategoryName = subcategoryElement ? subcategoryElement.getAttribute('data-subcategory-name') || 'đã chọn' : 'đã chọn';
+                
+                return {
+                    isValid: false,
+                    title: 'Sản phẩm không hợp lệ!',
+                    message: `Mã giảm giá của quý khách chỉ áp dụng cho sản phẩm ${subcategoryName} không hỗ trợ cho sản phẩm ${currentSubcategoryName}!`
+                };
+            }
+        }
+
+        // Subscription validation - FIX: Thêm kiểm tra null cho element
+        if (couponData.category !== 'ALL' && couponData.subcategory !== 'ALL' && couponData.subscription !== 'ALL' && couponData.subscription) {
+            // Handle subscription as object or string
+            let subscriptionId = typeof couponData.subscription === 'object' ? couponData.subscription.id : couponData.subscription;
+            let subscriptionName = typeof couponData.subscription === 'object' ? couponData.subscription.name : couponData.subscription;
+            
+            if (subscriptionId != selectionData.subscription) {
+                // Get subscription name for display - FIX: Thêm kiểm tra null
+                const subscriptionElement = document.querySelector(`input[name="subscription"][value="${selectionData.subscription}"]`);
+                let currentSubscriptionName = 'đã chọn';
+                
+                if (subscriptionElement) {
+                    const nameElement = subscriptionElement.closest('.form-check').querySelector('.text-uppercase.fs-5.fw-bolder');
+                    if (nameElement) {
+                        currentSubscriptionName = nameElement.textContent.trim();
+                    } else {
+                        // Fallback
+                        const fallbackElement = subscriptionElement.closest('.form-check').querySelector('.text-uppercase.fw-bolder');
+                        currentSubscriptionName = fallbackElement ? fallbackElement.textContent.trim() : 'đã chọn';
+                    }
+                }
+                
+                return {
+                    isValid: false,
+                    title: 'Gói không hợp lệ!',
+                    message: `Mã giảm giá của quý khách chỉ áp dụng cho gói đăng ký ${subscriptionName} không hỗ trợ cho gói ${currentSubscriptionName}!`
+                };
+            }
+        }
+
+        // Minimum amount validation
+        if (couponData.min_amount && selectionData.totalAmount < parseFloat(couponData.min_amount)) {
+            return {
+                isValid: false,
+                title: 'Đơn hàng chưa đủ điều kiện!',
+                message: `Đơn hàng cần đạt tổng thanh toán tối thiểu ${formatPrice(couponData.min_amount)}đ để áp dụng mã giảm giá!`
+            };
+        }
+
+        return { isValid: true };
+    }
+
+    function calculateCouponDiscount(basePrice, couponData) {
+        let discountAmount = 0;
+        
+        // Kiểm tra min_amount trước khi tính toán
+        if (couponData.min_amount && basePrice < parseFloat(couponData.min_amount)) {
+            return 0; // Không áp dụng coupon nếu không đủ điều kiện
+        }
+        
+        if (couponData.type === 'percent') {
+            discountAmount = (basePrice * parseFloat(couponData.discount)) / 100;
+        } else if (couponData.type === 'fixed') {
+            discountAmount = parseFloat(couponData.discount);
+        }
+        
+        // Áp dụng max_amount cho cả percent và fixed
+        if (couponData.max_amount && discountAmount > parseFloat(couponData.max_amount)) {
+            discountAmount = parseFloat(couponData.max_amount);
+        }
+        
+        // Đảm bảo discount không vượt quá giá gốc
+        if (discountAmount > basePrice) {
+            discountAmount = basePrice;
+        }
+        
+        return discountAmount;
+    }
+
+    function recalculateCouponDiscount() {
+        if (!appliedCoupon || !selectedDuration) return;
+        
+        const basePrice = parseFloat(selectedDuration.price) || 0;
+        
+        // Check if coupon is still valid for new price
+        if (appliedCoupon.min_amount && basePrice < parseFloat(appliedCoupon.min_amount)) {
+            // Remove coupon if doesn't meet minimum amount
+            showSweetAlert(`Đơn hàng không đủ điều kiện tối thiểu ${formatPrice(appliedCoupon.min_amount)}đ để áp dụng mã giảm giá. Mã giảm giá đã được hủy.`, 'warning');
+            clearCouponDisplay();
+            appliedCoupon = null;
+            return;
+        }
+        
+        // Recalculate and update display
+        updateOrderSummary();
+    }
+
+    function revalidateAppliedCoupon() {
+        if (!appliedCoupon) return;
+        
+        const currentSelectionData = {
+            service: typeof SERVICE !== 'undefined' ? SERVICE : 'HOSTING',
+            category: selectedCategory,
+            subcategory: selectedSubcategory,
+            subscription: selectedSubscription,
+            totalAmount: selectedDuration ? parseFloat(selectedDuration.price) || 0 : 0
+        };
+        
+        const validationResult = validateHostingCoupon(appliedCoupon, currentSelectionData);
+        
+        if (!validationResult.isValid) {
+            // Remove coupon if no longer valid
+            showSweetAlert(`${validationResult.message} Mã giảm giá đã được hủy.`, 'warning', validationResult.title);
+            clearCouponDisplay();
+            appliedCoupon = null;
+        }
+    }
+
+    function clearCouponDisplay() {
+        // Hide discount row
+        const discountRow = document.querySelector('.total-coupon-discount').closest('tr');
+        if (discountRow) {
+            discountRow.style.display = 'none';
+        }
+
+        // Hide coupon display
+        const couponDisplay = document.getElementById('dispay_coupon_apply');
+        if (couponDisplay) {
+            couponDisplay.style.display = 'none';
+            couponDisplay.innerHTML = '';
+        }
+
+        // Clear coupon input
+        document.querySelector('input[name="coupon"]').value = '';
+    }
+
+    function validateForm() {
+        const domain = document.querySelector('input[name="domain"]').value.trim();
+        const username = document.querySelector('input[name="username"]').value.trim();
+        const password = document.querySelector('input[name="password"]').value.trim();
+
+        return true;
+    }
+
+    function resetAllSelections() {
+        selectedCategory = null;
+        selectedSubcategory = null;
+        selectedSubscription = null;
+        selectedDuration = null;
+        appliedCoupon = null;
+
+        document.querySelector('.subcategory-menu').style.display = 'none';
+        document.querySelector('.hosting-subscription-menu').style.display = 'none';
+        document.querySelector('.hosting-duration-menu').style.display = 'none';
+
+        clearCouponDisplay();
+        updateOrderSummary();
+    }
+
+    // SweetAlert helper function
+    function showSweetAlert(message, type = 'info', title = null) {
+        const config = {
+            text: message,
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#3085d6',
+            timer: type === 'success' ? 3000 : undefined,
+            timerProgressBar: type === 'success'
+        };
+
+        switch(type) {
+            case 'success':
+                config.icon = 'success';
+                config.title = title || 'Thành công!';
+                config.confirmButtonColor = '#28a745';
+                break;
+            case 'error':
+                config.icon = 'error';
+                config.title = title || 'Lỗi!';
+                config.confirmButtonColor = '#dc3545';
+                break;
+            case 'warning':
+                config.icon = 'warning';
+                config.title = title || 'Cảnh báo!';
+                config.confirmButtonColor = '#ffc107';
+                break;
+            case 'info':
+                config.icon = 'info';
+                config.title = title || 'Thông báo!';
+                config.confirmButtonColor = '#17a2b8';
+                break;
+            case 'question':
+                config.icon = 'question';
+                config.title = title || 'Xác nhận!';
+                config.showCancelButton = true;
+                config.cancelButtonText = 'Hủy';
+                config.cancelButtonColor = '#6c757d';
+                break;
+        }
+
+        return Swal.fire(config);
+    }
+
+    // Utility functions
+    function formatPrice(price) {
+        return new Intl.NumberFormat('vi-VN').format(Math.round(price));
+    }
+
+    function isValidDomain(domain) {
+        const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$/;
+        return domainRegex.test(domain);
+    }
+
+    // Coupon handling - updated logic
+    function handleCouponApplication() {
+        const couponCode = document.querySelector('input[name="coupon"]').value.trim();
+        
+        if (!couponCode) {
+            showSweetAlert('Vui lòng nhập mã giảm giá', 'error');
+            return;
+        }
+
+        if (!selectedDuration) {
+            showSweetAlert('Vui lòng chọn gói và chu kỳ trước khi áp dụng mã giảm giá', 'error');
+            return;
+        }
+
+        // Get current selection data for coupon validation
+        const currentSelectionData = {
+            service: typeof SERVICE !== 'undefined' ? SERVICE : 'HOSTING',
+            category: selectedCategory,
+            subcategory: selectedSubcategory,
+            subscription: selectedSubscription,
+            totalAmount: parseFloat(selectedDuration.price) || 0
+        };
+
+        // Call coupon validation API
+        applyCouponForHosting(couponCode, currentSelectionData);
+    }
+
+    function applyCouponForHosting(couponCode, selectionData) {
+        const applyButton = document.getElementById('apply_coupon_hosting');
+        const originalHTML = applyButton.innerHTML;
+        
+        // Show loading state with SweetAlert
+        Swal.fire({
+            title: 'Đang kiểm tra mã giảm giá...',
+            html: 'Vui lòng chờ trong giây lát',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        // Show loading state on button
+        applyButton.innerHTML = '<i class="fad fa-spinner fa-spin me-1"></i>Đang kiểm tra...';
+        applyButton.disabled = true;
+
+        // API call to validate coupon
+        fetch(`${ROUTE_COUPON_CHECKING}?code=${encodeURIComponent(couponCode)}`)
+            .then(response => response.json())
+            .then(result => {
+                applyButton.innerHTML = originalHTML;
+                applyButton.disabled = false;
+                Swal.close();
+
+                if (result.status === "success" && result.data) {
+                    const validationResult = validateHostingCoupon(result.data, selectionData);
+                    
+                    if (validationResult.isValid) {
+                        appliedCoupon = result.data; // Store coupon data
+                        applyHostingCoupon(result.data);
+                        showSweetAlert('Áp dụng mã giảm giá thành công!', 'success');
+                    } else {
+                        showSweetAlert(validationResult.message, 'error', validationResult.title);
+                    }
+                } else {
+                    showSweetAlert(result.message || 'Mã giảm giá không hợp lệ', 'error');
+                }
+            })
+            .catch(error => {
+                applyButton.innerHTML = originalHTML;
+                applyButton.disabled = false;
+                Swal.close();
+                showSweetAlert('Không thể kiểm tra mã giảm giá. Vui lòng thử lại.', 'error');
+            });
+    }
+
+    function validateHostingCoupon(couponData, selectionData) {
+        // Service validation
+        if (couponData.service !== 'ALL' && couponData.service !== selectionData.service) {
+            return {
+                isValid: false,
+                title: 'Mã giảm giá không hợp lệ!',
+                message: `Mã giảm giá của quý khách chỉ áp dụng cho dịch vụ ${couponData.service} không hỗ trợ cho dịch vụ ${selectionData.service}!`
+            };
+        }
+
+        // Category validation
+        if (couponData.category !== 'ALL' && couponData.category) {
+            // Handle category as object or string
+            let categoryId = typeof couponData.category === 'object' ? couponData.category.id : couponData.category;
+            let categoryName = typeof couponData.category === 'object' ? couponData.category.name : couponData.category;
+            
+            if (categoryId != selectionData.category) {
+                // Get category name for display
+                const categoryElement = document.querySelector(`input[name="category"][value="${selectionData.category}"]`);
+                const currentCategoryName = categoryElement ? categoryElement.getAttribute('data-category-name') || 'đã chọn' : 'đã chọn';
+                
+                return {
+                    isValid: false,
+                    title: 'Chuyên mục không hợp lệ!',
+                    message: `Mã giảm giá của quý khách chỉ áp dụng cho chuyên mục ${categoryName} không hỗ trợ cho chuyên mục ${currentCategoryName}!`
+                };
+            }
+        }
+
+        // Subcategory validation
+        if (couponData.category !== 'ALL' && couponData.subcategory !== 'ALL' && couponData.subcategory) {
+            // Handle subcategory as object or string
+            let subcategoryId = typeof couponData.subcategory === 'object' ? couponData.subcategory.id : couponData.subcategory;
+            let subcategoryName = typeof couponData.subcategory === 'object' ? couponData.subcategory.name : couponData.subcategory;
+            
+            if (subcategoryId != selectionData.subcategory) {
+                // Get subcategory name for display
+                const subcategoryElement = document.querySelector(`input[name="subcategory"][value="${selectionData.subcategory}"]`);
+                const currentSubcategoryName = subcategoryElement ? subcategoryElement.getAttribute('data-subcategory-name') || 'đã chọn' : 'đã chọn';
+                
+                return {
+                    isValid: false,
+                    title: 'Sản phẩm không hợp lệ!',
+                    message: `Mã giảm giá của quý khách chỉ áp dụng cho sản phẩm ${subcategoryName} không hỗ trợ cho sản phẩm ${currentSubcategoryName}!`
+                };
+            }
+        }
+
+        // Subscription validation
+        if (couponData.category !== 'ALL' && couponData.subcategory !== 'ALL' && couponData.subscription !== 'ALL' && couponData.subscription) {
+            // Handle subscription as object or string
+            let subscriptionId = typeof couponData.subscription === 'object' ? couponData.subscription.id : couponData.subscription;
+            let subscriptionName = typeof couponData.subscription === 'object' ? couponData.subscription.name : couponData.subscription;
+            
+            if (subscriptionId != selectionData.subscription) {
+                // Get subscription name for display
+                const subscriptionElement = document.querySelector(`input[name="subscription"][value="${selectionData.subscription}"]`);
+                const currentSubscriptionName = subscriptionElement ? 
+                    subscriptionElement.closest('.form-check').querySelector('.text-uppercase.fs-6.fw-bolder').textContent || 'đã chọn' : 'đã chọn';
+                
+                return {
+                    isValid: false,
+                    title: 'Gói không hợp lệ!',
+                    message: `Mã giảm giá của quý khách chỉ áp dụng cho gói đăng ký ${subscriptionName} không hỗ trợ cho gói ${currentSubscriptionName}!`
+                };
+            }
+        }
+
+        // Minimum amount validation
+        if (couponData.min_amount && selectionData.totalAmount < parseFloat(couponData.min_amount)) {
+            return {
+                isValid: false,
+                title: 'Đơn hàng chưa đủ điều kiện!',
+                message: `Đơn hàng cần đạt tổng thanh toán tối thiểu ${formatPrice(couponData.min_amount)}đ để áp dụng mã giảm giá!`
+            };
+        }
+
+        return { isValid: true };
+    }
+
+    function applyHostingCoupon(couponData) {
+        // Calculate discount using the updated function
+        const basePrice = parseFloat(selectedDuration.price) || 0;
+        const discountAmount = calculateCouponDiscount(basePrice, couponData);
+
+        // Update total price display
+        const finalPrice = basePrice - discountAmount;
+        
+        // Show discount row
+        const discountRow = document.querySelector('.total-coupon-discount').closest('tr');
+        if (discountRow) {
+            discountRow.style.display = 'table-row';
+            document.querySelector('.total-coupon-discount').textContent = formatPrice(discountAmount) + 'đ';
+        }
+
+        // Update final payment
+        document.querySelector('.total-payment').textContent = formatPrice(finalPrice) + 'đ';
+
+        // Show coupon info
+        displayHostingCouponInfo(couponData);
+    }
+
+    function displayHostingCouponInfo(couponData) {
+        const couponDisplay = document.getElementById('dispay_coupon_apply');
+        if (couponDisplay) {
+            // Hiển thị đúng loại coupon
+            let discountText = '';
+            if (couponData.type === 'fixed') {
+                discountText = `Giảm ${formatPrice(couponData.discount)}đ`;
+            } else if (couponData.type === 'percent') {
+                discountText = `Giảm ${couponData.discount}%`;
+            }
+
+            couponDisplay.innerHTML = `
+            <div class="border border-primary border-dashed bg-light-primary rounded-3">
+                <div class="p-3">
+                    <div class="d-flex align-items-start gap-2">
+                        <img src="${couponData.image}" height="43" class="rounded-3">
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold txt-primary">${couponData.name} - ${discountText}</div>
+                            <div class="text-muted f-12">
+                                Tối thiểu: ${formatPrice(couponData.min_amount)}đ - Tối đa: ${formatPrice(couponData.max_amount)}đ
+                            </div>
+                            ${couponData.note ? `<div class="text-muted f-12 mt-1">${couponData.note}</div>` : ''}
+                        </div>
+                        <button type="button" class="btn btn-sm btn-step-ghost txt-primary" onclick="removeHostingCoupon()" title="Hủy mã giảm giá">
+                            <i class="fad fa-times text-purple"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+            couponDisplay.style.display = 'block';
+        }
+    }
+
+    // Global function for removing coupon with SweetAlert confirmation
+    window.removeHostingCoupon = function() {
+        showSweetAlert('Bạn có chắc chắn muốn xóa mã giảm giá?', 'question')
+            .then((result) => {
+                if (result.isConfirmed) {
+                    // Reset coupon
+                    appliedCoupon = null;
+                    
+                    // Reset coupon display
+                    const discountRow = document.querySelector('.total-coupon-discount').closest('tr');
+                    if (discountRow) {
+                        discountRow.style.display = 'none';
+                    }
+
+                    const couponDisplay = document.getElementById('dispay_coupon_apply');
+                    if (couponDisplay) {
+                        couponDisplay.style.display = 'none';
+                        couponDisplay.innerHTML = '';
+                    }
+
+                    // Reset total payment
+                    const basePrice = parseFloat(selectedDuration.price) || 0;
+                    document.querySelector('.total-payment').textContent = formatPrice(basePrice) + 'đ';
+
+                    // Clear coupon input
+                    document.querySelector('input[name="coupon"]').value = '';
+                    
+                    showSweetAlert('Đã xóa mã giảm giá', 'success');
+                }
+            });
+    };
+});
+/*** END PATMENT HOSTING ***/
+
+/*** START GET RESOURCES HOSTING ***/
+const skeletonCSS = `
+<style>
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-progress {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100% !important;
+}
+
+.skeleton-text {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    color: transparent !important;
+    border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+</style>
+`;
+
+function initHostingResources() {
+    if (typeof ROUTE_NAME === 'undefined') {
+        return;
+    }
+    
+    if (ROUTE_NAME !== 'HOSTING_DETAIL') {
+        return;
+    }
+    
+    if (typeof ROUTE_HANDLE === 'undefined') {
+        return;
+    }
+    
+    if (typeof ORDER_ID === 'undefined') {
+        return;
+    }
+    
+    let resourceInterval;
+
+    function loadHostingResources() {
+        if (typeof $ === 'undefined') {
+            return;
+        }
+        
+        $.ajax({
+            url: ROUTE_HANDLE,
+            method: 'GET',
+            data: {
+                key: ACCESS_TOKEN,
+                action: 'resources',
+                hosting: ORDER_ID
+            },
+            beforeSend: function() {
+                if (!$('#cpu-progress').hasClass('loaded')) {
+                    showSkeletonLoading();
+                }
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    updateResourcesDisplay(response.data);
+                    hideSkeletonLoading();
+                } else {
+                    showErrorState();
+                }
+            },
+            error: function(xhr, status, error) {
+                showErrorState();
+                hideSkeletonLoading();
+            }
+        });
+    }
+
+    function showSkeletonLoading() {
+        $('#cpu-progress, #ram-progress, #disk-progress, #process-progress').addClass('skeleton-progress skeleton');
+        $('#cpu-text, #ram-text, #disk-text, #process-text').addClass('skeleton-text').text('Loading...');
+    }
+
+    function hideSkeletonLoading() {
+        $('#cpu-progress, #ram-progress, #disk-progress, #process-progress').removeClass('skeleton-progress skeleton').addClass('loaded');
+        $('#cpu-text, #ram-text, #disk-text, #process-text').removeClass('skeleton-text');
+    }
+
+    function updateResourcesDisplay(data) {
+        const cpuPercentage = data.resource_usage.cpu.percentage || 0;
+        $('#cpu-progress').css('width', cpuPercentage + '%').attr('aria-valuenow', cpuPercentage);
+        $('#cpu-text').text(`${cpuPercentage}% (${data.resource_usage.cpu.usage}/${data.resource_usage.cpu.maximum})`);
+
+        const ramPercentage = data.resource_usage.ram.percentage || 0;
+        $('#ram-progress').css('width', ramPercentage + '%').attr('aria-valuenow', ramPercentage);
+        $('#ram-text').text(`${ramPercentage}% (${data.resource_usage.ram.formatted_usage}MB/${data.resource_usage.ram.formatted_maximum}MB)`);
+
+        const diskPercentage = (data.disk_usage.phamtram * 100).toFixed(2);
+        $('#disk-progress').css('width', diskPercentage + '%').attr('aria-valuenow', diskPercentage);
+        $('#disk-text').text(`${diskPercentage}% (${data.disk_usage.disk_used}MB/${data.disk_usage.disk_limit}MB)`);
+
+        const processPercentage = data.resource_usage.process.percentage || 0;
+        $('#process-progress').css('width', processPercentage + '%').attr('aria-valuenow', processPercentage);
+        $('#process-text').text(`${processPercentage}% (${data.resource_usage.process.usage}/${data.resource_usage.process.maximum})`);
+    }
+
+    function showErrorState() {
+        $('#cpu-text, #ram-text, #disk-text, #process-text').text('Error loading data');
+        $('#cpu-progress, #ram-progress, #disk-progress, #process-progress').css('width', '0%');
+    }
+
+    loadHostingResources();
+
+    resourceInterval = setInterval(function() {
+        loadHostingResources();
+    }, 10000);
+
+    $(window).on('beforeunload', function() {
+        if (resourceInterval) {
+            clearInterval(resourceInterval);
+        }
+    });
+}
+
+if (typeof $ !== 'undefined') {
+    $(document).ready(function() {
+        $('head').append(skeletonCSS);
+        setTimeout(initHostingResources, 100);
+    });
+} else {
+    document.addEventListener('DOMContentLoaded', function() {
+        document.head.insertAdjacentHTML('beforeend', skeletonCSS);
+        
+        const checkJQuery = setInterval(function() {
+            if (typeof $ !== 'undefined') {
+                clearInterval(checkJQuery);
+                setTimeout(initHostingResources, 100);
+            }
+        }, 100);
+    });
+}
+/*** END GET RESOURCES HOSTING ***/
+
+
+/* START Hosting Renewal Price Calculator + Enhanced Coupon Validation */
+document.addEventListener("DOMContentLoaded", function () {
+    if (typeof ROUTE_NAME === 'undefined' || ROUTE_NAME !== 'HOSTING_DETAIL') {
+        return;
+    }
+
+    const hostRenewForm = document.getElementById('host-renew-form');
+    if (!hostRenewForm) {
+        return;
+    }
+
+    let currentDiscount = 0;
+    let currentCouponData = null;
+    
+    hostRenewForm.querySelectorAll('input[name="duration"]').forEach(function(input) {
+        input.addEventListener('change', function() {
+            hostRenewForm.querySelectorAll('.offer-check .form-check').forEach(function(fc) {
+                fc.classList.remove('active-select');
+            });
+            
+            if (input.checked) {
+                input.closest('.form-check').classList.add('active-select');
+                updateBillInfo();
+                
+                if (currentCouponData && currentCouponData.min_amount) {
+                    let currentTotalPayment = calculateCurrentTotalPayment();
+                    if (currentTotalPayment < parseFloat(currentCouponData.min_amount)) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Mã giảm giá đã bị hủy',
+                            text: `Đơn hàng không đủ điều kiện tối thiểu ${formatPrice(currentCouponData.min_amount)} VNĐ. Mã giảm giá đã được hủy!`,
+                            confirmButtonText: 'Đóng'
+                        });
+                        resetCoupon();
+                    }
+                }
+            }
+        });
+    });
+
+    const applyCouponBtn = hostRenewForm.querySelector("#apply-coupon");
+    if (applyCouponBtn) {
+        applyCouponBtn.addEventListener("click", function () {
+            let couponInput = hostRenewForm.querySelector('input[name="coupon"]');
+            let code = couponInput ? couponInput.value.trim() : '';
+            
+            if (!code) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Thông báo',
+                    text: 'Vui lòng nhập mã giảm giá!',
+                    confirmButtonText: 'Đóng'
+                });
+                return;
+            }
+
+            let selectedDuration = hostRenewForm.querySelector('input[name="duration"]:checked');
+            if (!selectedDuration) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Thông báo',
+                    text: 'Vui lòng chọn chu kỳ gia hạn trước khi áp dụng mã giảm giá!',
+                    confirmButtonText: 'Đóng'
+                });
+                return;
+            }
+
+            let applyButton = applyCouponBtn;
+            let originalHTML = applyButton.innerHTML;
+            let originalDisabled = applyButton.disabled;
+
+            applyButton.innerHTML = '<i class="fad fa-spinner fa-spin me-1"></i>Đang kiểm tra...';
+            applyButton.disabled = true;
+
+            Swal.fire({
+                title: 'Đang xử lý...',
+                text: 'Vui lòng chờ trong giây lát',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            let apiUrl = `/api/private/v3/coupon/checking?code=${encodeURIComponent(code)}`;
+            
+            fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${ACCESS_TOKEN}`,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => response.json())
+                .then(result => {
+                    applyButton.innerHTML = originalHTML;
+                    applyButton.disabled = originalDisabled;
+
+                    Swal.close();
+
+                    if (result.status === "success" && result.data) {
+                        let validationResult = validateCoupon(result.data);
+                        if (validationResult.isValid) {
+                            let basePrice = calculateCurrentTotalPayment();
+                            let discountAmount = calculateCouponDiscount(basePrice, result.data);
+                            
+                            if (discountAmount > 0) {
+                                currentDiscount = result.data.type === 'percent' ? parseFloat(result.data.discount) : 0;
+                                currentCouponData = result.data;
+                                
+                                displayCouponInfo(result.data);
+                                
+                                updateBillInfo();
+                                
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Thành công!',
+                                    text: 'Áp dụng mã giảm giá thành công!',
+                                    confirmButtonText: 'Đóng'
+                                });
+                            } else {
+                                resetCoupon();
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Không thể áp dụng',
+                                    text: 'Mã giảm giá không thể áp dụng cho đơn hàng này.',
+                                    confirmButtonText: 'Đóng'
+                                });
+                            }
+                        } else {
+                            resetCoupon();
+                            Swal.fire({
+                                icon: validationResult.icon || 'error',
+                                title: validationResult.title || 'Lỗi',
+                                text: validationResult.message,
+                                confirmButtonText: 'Đóng'
+                            });
+                        }
+                    } else {
+                        resetCoupon();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: result.message || 'Mã giảm giá không hợp lệ hoặc không có giảm giá.',
+                            confirmButtonText: 'Đóng'
+                        });
+                    }
+                })
+                .catch((error) => {
+                    console.error('Coupon validation error:', error);
+                    
+                    applyButton.innerHTML = originalHTML;
+                    applyButton.disabled = originalDisabled;
+                    
+                    Swal.close();
+                    
+                    resetCoupon();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi kết nối',
+                        text: 'Không thể kiểm tra mã giảm giá. Vui lòng thử lại.',
+                        confirmButtonText: 'Đóng'
+                    });
+                });
+        });
+    }
+
+    function calculateCouponDiscount(basePrice, couponData) {
+        if (!basePrice || basePrice <= 0) {
+            return 0;
+        }
+        
+        if (!couponData || !couponData.type || !couponData.discount) {
+            return 0;
+        }
+        
+        const price = parseFloat(basePrice);
+        const discountValue = parseFloat(couponData.discount);
+        
+        if (isNaN(price) || isNaN(discountValue) || discountValue <= 0) {
+            return 0;
+        }
+        
+        if (couponData.min_amount) {
+            const minAmount = parseFloat(couponData.min_amount);
+            if (!isNaN(minAmount) && price < minAmount) {
+                return 0;
+            }
+        }
+        
+        let discountAmount = 0;
+        
+        if (couponData.type === 'percent') {
+            const percentValue = Math.min(discountValue, 100);
+            discountAmount = (price * percentValue) / 100;
+        } else if (couponData.type === 'fixed') {
+            discountAmount = discountValue;
+        } else {
+            return 0;
+        }
+        
+        if (couponData.max_amount) {
+            const maxAmount = parseFloat(couponData.max_amount);
+            if (!isNaN(maxAmount) && maxAmount > 0) {
+                discountAmount = Math.min(discountAmount, maxAmount);
+            }
+        }
+        
+        discountAmount = Math.min(discountAmount, price);
+        
+        return Math.max(discountAmount, 0);
+    }
+
+    function displayCouponInfo(couponData) {
+        let couponContainer = hostRenewForm.querySelector('#dispay_coupon_apply');
+        if (couponContainer) {
+            let minAmount = couponData.min_amount ? formatPrice(couponData.min_amount) : 'Không có';
+            let maxAmount = couponData.max_amount ? formatPrice(couponData.max_amount) : 'Không giới hạn';
+            
+            let discountText = couponData.type === 'percent' ? 
+                `${couponData.discount}%` : 
+                `${formatPrice(couponData.discount)}đ`;
+            
+            couponContainer.innerHTML = `
+                <div class="border border-primary border-dashed bg-light-primary rounded-3">
+                    <div class="p-3">
+                        <div class="d-flex align-items-start gap-2">
+                            <img src="${couponData.image || '/assets/images/default-coupon.png'}" height="43" class="rounded-3">
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold txt-primary">${couponData.name} - ${discountText}</div>
+                                <div class="text-muted f-12">
+                                    Tối thiểu: ${minAmount}đ - Tối đa: ${maxAmount}đ
+                                </div>
+                                ${couponData.note ? `<div class="text-muted f-12 mt-1">${couponData.note}</div>` : ''}
+                            </div>
+                            <button type="button" class="btn btn-sm btn-step-ghost txt-primary" onclick="removeHostingCoupon()" title="Hủy mã giảm giá">
+                                <i class="fad fa-times text-purple"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            couponContainer.style.display = 'block';
+        }
+    }
+
+    function validateCoupon(couponData) {
+        if (typeof SERVICE !== 'undefined' && couponData.service !== 'ALL' && couponData.service !== SERVICE) {
+            return {
+                isValid: false,
+                icon: 'error',
+                title: 'Mã giảm giá không hợp lệ!',
+                message: 'Mã giảm giá của quý khách chỉ áp dụng cho dịch vụ ' + couponData.service + ' không hỗ trợ cho dịch vụ ' + SERVICE + '!'
+            };
+        }
+    
+        if (typeof CATEGORY !== 'undefined' && couponData.category !== 'ALL' && couponData.category) {
+            let categoryId = typeof couponData.category === 'object' ? couponData.category.id : couponData.category;
+            let categoryName = typeof couponData.category === 'object' ? couponData.category.name : couponData.category;
+            
+            if (String(categoryId) !== String(CATEGORY)) {
+                return {
+                    isValid: false,
+                    icon: 'error',
+                    title: 'Chuyên mục không hợp lệ!',
+                    message: 'Mã giảm giá của quý khách chỉ áp dụng cho chuyên mục ' + categoryName + ' không hỗ trợ cho chuyên mục ' + CATEGORY_NAME + '!'
+                };
+            }
+        }
+    
+        if (typeof SUBCATEGORY !== 'undefined' && couponData.category !== 'ALL' && couponData.subcategory !== 'ALL' && couponData.subcategory) {
+            let subcategoryId = typeof couponData.subcategory === 'object' ? couponData.subcategory.id : couponData.subcategory;
+            let subcategoryName = typeof couponData.subcategory === 'object' ? couponData.subcategory.name : couponData.subcategory;
+            
+            if (String(subcategoryId) !== String(SUBCATEGORY)) {
+                return {
+                    isValid: false,
+                    icon: 'error',
+                    title: 'Sản phẩm không hợp lệ!',
+                    message: 'Mã giảm giá của quý khách chỉ áp dụng cho sản phẩm ' + subcategoryName + ' không hỗ trợ cho sản phẩm ' + SUBCATEGORY_NAME + '!'
+                };
+            }
+        }
+    
+        if (typeof SUBSCRIPTION !== 'undefined' && couponData.category !== 'ALL' && couponData.subcategory !== 'ALL' && couponData.subscription !== 'ALL' && couponData.subscription) {
+            let subscriptionId = typeof couponData.subscription === 'object' ? couponData.subscription.id : couponData.subscription;
+            let subscriptionName = typeof couponData.subscription === 'object' ? couponData.subscription.name : couponData.subscription;
+            
+            if (String(subscriptionId) !== String(SUBSCRIPTION)) {
+                return {
+                    isValid: false,
+                    icon: 'error',
+                    title: 'Gói không hợp lệ!',
+                    message: 'Mã giảm giá của quý khách chỉ áp dụng cho gói đăng ký ' + subscriptionName + ' không hỗ trợ cho gói ' + SUBSCRIPTION_NAME + '!'
+                };
+            }
+        }
+    
+        let currentTotalPayment = calculateCurrentTotalPayment();
+        
+        if (couponData.min_amount && currentTotalPayment < parseFloat(couponData.min_amount)) {
+            return {
+                isValid: false,
+                icon: 'warning',
+                title: 'Đơn hàng chưa đủ điều kiện!',
+                message: `Đơn hàng cần đạt tổng thanh toán tối thiểu ${formatPrice(couponData.min_amount)} VNĐ để áp dụng mã giảm giá!`
+            };
+        }
+    
+        return { isValid: true };
+    }
+
+    function calculateCurrentTotalPayment() {
+        let selectedDuration = hostRenewForm.querySelector('input[name="duration"]:checked');
+        if (!selectedDuration) return 0;
+
+        let price = parseFloat(selectedDuration.getAttribute("data-price")) || 0;
+
+        let vatRate = typeof VAT !== "undefined" ? parseFloat(VAT) : 0;
+        let vatAmount = (price * vatRate) / 100;
+
+        return price + vatAmount;
+    }
+
+    function resetCoupon() {
+        currentDiscount = 0;
+        currentCouponData = null;
+        
+        let couponContainer = hostRenewForm.querySelector('#dispay_coupon_apply');
+        if (couponContainer) {
+            couponContainer.style.display = 'none';
+            couponContainer.innerHTML = '';
+        }
+        
+        let couponInput = hostRenewForm.querySelector('input[name="coupon"]');
+        if (couponInput) {
+            couponInput.value = "";
+        }
+        
+        updateBillInfo();
+    }
+
+    window.resetCoupon = resetCoupon;
+    window.removeHostingCoupon = resetCoupon;
+
+    function updateBillInfo() {
+        let selectedDuration = hostRenewForm.querySelector('input[name="duration"]:checked');
+        if (!selectedDuration) {
+            hostRenewForm.querySelectorAll('.bill-duration').forEach(el => el.textContent = '');
+            hostRenewForm.querySelectorAll('.bill-payment').forEach(el => el.textContent = '0đ');
+            hostRenewForm.querySelectorAll('.total-coupon-discount').forEach(el => el.textContent = '0đ');
+            
+            hostRenewForm.querySelectorAll('tr').forEach(tr => {
+                if (tr.querySelector('.total-coupon-discount')) {
+                    tr.style.display = 'none';
+                }
+            });
+            return;
+        }
+
+        let months = parseInt(selectedDuration.getAttribute("data-months")) || 0;
+        let price = parseFloat(selectedDuration.getAttribute("data-price")) || 0;
+
+        let durationText = '';
+        if (months === 1) {
+            durationText = '1 Tháng';
+        } else if (months === 12) {
+            durationText = '1 Năm';
+        } else {
+            durationText = months + ' Tháng';
+        }
+
+        hostRenewForm.querySelectorAll('.bill-duration').forEach(el => {
+            if (el.closest('tr').querySelector('i.fal.fa-clock')) {
+                let dataName = selectedDuration.getAttribute("data-name");
+                el.textContent = dataName || durationText;
+            } else if (el.closest('tr').querySelector('i.fal.fa-money')) {
+                el.textContent = formatPrice(price) + 'đ';
+            }
+        });
+
+        let discountAmount = 0;
+        if (currentCouponData) {
+            discountAmount = calculateCouponDiscount(price, currentCouponData);
+        }
+
+        hostRenewForm.querySelectorAll('.total-coupon-discount').forEach(el => {
+            if (discountAmount > 0) {
+                el.textContent = '-' + formatPrice(discountAmount) + 'đ';
+                el.closest('tr').style.display = '';
+            } else {
+                el.textContent = '0đ';
+                el.closest('tr').style.display = 'none';
+            }
+        });
+
+        let priceAfterDiscount = price - discountAmount;
+
+        let vatRate = typeof VAT !== "undefined" ? parseFloat(VAT) : 0;
+        let vatAmount = 0;
+        if (vatRate > 0) {
+            vatAmount = (priceAfterDiscount * vatRate) / 100;
+            hostRenewForm.querySelectorAll('tr').forEach(tr => {
+                if (tr.querySelector('.bill-vat')) {
+                    tr.style.display = '';
+                    tr.querySelector('.bill-vat').textContent = formatPrice(vatAmount) + 'đ';
+                }
+            });
+        }
+
+        let finalPayment = priceAfterDiscount + vatAmount;
+
+        hostRenewForm.querySelectorAll('.bill-payment').forEach(el => {
+            el.textContent = formatPrice(finalPayment) + 'đ';
+        });
+    }
+
+    function formatPrice(price) {
+        if (!price || price === 0) return '0';
+        return new Intl.NumberFormat("vi-VN").format(parseFloat(price));
+    }
+
+    function numberFormat(number) {
+        return formatPrice(number);
+    }
+
+    updateBillInfo();
+});
+/* END Hosting Renewal Price Calculator + Enhanced Coupon Validation */
+

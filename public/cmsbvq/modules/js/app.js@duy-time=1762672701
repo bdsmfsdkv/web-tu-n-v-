@@ -1,0 +1,959 @@
+$.ajaxSetup({
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+});
+
+$(function () {
+    $('[data-bs-toggle="tooltip"]').tooltip();
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+});
+
+function direct(url, newTab = false) {
+    if (newTab) {
+        window.open(url, '_blank');
+    } else {
+        window.location.href = url;
+    }
+}
+
+function copy(text) {
+    var tempInput = document.createElement("input");
+    tempInput.style.position = "absolute";
+    tempInput.style.left = "-9999px";
+    document.body.appendChild(tempInput);
+    tempInput.value = text;
+    tempInput.select();
+    tempInput.setSelectionRange(0, 99999);
+    document.execCommand("copy");
+    document.body.removeChild(tempInput);
+    new Notify({
+        status: "success",
+        title: "Thành công",
+        text: "Sao chép thành công !",
+        autotimeout: 3000,
+        speed: 300,
+        autoclose: true,
+        effect: 'slide',
+    });
+}
+
+async function pasteClipboard(sel) {
+    try {
+      const text = await navigator.clipboard.readText();
+      document.querySelector(sel).value = text;
+      new Notify({
+        status: "success",
+        title: "Thành công",
+        text: "Paste success",
+        autotimeout: 3000,
+      });
+    } catch {
+      new Notify({
+        status: "error",
+        title: "Thất bại",
+        text: "Paste failed",
+        autotimeout: 3000,
+      });
+    }
+  }  
+  
+/* SELECT2 */
+$(document).ready(function () {
+    const formatState = (state) => {
+        if (!state.id) {
+            return $('<span>' + state.text + '</span>');
+        }
+
+        let logo = $(state.element).attr('img-select2');
+        if (logo) {
+            return $('<span><img src="' + logo + '" class="rounded-2 me-2" style="width: 20px; height: 20px">' + state.text + '</span>');
+        }
+
+        return $('<span>' + state.text + '</span>');
+    };
+
+    $('.custom-select2').each(function () {
+        let searchAttr = $(this).data('search');
+        let placeholderAttr = $(this).data('placeholder');
+
+        let allowSearch = false;
+        let placeholder = "Chọn danh mục";
+
+        if (typeof searchAttr !== 'undefined') {
+            allowSearch = (searchAttr === true || searchAttr === 'true');
+        }
+        if (typeof placeholderAttr !== 'undefined' && placeholderAttr.trim() !== '') {
+            placeholder = placeholderAttr;
+        }
+
+        $(this).select2({
+            templateResult: formatState,
+            templateSelection: formatState,
+            width: '100%',
+            minimumResultsForSearch: allowSearch ? 0 : Infinity,
+            placeholder: placeholder,
+            allowClear: false
+        });
+    });
+
+    $('.custom-select2').on('select2:select', function (e) {
+        let selectedOption = $(this).find(':selected');
+        let description = selectedOption.data('description');
+        $('.div-details').html(`<div class="alert bg-light-info mb-3">${description || ''}</div>`);
+    });
+
+    $('.custom-select2').on('select2:unselect', function () {
+        $('.div-details').html('');
+    });
+});
+
+/* FORM */
+$(document).ready(function () {
+    $('.create-form').on('submit', function (e) {
+        e.preventDefault();
+
+        var form = $(this);
+        var formData = new FormData(form[0]);
+        var submitBtn = form.find('button[type="submit"]');
+        var originalBtnHtml = submitBtn.html();
+
+        $.ajax({
+            url: form.attr('action'),
+            type: form.attr('method'),
+            data: formData,
+            processData: false,
+            contentType: false,
+            beforeSend: function () {
+                $('#loading').show();
+                submitBtn.html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Đang xử lý...');
+                submitBtn.prop('disabled', true);
+            },
+            success: function (response) {
+                $('#loading').hide();
+                submitBtn.html(originalBtnHtml);
+                submitBtn.prop('disabled', false);
+
+                Swal.fire({
+                    icon: response.status === 'success' ? 'success' : 'error',
+                    title: response.status === 'success' ? 'Thành công!' : 'Lỗi!',
+                    text: response.message,
+                    confirmButtonText: 'Đóng'
+                });
+            },
+            error: function (xhr) {
+                $('#loading').hide();
+                submitBtn.html(originalBtnHtml);
+                submitBtn.prop('disabled', false);
+
+                let message = 'Vui lòng thử lại.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Đã xảy ra lỗi!',
+                    text: message,
+                    confirmButtonText: 'Đóng'
+                });
+            }
+        });
+    });
+});
+
+$(document).ready(function () {
+    $('.edit-form').on('submit', function (e) {
+        e.preventDefault();
+
+        var form = $(this);
+        var formData = new FormData(form[0]);
+        var submitBtn = form.find('button[type="submit"]');
+        var originalBtnHtml = submitBtn.html();
+
+        $.ajax({
+            url: form.attr('action'),
+            type: form.attr('method'),
+            data: formData,
+            processData: false,
+            contentType: false,
+            beforeSend: function () {
+                $('#loading').show();
+                submitBtn.html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Đang xử lý...');
+                submitBtn.prop('disabled', true);
+            },
+            success: function (response) {
+                $('#loading').hide();
+                submitBtn.html(originalBtnHtml);
+                submitBtn.prop('disabled', false);
+
+                Swal.fire({
+                    icon: response.status === 'success' ? 'success' : 'error',
+                    title: response.status === 'success' ? 'Thành công!' : 'Lỗi!',
+                    text: response.message,
+                    confirmButtonText: 'Đóng'
+                });
+            },
+            error: function (xhr) {
+                $('#loading').hide();
+                submitBtn.html(originalBtnHtml);
+                submitBtn.prop('disabled', false);
+
+                let message = 'Vui lòng thử lại.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Đã xảy ra lỗi!',
+                    text: message,
+                    confirmButtonText: 'Đóng'
+                });
+            }
+        });
+    });
+});
+
+
+$(document).ready(function() {
+    $('.payment-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        var form = $(this);
+        var submitBtn = form.find('button[type="submit"]');
+        var originalText = submitBtn.html();
+        
+        Swal.fire({
+            title: 'Xác nhận thanh toán?',
+            text: 'Bạn có chắc chắn muốn thanh toán đơn hàng này không?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Thanh toán',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show processing dialog
+                Swal.fire({
+                    title: 'Hệ thống đang xử lý...',
+                    text: 'Quý khách vui lòng chờ trong giây lát.',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Single AJAX call
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    dataType: 'json',
+                    beforeSend: function() {
+                        submitBtn.html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Đang xử lý...');
+                        submitBtn.prop('disabled', true);
+                    },
+                    success: function(response) {
+                        Swal.close();
+                        Swal.fire({
+                            title: response.title ||'Thành công!',
+                            text: response.message || 'Thanh toán thành công!',
+                            icon: 'success',
+                            confirmButtonText: 'Đóng'
+                        }).then(() => {
+                            /*if (response.redirect) {
+                                window.location.href = response.redirect;
+                            } else {
+                                location.reload();
+                            }*/
+                        });
+                    },
+                    error: function(xhr) {
+                        Swal.close();
+                        var response = xhr.responseJSON;
+                        Swal.fire({
+                            title:response && response.title ? response.title : 'Thất bại!',
+                            text: response && response.message ? response.message : 'Có lỗi xảy ra, vui lòng thử lại sau!',
+                            icon: 'error',
+                            confirmButtonText: 'Đóng'
+                        });
+                    },
+                    complete: function() {
+                        submitBtn.prop('disabled', false).html(originalText);
+                    }
+                });
+            }
+        });
+    });
+});
+
+$(document).ready(function() {
+    $('.action-form').on('submit', function(e) {
+        e.preventDefault();
+
+        var form = $(this);
+        var submitBtn = form.find('button[type="submit"]');
+        var originalText = submitBtn.html();
+        var TOKEN = ACCESS_TOKEN || '';
+        var showSubmitText = form.data('submit-text') !== false && form.data('submit-text') !== 'false';
+
+        var title = form.data('title') || 'Xác nhận thao tác';
+        var message = form.data('message') || 'Bạn có chắc chắn muốn thực hiện thao tác này không?';
+        var needConfirm = form.data('confirm') !== false && form.data('confirm') !== 'false';
+        var autoReload = form.data('reload') === true || form.data('reload') === 'true';
+        var timer = form.data('timer') || 0; // Thời gian tự đóng alert (ms)
+
+        var actionUrl = form.attr('action');
+        if (!actionUrl || actionUrl === '') {
+            actionUrl = ROUTE_HANDLE;
+        }
+
+        var formData = form.serialize();
+        if (!form.find('input[name="key"]').length) {
+            var keyValue = TOKEN || '';
+            formData += '&key=' + encodeURIComponent(keyValue);
+        }
+
+        function executeAjax() {
+            Swal.fire({
+                title: 'Hệ thống đang xử lý dữ liệu...',
+                text: 'Vui lòng chờ đợi trong giây lát.',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: actionUrl,
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                beforeSend: function() {
+                    if (showSubmitText) {
+                        submitBtn.html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Đang xử lý...');
+                    } else {
+                        submitBtn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+                    }
+                    submitBtn.prop('disabled', true);
+                },
+                success: function(response) {
+                    Swal.close();
+
+                    if (response.status === 'success') {
+                        let swalConfig = {
+                            title: response.title || 'Thành công!',
+                            text: response.message || 'Thao tác đã được thực hiện thành công!',
+                            icon: 'success',
+                            confirmButtonText: 'Đóng',
+                        };
+
+                        if (timer > 0) {
+                            // Nếu có timer, tự đóng alert sau timer ms, ẩn nút confirm luôn
+                            swalConfig.showConfirmButton = false;
+                            swalConfig.timer = timer;
+                        }
+
+                        Swal.fire(swalConfig).then(() => {
+                            if (response.redirect) {
+                                window.location.href = response.redirect;
+                            } else if (response.reload || autoReload) {
+                                location.reload();
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            title: response.title || 'Thất bại!',
+                            text: response.message || 'Có lỗi xảy ra, vui lòng thử lại sau!',
+                            icon: 'error',
+                            confirmButtonText: 'Đóng'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    Swal.close();
+                    var response = xhr.responseJSON;
+                    Swal.fire({
+                        title: response && response.title ? response.title : 'Thất bại!',
+                        text: response && response.message ? response.message : 'Có lỗi xảy ra, vui lòng thử lại sau!',
+                        icon: 'error',
+                        confirmButtonText: 'Đóng'
+                    });
+                },
+                complete: function() {
+                    submitBtn.prop('disabled', false).html(originalText);
+                }
+            });
+        }
+
+        function runSubmit() {
+            if (needConfirm) {
+                Swal.fire({
+                    title: title,
+                    text: message,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Xác nhận',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        executeAjax();
+                    } else {
+                        submitBtn.prop('disabled', false).html(originalText);
+                    }
+                });
+            } else {
+                executeAjax();
+            }
+        }
+
+        runSubmit();
+    });
+});
+
+function action() {
+    var btn = $(event.target).closest('button');
+    var originalText = btn.html();
+    var route = btn.data('route');
+    var payload = btn.data('payload') || {};
+    var method = btn.data('method') || 'POST';
+    var needConfirm = btn.data('confirm') !== false && btn.data('confirm') !== 'false';
+    var title = btn.data('title') || 'Xác nhận thao tác';
+    var message = btn.data('message') || 'Bạn có chắc chắn muốn thực hiện thao tác này không?';
+    var autoReload = btn.data('reload') === true || btn.data('reload') === 'true';
+    var timer = btn.data('timer') || false;
+    var loadingText = btn.data('text') || '<span class="spinner-border spinner-border-sm" style="width: 14px; height: 14px;" role="status" aria-hidden="true"></span> Đang xử lý...';
+
+    // Detect mobile
+    var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    // Parse payload string (if any)
+    if (typeof payload === 'string') {
+        try {
+            payload = JSON.parse(payload.replace(/'/g, '"'));
+        } catch (e) {
+            console.error("Payload JSON parse error:", e);
+            payload = {};
+        }
+    }
+
+    function showSuccess(title, message, redirect) {
+        if (isMobile) {
+            new Notify({
+                status: "success",
+                title: title || "Thành công",
+                text: message || "Thao tác thành công!",
+                autotimeout: timer || 3000,
+                speed: 300,
+                autoclose: true,
+                effect: 'slide'
+            });
+            if (redirect) setTimeout(() => window.location.href = redirect, 1000);
+            else if (autoReload) setTimeout(() => location.reload(), 1000);
+        } else {
+            Swal.fire({
+                title: title || "Thành công!",
+                text: message || "Thao tác thành công!",
+                icon: "success",
+                confirmButtonText: "Đóng",
+                timer: timer || undefined
+            }).then(() => {
+                if (redirect) window.location.href = redirect;
+                else if (autoReload) location.reload();
+            });
+        }
+    }
+
+    function showError(title, message) {
+        if (isMobile) {
+            new Notify({
+                status: "error",
+                title: title || "Thất bại",
+                text: message || "Đã có lỗi xảy ra!",
+                autotimeout: timer || 3000,
+                speed: 300,
+                autoclose: true,
+                effect: 'slide'
+            });
+        } else {
+            Swal.fire({
+                title: title || "Thất bại!",
+                text: message || "Có lỗi xảy ra, vui lòng thử lại!",
+                icon: "error",
+                confirmButtonText: "Đóng",
+                timer: timer || undefined,
+                timerProgressBar: timer ? true : false
+            });
+        }
+    }
+
+    function executeRequest() {
+        btn.html(loadingText).prop('disabled', true);
+
+        if (!isMobile) {
+            Swal.fire({
+                title: 'Hệ thống đang xử lý...',
+                text: 'Vui lòng chờ trong giây lát.',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => Swal.showLoading()
+            });
+        }
+
+        $.ajax({
+            url: typeof window[route] !== 'undefined' ? window[route] : route,
+            type: method,
+            data: payload,
+            dataType: 'json',
+            success: function (response) {
+                if (!isMobile) Swal.close();
+
+                if (response.status === 'success') {
+                    showSuccess(response.title, response.message, response.redirect);
+                } else {
+                    showError(response.title, response.message);
+                }
+            },
+            error: function (xhr) {
+                if (!isMobile) Swal.close();
+
+                let response = xhr.responseJSON || {};
+                showError(response.title, response.message);
+            },
+            complete: function () {
+                btn.prop('disabled', false).html(originalText);
+            }
+        });
+    }
+
+    if (needConfirm) {
+        Swal.fire({
+            title: title,
+            text: message,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Xác nhận',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) executeRequest();
+        });
+    } else {
+        executeRequest();
+    }
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.dh-filter-menu').forEach(function(filterButton) {
+        filterButton.classList.add('mb-2');
+
+        const targetId = filterButton.getAttribute('data-target');
+        const filterMenu = document.querySelector(targetId + '.dh-filter-panel');
+
+        if (filterMenu) {
+            filterMenu.style.overflow = 'hidden';
+            filterMenu.style.maxHeight = '0';
+            filterMenu.style.transition = 'max-height 0.4s ease, opacity 0.4s ease';
+            filterMenu.style.opacity = '0';
+            filterMenu.style.display = 'block';
+
+            filterButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (filterMenu.style.maxHeight === '0px' || filterMenu.style.maxHeight === '0') {
+                    filterMenu.style.display = 'block';
+                    filterMenu.style.maxHeight = filterMenu.scrollHeight + 'px';
+                    filterMenu.style.opacity = '1';
+
+                    filterButton.classList.remove('btn-default');
+                    filterButton.classList.add('btn-danger');
+                    filterButton.innerHTML = '<i class="fad fa-times me-1"></i>Đóng bộ lọc';
+                } else {
+                    filterMenu.style.maxHeight = '0';
+                    filterMenu.style.opacity = '0';
+
+                    filterButton.classList.remove('btn-danger');
+                    filterButton.classList.add('btn-default');
+                    filterButton.innerHTML = '<i class="fad fa-filter me-1"></i>Bộ lọc';
+
+                    // Sau khi ẩn hết mới set display:none để tránh nhảy layout
+                    setTimeout(() => {
+                        if (filterMenu.style.maxHeight === '0px' || filterMenu.style.maxHeight === '0') {
+                            filterMenu.style.display = 'none';
+                        }
+                    }, 400);
+                }
+            });
+        }
+    });
+});
+
+/*
+  AUTHENTICATE
+*/
+/* Đăng xuất */
+document.querySelectorAll('.auth-logout').forEach(button => {
+    button.addEventListener('click', function() {
+      Swal.fire({
+        title: 'Bạn có chắc muốn đăng xuất?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Đăng xuất',
+        cancelButtonText: 'Hủy',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Swal.fire({
+            title: 'Đang xử lý...',
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading()
+            }
+          });
+          
+          fetch('/auth/logout', { method: 'GET', credentials: 'same-origin' })
+            .then(response => response.json())
+            .then(data => {
+              Swal.close();
+              if (data.status === 'success') {
+                Swal.fire({
+                  icon: 'success',
+                  title: 'Thành công',
+                  text: data.message,
+                  timer: 2000,
+                  showConfirmButton: false,
+                  willClose: () => {
+                    window.location.href = '/auth/login';
+                  }
+                });
+              } else {
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Lỗi',
+                  text: data.message,
+                });
+              }
+            })
+            .catch(error => {
+              Swal.close();
+              Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Có lỗi khi đăng xuất: ' + error,
+              });
+            });
+        }
+      });
+    });
+  });
+
+function CronTask(url, title) {
+    new Notify({
+        status: 'info',
+        title: title || 'Hệ thống đang xử lý...',
+        text: 'Vui lòng đợi trong giây lát...',
+        autoclose: true,
+        timeout: 3000, 
+        closeButton: true
+    });    
+
+    let loadingOverlay = document.getElementById('loading-overlay');
+    let loadingText = document.getElementById('loading-text');
+    let dots = ['...', '.. ', '. ', '.. '];
+    let index = 0;
+
+    loadingOverlay.style.display = 'flex';
+    loadingText.textContent = (title || 'Hệ thống đang xử lý...') + dots[index];
+
+    let loadingInterval = setInterval(() => {
+        index = (index + 1) % dots.length;
+        loadingText.textContent = (title || 'Hệ thống đang xử lý...') + dots[index];
+    }, 500);
+
+    $.ajax({
+        url: url,
+        type: 'GET',
+        success: function(response) {
+            clearInterval(loadingInterval);
+            loadingOverlay.style.display = 'none';
+
+            if (response.status === 'success') {
+                new Notify({
+                    status: 'success',
+                    title: 'Thành công',
+                    text: response.message,
+                    autoclose: true,
+                    timeout: 3000,
+                    closeButton: true
+                });
+
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                new Notify({
+                    status: 'error',
+                    title: 'Lỗi',
+                    text: response.message || 'Có lỗi xảy ra.',
+                    autoclose: true,
+                    timeout: 3000,
+                    closeButton: true
+                });
+            }
+        },
+        error: function() {
+            clearInterval(loadingInterval);
+            loadingOverlay.style.display = 'none';
+
+            new Notify({
+                status: 'error',
+                title: 'Lỗi',
+                text: 'Có lỗi xảy ra!',
+                autoclose: true,
+                timeout: 3000,
+                closeButton: true
+            });
+        }
+    });
+}
+
+
+function changeStatus(id) {
+    const checkbox = event.target;
+    const status = checkbox.checked ? 'active' : 'inactive';
+    const url = checkbox.getAttribute('url-ajax');
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            id: id,
+            status: status,
+            action: 'status'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            new Notify({
+                status: "success",
+                title: "Thành công",
+                text: data.message || "Cập nhật trạng thái thành công!",
+                autotimeout: 3000
+            });
+        } else {
+            new Notify({
+                status: "error",
+                title: "Thất bại",
+                text: data.message || "Cập nhật trạng thái thất bại!",
+                autotimeout: 3000
+            });
+            checkbox.checked = !checkbox.checked;
+        }
+    })
+    .catch(error => {
+        new Notify({
+            status: "error",
+            title: "Lỗi hệ thống",
+            text: error.message,
+            autotimeout: 3000
+        });
+        checkbox.checked = !checkbox.checked;
+    });
+}
+
+function showStatus(id) {
+    const checkbox = event.target;
+    const status = checkbox.checked ? 'true' : 'false';
+    const url = checkbox.getAttribute('url-ajax');
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            id: id,
+            show: status,
+            action: 'show'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            new Notify({
+                status: "success",
+                title: "Thành công",
+                text: data.message || "Cập nhật trạng thái thành công!",
+                autotimeout: 3000
+            });
+        } else {
+            new Notify({
+                status: "error",
+                title: "Thất bại",
+                text: data.message || "Cập nhật trạng thái thất bại!",
+                autotimeout: 3000
+            });
+            checkbox.checked = !checkbox.checked;
+        }
+    })
+    .catch(error => {
+        new Notify({
+            status: "error",
+            title: "Lỗi hệ thống",
+            text: error.message,
+            autotimeout: 3000
+        });
+        checkbox.checked = !checkbox.checked;
+    });
+}
+
+function renewStatus(id) {
+    const checkbox = event.target;
+    const renew = checkbox.checked ? 'true' : 'false';
+
+    checkbox.disabled = true;
+
+    fetch(ROUTE_HANDLE, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            key: ACCESS_TOKEN,
+            hosting: id,
+            vps: id,
+            renew: renew,
+            action: 'renew_status'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            new Notify({
+                status: "success",
+                title: "Thành công",
+                text: data.message || (renew === 'true' ? "Đã bật chức năng tự động gia hạn" : "Đã tắt chức năng tự động gia hạn"),
+                autotimeout: 3000
+            });
+        } else {
+            new Notify({
+                status: "error",
+                title: "Thất bại", 
+                text: data.message || "Có lỗi xảy ra khi thay đổi trạng thái",
+                autotimeout: 3000
+            });
+            checkbox.checked = !checkbox.checked;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        new Notify({
+            status: "error",
+            title: "Lỗi hệ thống",
+            text: "Không thể kết nối đến server",
+            autotimeout: 3000
+        });
+        checkbox.checked = !checkbox.checked;
+    })
+    .finally(() => {
+        checkbox.disabled = false;
+    });
+}
+
+/*** start random string & password ***/
+$(document).ready(function() {
+    // Random username
+    $(document).on('click', '.dh-random-string .dh-submit-random', function() {
+        const btn = $(this);
+        const input = btn.siblings('input');
+        
+        // Show spinner ngắn
+        btn.find('i').removeClass('fa-random').addClass('fa-spinner fa-spin');
+        
+        // Generate ngay lập tức
+        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        let username = 'user';
+        for (let i = 0; i < 8; i++) {
+            username += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        
+        input.val(username);
+        
+        // Restore icon sau 100ms (chỉ để thấy spinner)
+        setTimeout(() => {
+            btn.find('i').removeClass('fa-spinner fa-spin').addClass('fa-random');
+        }, 100);
+    });
+
+    // Random password
+    $(document).on('click', '.dh-random-password .dh-submit-random', function() {
+        const btn = $(this);
+        const input = btn.siblings('input');
+    
+        btn.find('i').removeClass('fa-random').addClass('fa-spinner fa-spin');
+    
+        const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        const numbers = '0123456789';
+        const safeSpecial = '@$!_*?-';
+        const allChars = uppercase + lowercase + numbers + safeSpecial;
+    
+        let password = '';
+    
+        password += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
+        password += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
+        password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+        password += safeSpecial.charAt(Math.floor(Math.random() * safeSpecial.length));
+    
+        for (let i = 4; i < 16; i++) {
+            password += allChars.charAt(Math.floor(Math.random() * allChars.length));
+        }
+    
+        password = password.split('').sort(() => Math.random() - 0.5).join('');
+    
+        input.val(password);
+    
+        setTimeout(() => {
+            btn.find('i').removeClass('fa-spinner fa-spin').addClass('fa-random');
+        }, 150);
+    });
+});
+
+/*** end random string & password ***/
+document.addEventListener("DOMContentLoaded", function () {
+    var elements = document.querySelectorAll('.dhAmount');
+    elements.forEach(function(el) {
+        var rawAmount = el.getAttribute('data-amount');
+
+        if (!rawAmount || isNaN(rawAmount) || rawAmount == 0) {
+            el.innerHTML = '0 <span class="f-10 fw-bold"> ' + CURRENCY_ICON + '</span>';
+            return;
+        }
+
+        var convertedAmount = parseFloat(rawAmount) * CURRENCY_RATE;
+        var formatted;
+
+        if (convertedAmount < 1) {
+            formatted = convertedAmount.toFixed(5).replace('.', ',');
+            formatted = formatted.replace(/(,?\d*?)0+$/, '$1');
+            if (formatted.endsWith(',')) {
+                formatted = formatted.slice(0, -1);
+            }
+        } else {
+            var rounded = Math.round(convertedAmount);
+            formatted = rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, CURRENCY_THOUSAND_SEPARATOR);
+        }
+
+        el.innerHTML = formatted + ' <span class="f-10 fw-bold"> ' + CURRENCY_ICON + '</span>';
+    });
+});

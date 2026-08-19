@@ -1,0 +1,841 @@
+/* START VPS Price Calculator*/
+document.addEventListener("DOMContentLoaded", function () {
+    if (typeof ROUTE_NAME === 'undefined' || ROUTE_NAME !== 'VPS_PAYMENT') {
+        return; 
+    }
+    let selectedOS = null;
+    let currentDiscount = 0;
+    let currentCouponData = null; 
+    let currentDiscount2 = 0;
+    let currentCouponData2 = null; 
+    
+    document.querySelectorAll(".step-up, .step-down").forEach((button) => {
+        button.addEventListener("click", function () {
+            let target = this.getAttribute("data-target");
+            let rangeInput = document.getElementById("addon_" + target);
+            let display = document.getElementById(target + "-value");
+
+            if (rangeInput) {
+                let value = parseInt(rangeInput.value);
+                if (this.classList.contains("step-up") && value < 100) {
+                    value++;
+                } else if (this.classList.contains("step-down") && value > 0) {
+                    value--;
+                }
+
+                rangeInput.value = value;
+
+                // Cập nhật hiển thị slider
+                if (display) {
+                    if (target === "cpu") {
+                        display.textContent = value + " vCore";
+                    } else if (target === "ip") {
+                        display.textContent = value;
+                    } else if (target === "ram") {
+                        display.textContent = value + " GB";
+                    } else if (target === "disk") {
+                        display.textContent = value + " x 10 GB";
+                    }
+                }
+
+                updateBillDisplay(target, value);
+
+                rangeInput.dispatchEvent(new Event('input'));
+                updateTotalPrice();
+            }
+        });
+    });
+
+    document.querySelectorAll('input[type="range"]').forEach((slider) => {
+        slider.addEventListener('input', function() {
+            let target = this.id.replace('addon_', '');
+            let display = document.getElementById(target + "-value");
+            let value = parseInt(this.value);
+
+            if (display) {
+                if (target === "cpu") {
+                    display.textContent = value + " vCore";
+                } else if (target === "ip") {
+                    display.textContent = value;
+                } else if (target === "ram") {
+                    display.textContent = value + " GB";
+                } else if (target === "disk") {
+                    display.textContent = value + " x 10 GB";
+                }
+            }
+
+            updateBillDisplay(target, value);
+            updateTotalPrice();
+        });
+    });
+
+    function updateBillDisplay(target, value) {
+        let billElement = document.querySelector(`.total-addon-${target}`);
+        if (billElement) {
+            if (target === "cpu") {
+                billElement.textContent = value + " vCore";
+            } else if (target === "ip") {
+                billElement.textContent = value + " IP";
+            } else if (target === "ram") {
+                billElement.textContent = value + " GB";
+            } else if (target === "disk") {
+                billElement.textContent = value + " x 10 GB";
+            }
+        }
+    }
+
+    // Lựa chọn OS
+    document.querySelectorAll('input[name="os"]').forEach((radio) => {
+        radio.addEventListener("change", function () {
+            selectedOS = this.value;
+            updateTotalPrice();
+        });
+    });
+
+    document.querySelectorAll('input[name="duration"]').forEach((radio) => {
+        radio.addEventListener("change", function () {
+            updateTotalPrice();
+            
+            if (currentCouponData && currentCouponData.min_amount) {
+                let currentTotalPayment = calculateCurrentTotalPayment();
+                if (currentTotalPayment < parseFloat(currentCouponData.min_amount)) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Mã giảm giá đã bị hủy',
+                        text: `Đơn hàng không đủ điều kiện tối thiểu ${numberFormat(currentCouponData.min_amount)} VNĐ. Mã giảm giá đã được hủy!`,
+                        confirmButtonText: 'Đóng'
+                    });
+                    resetCoupon();
+                }
+            }
+        });
+    });
+
+    document.getElementById("apply-coupon").addEventListener("click", function () {
+        let code = document.querySelector('input[name="coupon"]').value.trim();
+        if (!code) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Thông báo',
+                text: 'Vui lòng nhập mã giảm giá!',
+                confirmButtonText: 'Đóng'
+            });
+            return;
+        }
+
+        let selectedTime = document.querySelector('input[name="duration"]:checked');
+        if (!selectedTime) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Thông báo',
+                text: 'Vui lòng chọn chu kỳ thanh toán trước khi áp dụng mã giảm giá!',
+                confirmButtonText: 'Đóng'
+            });
+            return;
+        }
+
+        let applyButton = document.getElementById("apply-coupon");
+        let originalHTML = applyButton.innerHTML;
+        let originalDisabled = applyButton.disabled;
+
+        applyButton.innerHTML = '<i class="fad fa-spinner fa-spin me-1"></i>Đang kiểm tra...';
+        applyButton.disabled = true;
+
+        Swal.fire({
+            title: 'Đang xử lý...',
+            text: 'Vui lòng chờ trong giây lát',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        fetch(`${ROUTE_COUPON_CHECKING}?code=${encodeURIComponent(code)}`)
+            .then(response => response.json())
+            .then(result => {
+                applyButton.innerHTML = originalHTML;
+                applyButton.disabled = originalDisabled;
+
+                Swal.close();
+
+                if (result.status === "success" && result.data) {
+                    let validationResult = validateCoupon(result.data);
+                    if (validationResult.isValid) {
+                        currentDiscount = parseFloat(result.data.discount);
+                        currentCouponData = result.data;
+                        
+                        let discountRow = document.querySelector('.total-coupon-discount');
+                        if (discountRow) {
+                            discountRow.closest('tr').style.display = "";
+                        }
+                        
+                        displayCouponInfo(result.data);
+                        
+                        $("#dispay_coupon_apply").show();
+                        updateTotalPrice();
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Thành công!',
+                            text: 'Áp dụng mã giảm giá thành công!',
+                            confirmButtonText: 'Đóng'
+                        });
+                    } else {
+                        resetCoupon();
+                        Swal.fire({
+                            icon: validationResult.icon || 'error',
+                            title: validationResult.title || 'Lỗi',
+                            text: validationResult.message,
+                            confirmButtonText: 'Đóng'
+                        });
+                    }
+                } else {
+                    resetCoupon();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: result.message || 'Mã giảm giá không hợp lệ hoặc không có giảm giá.',
+                        confirmButtonText: 'Đóng'
+                    });
+                }
+            })
+            .catch(() => {
+                applyButton.innerHTML = originalHTML;
+                applyButton.disabled = originalDisabled;
+                
+                Swal.close();
+                
+                resetCoupon();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi kết nối',
+                    text: 'Không thể kiểm tra mã giảm giá. Vui lòng thử lại.',
+                    confirmButtonText: 'Đóng'
+                });
+            });
+    });
+
+    function displayCouponInfo(couponData) {
+        let couponDisplay = document.getElementById("dispay_coupon_apply");
+        if (!couponDisplay) return;
+    
+        let discountText = '';
+        if (couponData.type === 'percent') { 
+            discountText = `${couponData.discount}%`;
+        } else if (couponData.type === 'fixed') { 
+            discountText = `${numberFormat(couponData.discount)}đ`;
+        }
+    
+        couponDisplay.innerHTML = `
+            <div class="border border-primary border-dashed bg-light-primary rounded-3">
+                <div class="p-3">
+                    <div class="d-flex align-items-start gap-2">
+                        <img src="${couponData.image}" height="43" class="rounded-3">
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold txt-primary">${couponData.name} - Giảm ${discountText}</div>
+                            ${couponData.type === 'fixed' ? `
+                            <div class="text-muted f-12">
+                                Thanh toán tối thiểu: ${couponData.min_amount ? numberFormat(couponData.min_amount)+'đ' : 'Không có'}
+                            </div>
+                            <div class="text-muted f-12">
+                                Giảm tối đa: ${couponData.max_amount ? numberFormat(couponData.max_amount)+'đ' : 'Không giới hạn'}
+                            </div>` : ''}
+                            ${couponData.note ? `<div class="text-muted f-12 mt-1">${couponData.note}</div>` : ''}
+                        </div>
+                        <button type="button" class="btn btn-sm btn-step-ghost" onclick="resetCoupon()" title="Hủy mã giảm giá">
+                            <i class="fad fa-times text-purple"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        couponDisplay.style.display = "block";
+    }
+
+    // Hàm kiểm tra tính hợp lệ của coupon
+    function validateCoupon(couponData) {
+        // Kiểm tra service
+        if (typeof SERVICE !== 'undefined' && couponData.service !== 'ALL' && couponData.service !== SERVICE) {
+            return {
+                isValid: false,
+                icon: 'error',
+                title: 'Mã giảm giá không hợp lệ!',
+                message: 'Mã giảm giá của quý khách chỉ áp dụng cho dịch vụ ' + couponData.service + ' không hỗ trợ cho dịch vụ ' + SERVICE + '!'
+            };
+        }
+    
+        // Kiểm tra category
+        if (typeof CATEGORY !== 'undefined' && couponData.category !== 'ALL' && couponData.category) {
+            // Nếu category là object thì lấy id, nếu là string thì dùng trực tiếp
+            let categoryId = typeof couponData.category === 'object' ? couponData.category.id : couponData.category;
+            let categoryName = typeof couponData.category === 'object' ? couponData.category.name : couponData.category;
+            
+            if (categoryId !== CATEGORY) {
+                return {
+                    isValid: false,
+                    icon: 'error',
+                    title: 'Chuyên mục không hợp lệ!',
+                    message: 'Mã giảm giá của quý khách chỉ áp dụng cho chuyên mục ' + categoryName + ' không hỗ trợ cho chuyên mục ' + CATEGORY_NAME + '!'
+                };
+            }
+        }
+    
+        // Kiểm tra subcategory
+        if (typeof SUBCATEGORY !== 'undefined' && couponData.category !== 'ALL' && couponData.subcategory !== 'ALL' && couponData.subcategory) {
+            // Nếu subcategory là object thì lấy id, nếu là string thì dùng trực tiếp
+            let subcategoryId = typeof couponData.subcategory === 'object' ? couponData.subcategory.id : couponData.subcategory;
+            let subcategoryName = typeof couponData.subcategory === 'object' ? couponData.subcategory.name : couponData.subcategory;
+            
+            if (subcategoryId !== SUBCATEGORY) {
+                return {
+                    isValid: false,
+                    icon: 'error',
+                    title: 'Sản phẩm không hợp lệ!',
+                    message: 'Mã giảm giá của quý khách chỉ áp dụng cho sản phẩm ' + subcategoryName + ' không hỗ trợ cho sản phẩm ' + SUBCATEGORY_NAME + '!'
+                };
+            }
+        }
+    
+        // Kiểm tra subscription (nếu có)
+        if (typeof SUBSCRIPTION !== 'undefined' && couponData.category !== 'ALL' && couponData.subcategory !== 'ALL' && couponData.subscription !== 'ALL' && couponData.subscription) {
+            // Nếu subscription là object thì lấy id, nếu là string thì dùng trực tiếp
+            let subscriptionId = typeof couponData.subscription === 'object' ? couponData.subscription.id : couponData.subscription;
+            let subscriptionName = typeof couponData.subscription === 'object' ? couponData.subscription.name : couponData.subscription;
+            
+            if (subscriptionId !== SUBSCRIPTION) {
+                return {
+                    isValid: false,
+                    icon: 'error',
+                    title: 'Gói không hợp lệ!',
+                    message: 'Mã giảm giá của quý khách chỉ áp dụng cho gói đăng ký ' + subscriptionName + ' không hỗ trợ cho gói ' + SUBSCRIPTION_NAME + '!'
+                };
+            }
+        }
+    
+        // Tính tổng thanh toán hiện tại để kiểm tra min_amount
+        let currentTotalPayment = calculateCurrentTotalPayment();
+        
+        // Kiểm tra min_amount
+        if (couponData.min_amount && currentTotalPayment < parseFloat(couponData.min_amount)) {
+            return {
+                isValid: false,
+                icon: 'warning',
+                title: 'Đơn hàng chưa đủ điều kiện!',
+                message: `Đơn hàng cần đạt tổng thanh toán tối thiểu ${numberFormat(couponData.min_amount)} VNĐ để áp dụng mã giảm giá!`
+            };
+        }
+    
+        return { isValid: true };
+    }
+
+    // Hàm tính tổng thanh toán hiện tại (trước khi áp dụng coupon)
+    function calculateCurrentTotalPayment() {
+        let selectedTime = document.querySelector('input[name="duration"]:checked');
+        if (!selectedTime) return 0;
+
+        let baseAmount = parseInt(selectedTime.getAttribute("data-amount")) || 0;
+        let cpuPrice = parseFloat(selectedTime.getAttribute("data-price-cpu")) || 0;
+        let ramPrice = parseFloat(selectedTime.getAttribute("data-price-ram")) || 0;
+        let diskPrice = parseFloat(selectedTime.getAttribute("data-price-disk")) || 0;
+        let ipPrice = parseFloat(selectedTime.getAttribute("data-price-ip")) || 0;
+
+        let cpuValue = parseInt(document.getElementById("addon_cpu")?.value) || 0;
+        let ramValue = parseInt(document.getElementById("addon_ram")?.value) || 0;
+        let diskValue = parseInt(document.getElementById("addon_disk")?.value) || 0;
+        let ipValue = parseInt(document.getElementById("addon_ip")?.value) || 0;
+
+        let totalAddonPrice = cpuValue * cpuPrice + ramValue * ramPrice + diskValue * diskPrice + ipValue * ipPrice;
+        let totalPrice = baseAmount + totalAddonPrice;
+
+        // Tính VAT
+        let vatRate = typeof VAT !== "undefined" ? VAT : 0;
+        let vatAmount = (totalPrice * vatRate) / 100;
+
+        return totalPrice + vatAmount;
+    }
+
+    // Hàm reset coupon
+    function resetCoupon() {
+        currentDiscount = 0;
+        currentCouponData = null;
+        
+        // Ẩn dòng giảm giá
+        let discountRow = document.querySelector(".total-coupon-discount");
+        if (discountRow) {
+            discountRow.closest('tr').style.display = "none";
+        }
+
+        // Ẩn discount-2
+        let discount2Row = document.querySelector(".total-coupon-discount-2");
+        if (discount2Row) {
+            discount2Row.closest('tr').style.display = "none";
+        }
+
+        // Ẩn thông tin coupon chi tiết
+        let couponDisplay = document.getElementById("dispay_coupon_apply");
+        if (couponDisplay) {
+            couponDisplay.style.display = "none";
+            couponDisplay.innerHTML = "";
+        }
+        
+        updateTotalPrice();
+    }
+
+    // Hàm hiển thị discount-2
+    function showDiscount2(discountPercent = 5, discountName = "Giảm giá đặc biệt") {
+        currentDiscount2 = discountPercent;
+
+        // Hiển thị dòng discount-2
+        let discount2Row = document.querySelector('.total-coupon-discount-2');
+        if (discount2Row) {
+            discount2Row.closest('tr').style.display = "";
+            // Cập nhật tên giảm giá
+            let discount2Label = discount2Row.closest('tr').querySelector('p');
+            if (discount2Label) {
+                discount2Label.textContent = discountName + ` (${discountPercent}%)`;
+            }
+        }
+
+        updateTotalPrice();
+    }
+
+    // Hàm ẩn discount-2
+    function hideDiscount2() {
+        currentDiscount2 = 0;
+
+        let discount2Row = document.querySelector('.total-coupon-discount-2');
+        if (discount2Row) {
+            discount2Row.closest('tr').style.display = "none";
+        }
+
+        updateTotalPrice();
+    }
+
+    // Expose functions to global scope
+    window.resetCoupon = resetCoupon;
+    window.showDiscount2 = showDiscount2;
+    window.hideDiscount2 = hideDiscount2;
+
+    function updateTotalPrice() {
+        // Lấy radio đang được chọn
+        let selectedTime = document.querySelector('input[name="duration"]:checked');
+        if (!selectedTime) return;
+
+        let baseAmount = parseInt(selectedTime.getAttribute("data-amount")) || 0;
+        let cpuPrice = parseFloat(selectedTime.getAttribute("data-price-cpu")) || 0;
+        let ramPrice = parseFloat(selectedTime.getAttribute("data-price-ram")) || 0;
+        let diskPrice = parseFloat(selectedTime.getAttribute("data-price-disk")) || 0;
+        let ipPrice = parseFloat(selectedTime.getAttribute("data-price-ip")) || 0;
+
+        let cpuValue = parseInt(document.getElementById("addon_cpu")?.value) || 0;
+        let ramValue = parseInt(document.getElementById("addon_ram")?.value) || 0;
+        let diskValue = parseInt(document.getElementById("addon_disk")?.value) || 0;
+        let ipValue = parseInt(document.getElementById("addon_ip")?.value) || 0;
+
+        let totalAddonPrice = cpuValue * cpuPrice + ramValue * ramPrice + diskValue * diskPrice + ipValue * ipPrice;
+        let totalPrice = baseAmount + totalAddonPrice;
+
+        // Tính giảm giá
+        let discountAmount = 0;
+        if (currentDiscount > 0) {
+            discountAmount = (totalPrice * currentDiscount) / 100;
+            
+            // Kiểm tra max_amount và giới hạn discount
+            if (currentCouponData && currentCouponData.max_amount) {
+                let maxDiscountAmount = parseFloat(currentCouponData.max_amount);
+                if (discountAmount > maxDiscountAmount) {
+                    discountAmount = maxDiscountAmount;
+                }
+            }
+        }
+
+        // Hiển thị giảm giá
+        if (document.querySelector(".total-coupon-discount")) {
+            document.querySelector(".total-coupon-discount").textContent = `${numberFormat(discountAmount)}đ`;
+        }
+
+        // Tính discount-2
+        let discount2Amount = 0;
+        if (currentDiscount2 > 0) {
+            discount2Amount = (totalPrice * currentDiscount2) / 100;
+        }
+
+        // Hiển thị giảm giá cho discount-2
+        if (document.querySelector(".total-coupon-discount-2")) {
+            document.querySelector(".total-coupon-discount-2").textContent = `${numberFormat(discount2Amount)}đ`;
+        }
+
+        // Giá sau giảm giá
+        let priceAfterDiscount = totalPrice - discountAmount;
+
+        // Sử dụng biến VAT global
+        let vatRate = typeof VAT !== "undefined" ? VAT : 0;
+        let vatAmount = (priceAfterDiscount * vatRate) / 100;
+
+        // Cập nhật hiển thị VAT
+        if (document.querySelector(".total-vat")) {
+            document.querySelector(".total-vat").textContent = `${numberFormat(vatAmount)}đ`;
+        }
+
+        // Tổng thanh toán = Tổng cộng - Giảm giá + VAT
+        let finalPayment = priceAfterDiscount + vatAmount;
+
+        // Cập nhật Tổng cộng
+        if (document.querySelector(".total-price")) {
+            document.querySelector(".total-price").textContent = `${numberFormat(totalPrice)}đ`;
+        }
+        // Cập nhật tổng thanh toán
+        if (document.querySelector(".total-payment")) {
+            document.querySelector(".total-payment").textContent = `${numberFormat(finalPayment)}đ`;
+        }
+    }
+
+    function numberFormat(number) {
+        return new Intl.NumberFormat("vi-VN").format(number);
+    }
+
+    // KHỞI TẠO GIÁ TRỊ BAN ĐẦU CHO BILL
+    function initializeBillDisplay() {
+        // Khởi tạo hiển thị addon ban đầu là 0
+        const addonTypes = ['cpu', 'ram', 'disk', 'ip'];
+        addonTypes.forEach(type => {
+            updateBillDisplay(type, 0);
+        });
+    }
+
+    // Gọi hàm khởi tạo
+    initializeBillDisplay();
+});
+/* END VPS Price Calculator*/
+/* START Random Password Generator */
+$(document).ready(function () {
+    function generateStrongPassword(length = 16) {
+        const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const lowercase = "abcdefghijklmnopqrstuvwxyz";
+        const numbers = "0123456789";
+        const specialChars = "!@#$%^&*_+-=?";
+        const allChars = uppercase + lowercase + numbers + specialChars;
+
+        let password = "";
+        password += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
+        password += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
+        password += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
+        password += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
+        password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+        password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+        password += specialChars.charAt(Math.floor(Math.random() * specialChars.length));
+        password += specialChars.charAt(Math.floor(Math.random() * specialChars.length));
+
+        for (let i = 8; i < length; i++) {
+            password += allChars.charAt(Math.floor(Math.random() * allChars.length));
+        }
+
+        return password
+            .split("")
+            .sort(() => Math.random() - 0.5)
+            .join("");
+    }
+
+    function generateRandomString(length) {
+        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        let result = "";
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        return result;
+    }
+
+    $("input[name='password']").val(generateStrongPassword(16));
+    $("input[name='host_name']").val(generateRandomString(12));
+
+    $(".randomPassword").on("click", function () {
+        let randomPassword = generateStrongPassword(16);
+        $("input[name='password']").val(randomPassword);
+    });
+
+    $(".randomHostName").on("click", function () {
+        let randomHostName = generateRandomString(12);
+        $("input[name='host_name']").val(randomHostName);
+    });
+});
+/* END Random Password Generator */
+
+/* START VPS Renewal System - Fixed Version */
+$(document).ready(function () {
+    var TOTAL_CPU_ADDON = window.TOTAL_CPU_ADDON || 0;
+    var TOTAL_RAM_ADDON = window.TOTAL_RAM_ADDON || 0;
+    var TOTAL_DISK_ADDON = window.TOTAL_DISK_ADDON || 0;
+    var TOTAL_IP_ADDON = window.TOTAL_IP_ADDON || 0;
+    var VAT = window.VAT || 0;
+
+    var selectedDuration = "";
+    var selectedBillingCycle = "";
+    var baseAmount = 0;
+    var cpuPrice = 0;
+    var ramPrice = 0;
+    var diskPrice = 0;
+    var ipPrice = 0;
+
+    // Hide billing table and addon rows initially
+    //$("#show-bill-renewal").hide();
+    $("#show-renew-ram, #show-renew-cpu, #show-renew-disk, #show-renew-ip").hide();
+
+    function formatNumber(num) {
+        return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function calculateTotalPrice() {
+        var cpuCost = TOTAL_CPU_ADDON * cpuPrice;
+        var ramCost = TOTAL_RAM_ADDON * ramPrice;
+        var diskCost = TOTAL_DISK_ADDON * diskPrice;
+        var ipCost = TOTAL_IP_ADDON * ipPrice;
+
+        var renewalCost = baseAmount;
+
+        // Show renewal fee
+        $("#show-renew-price td:nth-child(2)").text(selectedBillingCycle);
+        $("#show-renew-price td:nth-child(3)").text(formatNumber(renewalCost) + "đ/1");
+
+        // Show addons if applicable
+        if (TOTAL_RAM_ADDON > 0) {
+            $("#show-renew-ram").show();
+            $("#sl-renew-ram").text(TOTAL_RAM_ADDON + " × " + formatNumber(ramPrice) + "đ/1");
+            $("#price-renew-ram").text(formatNumber(ramCost) + "đ");
+        } else {
+            $("#show-renew-ram").hide();
+        }
+        
+        if (TOTAL_CPU_ADDON > 0) {
+            $("#show-renew-cpu").show();
+            $("#sl-renew-cpu").text(TOTAL_CPU_ADDON + " × " + formatNumber(cpuPrice) + "đ/1");
+            $("#price-renew-cpu").text(formatNumber(cpuCost) + "đ");
+        } else {
+            $("#show-renew-cpu").hide();
+        }
+        
+        if (TOTAL_DISK_ADDON > 0) {
+            $("#show-renew-disk").show();
+            $("#sl-renew-disk").text(TOTAL_DISK_ADDON + " × " + formatNumber(diskPrice) + "đ/1");
+            $("#price-renew-disk").text(formatNumber(diskCost) + "đ");
+        } else {
+            $("#show-renew-disk").hide();
+        }
+
+        if ($("#show-renew-ip").length && TOTAL_IP_ADDON > 0) {
+            $("#show-renew-ip").show();
+            $("#sl-renew-ip").text(TOTAL_IP_ADDON);
+            $("#price-renew-ip").text(formatNumber(ipCost) + "đ");
+        } else {
+            $("#show-renew-ip").hide();
+        }
+
+        // Calculate total costs
+        var totalAddonCost = cpuCost + ramCost + diskCost + ipCost;
+        var totalBaseCost = renewalCost + totalAddonCost;
+        
+        // Calculate VAT
+        var vatAmount = totalBaseCost * VAT / 100;
+        var totalFinalCost = totalBaseCost + vatAmount;
+
+        // Display totals
+        $("#total-phigiahan").text(formatNumber(totalBaseCost) + "đ");
+        $("#total-vat-upgrade").text(formatNumber(vatAmount) + "đ");
+        $("#total-price-renew").text(formatNumber(totalFinalCost) + "đ");
+
+        $("#selected-time").val(selectedDuration);
+
+        // Show billing table when package is selected
+        //$("#show-bill-renewal").show();
+    }
+
+    // Fixed: Use proper selector for radio button changes
+    $(document).on("change", "input[name='duration']", function () {
+        // Remove selected class from all items
+        $(".select-item").removeClass("selected");
+        // Add selected class to current item
+        $(this).closest(".select-item").addClass("selected");
+
+        var $selectedInput = $(this);
+        selectedDuration = $selectedInput.val();
+        selectedBillingCycle = $selectedInput.closest(".select-item").find("p:first").text();
+        baseAmount = parseFloat($selectedInput.data("amount")) || 0;
+        cpuPrice = parseFloat($selectedInput.data("price-cpu")) || 0;
+        ramPrice = parseFloat($selectedInput.data("price-ram")) || 0;
+        diskPrice = parseFloat($selectedInput.data("price-disk")) || 0;
+        ipPrice = parseFloat($selectedInput.data("price-ip")) || 0;
+
+        calculateTotalPrice();
+    });
+
+    // Alternative: Click handler for the visual selection
+    $(document).on("click", ".select-item", function () {
+        var $radioInput = $(this).find("input[name='duration']");
+        if ($radioInput.length) {
+            $radioInput.prop("checked", true).trigger("change");
+        }
+    });
+});
+
+
+/* START VPS Upgrade System - Fixed Version */
+$(document).ready(function() {
+    if (typeof ROUTE_NAME === 'undefined' || ROUTE_NAME !== 'VPS_DETAIL') {
+        return; 
+    }
+    // Global variables
+    let cpuQuantity = 0;
+    let ramQuantity = 0;
+    let diskQuantity = 0;
+    let ipQuantity = 0;
+
+    // Get prices from global variables (should be set in blade template)
+    const PRICE_CPU_ADDON = window.PRICE_CPU_ADDON || 0;
+    const PRICE_RAM_ADDON = window.PRICE_RAM_ADDON || 0;
+    const PRICE_DISK_ADDON = window.PRICE_DISK_ADDON || 0;
+    const PRICE_IP_ADDON = window.PRICE_IP_ADDON || 0;
+    const VAT = window.VAT || 0;
+
+    // Format currency function
+    function formatCurrency(amount) {
+        return Math.round(amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "đ";
+    }
+
+    // Update display values
+    function updateDisplayValues() {
+        $("#cpu-value").text(cpuQuantity + " vCore");
+        $("#ram-value").text(ramQuantity + " GB");
+        $("#disk-value").text((diskQuantity * 10) + " GB"); // 1DV = 10GB
+        $("#ip-value").text(ipQuantity);
+    }
+
+    // Update pricing calculations
+    function updatePricing() {
+        const cpuPrice = cpuQuantity * PRICE_CPU_ADDON;
+        const ramPrice = ramQuantity * PRICE_RAM_ADDON;
+        const diskPrice = diskQuantity * PRICE_DISK_ADDON; // PRICE_DISK_ADDON đã được tính sẵn cho 1DV
+        const ipPrice = ipQuantity * PRICE_IP_ADDON;
+
+        // Update quantities in table
+        $("#sl-addon-cpu").text(cpuQuantity);
+        $("#sl-addon-ram").text(ramQuantity);
+        $("#sl-addon-disk").text(diskQuantity);
+        $("#sl-addon-ip").text(ipQuantity);
+
+        // Update prices in table
+        $("#price-addon-cpu").text(formatCurrency(cpuPrice));
+        $("#price-addon-ram").text(formatCurrency(ramPrice));
+        $("#price-addon-disk").text(formatCurrency(diskPrice));
+        $("#price-addon-ip").text(formatCurrency(ipPrice));
+
+        // Calculate totals
+        const totalPrice = cpuPrice + ramPrice + diskPrice + ipPrice;
+        const vatAmount = totalPrice * VAT / 100;
+        const totalPayment = totalPrice + vatAmount;
+
+        // Update total prices
+        $("#total-price-upgrade").text(formatCurrency(totalPrice));
+        $("#total-vat-upgrade").text(formatCurrency(vatAmount));
+        $("#total-payment-upgrade").text(formatCurrency(totalPayment));
+
+        // Show/hide addon rows based on quantity
+        $("#show-addon-cpu").toggle(cpuQuantity > 0);
+        $("#show-addon-ram").toggle(ramQuantity > 0);
+        $("#show-addon-disk").toggle(diskQuantity > 0);
+        $("#show-addon-ip").toggle(ipQuantity > 0);
+
+        // Show/hide billing table
+        const hasAnyAddon = cpuQuantity > 0 || ramQuantity > 0 || diskQuantity > 0 || ipQuantity > 0;
+        //$("#show-bill-upgrade").toggle(hasAnyAddon);
+
+        // Update display values
+        updateDisplayValues();
+    }
+
+    // Generic function to handle addon changes
+    function updateAddon(type, change) {
+        const $input = $(`#addon_${type}`);
+        const $rangeInput = $(`input[name="addon_${type}"]`);
+        
+        if (!$input.length) return;
+
+        let currentValue = parseInt($input.val()) || 0;
+        let newValue = Math.max(0, Math.min(100, currentValue + change));
+        
+        // Update the range input
+        $input.val(newValue);
+        $rangeInput.val(newValue);
+        
+        // Update corresponding quantity variable
+        switch(type) {
+            case 'cpu':
+                cpuQuantity = newValue;
+                break;
+            case 'ram':
+                ramQuantity = newValue;
+                break;
+            case 'disk':
+                diskQuantity = newValue;
+                break;
+            case 'ip':
+                ipQuantity = newValue;
+                break;
+        }
+        
+        updatePricing();
+    }
+
+    // Event handlers for step buttons
+    $(document).on('click', '.step-up', function() {
+        const target = $(this).data('target');
+        updateAddon(target, 1);
+    });
+
+    $(document).on('click', '.step-down', function() {
+        const target = $(this).data('target');
+        updateAddon(target, -1);
+    });
+
+    // Event handlers for range inputs
+    $(document).on('input change', 'input[type="range"]', function() {
+        const name = $(this).attr('name');
+        const value = parseInt($(this).val()) || 0;
+        
+        switch(name) {
+            case 'addon_cpu':
+                cpuQuantity = value;
+                break;
+            case 'addon_ram':
+                ramQuantity = value;
+                break;
+            case 'addon_disk':
+                diskQuantity = value;
+                break;
+            case 'addon_ip':
+                ipQuantity = value;
+                break;
+        }
+        
+        updatePricing();
+    });
+
+    // Initialize
+    function init() {
+        // Hide all addon rows initially
+        $("#show-addon-cpu, #show-addon-ram, #show-addon-disk, #show-addon-ip").hide();
+        
+        // Hide billing table initially
+        //$("#show-bill-upgrade").hide();
+        
+        // Reset all quantities
+        cpuQuantity = ramQuantity = diskQuantity = ipQuantity = 0;
+        
+        // Update display
+        updatePricing();
+    }
+
+    // Initialize the system
+    init();
+});
+/* END VPS Upgrade System */
