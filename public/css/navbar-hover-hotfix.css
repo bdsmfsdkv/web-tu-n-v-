@@ -103,3 +103,53 @@
         pointer-events: none !important;
     }
 }
+
+/* Tablet/mobile fallback: tapping Danh Mục / Nạp Tiền must always expand.
+   :focus-within keeps this working even if an older cached app.js still uses
+   the previous mobile breakpoint and never adds the .open class. */
+@media (max-width: 1199px) {
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown:focus-within > ul.modern-dropdown-menu,
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown.open > ul.modern-dropdown-menu {
+        display: block !important;
+        max-height: 360px !important;
+        margin: 4px 0 7px !important;
+        padding: 6px !important;
+        overflow-y: auto !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        transform: none !important;
+        border-width: 1px !important;
+        transition-delay: 0s !important;
+    }
+
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-mega-dropdown:focus-within > div.mega-menu,
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-mega-dropdown.open > div.mega-menu {
+        display: block !important;
+        max-height: min(68dvh, 720px) !important;
+        margin: 4px 0 7px !important;
+        padding: 6px !important;
+        overflow-y: auto !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        transform: none !important;
+        border-width: 1px !important;
+        transition-delay: 0s !important;
+    }
+
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown:focus-within > a.nav-link-item,
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown.open > a.nav-link-item,
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-mega-dropdown:focus-within > a.nav-link-item,
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-mega-dropdown.open > a.nav-link-item {
+        color: #dc2626 !important;
+        background: rgba(220, 38, 38, .075) !important;
+    }
+
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown:focus-within > a.nav-link-item .nav-arrow,
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown.open > a.nav-link-item .nav-arrow,
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-mega-dropdown:focus-within > a.nav-link-item .nav-arrow,
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-mega-dropdown.open > a.nav-link-item .nav-arrow {
+        transform: rotate(180deg) !important;
+    }
+}
