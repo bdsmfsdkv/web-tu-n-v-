@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Session\TokenMismatchException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -26,5 +27,44 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
+
+    /**
+     * Prevent the default Laravel 419 "Page Expired" screen.
+     * Normal form requests are redirected back to the previous page so a fresh
+     * CSRF token/session is generated. AJAX requests keep status 419 so the
+     * frontend can detect it and reload the page automatically.
+     */
+    public function render($request, Throwable $e)
+    {
+        if ($e instanceof TokenMismatchException) {
+            return $this->expiredSessionResponse($request);
+        }
+
+        $response = parent::render($request, $e);
+
+        if (method_exists($response, 'getStatusCode') && $response->getStatusCode() === 419) {
+            return $this->expiredSessionResponse($request);
+        }
+
+        return $response;
+    }
+
+    protected function expiredSessionResponse($request)
+    {
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'reload' => true,
+                'message' => 'Phiên làm việc đã hết hạn. Trang sẽ tự tải lại.',
+            ], 419);
+        }
+
+        $target = $request->headers->get('referer') ?: url('/');
+
+        return redirect()
+            ->to($target)
+            ->withInput($request->except($this->dontFlash))
+            ->with('warning', 'Phiên làm việc đã hết hạn. Trang đã được tải lại, vui lòng thử lại.');
     }
 }
