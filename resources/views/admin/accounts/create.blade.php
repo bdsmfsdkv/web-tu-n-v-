@@ -24,13 +24,16 @@
                             <div class="col-lg-6 col-sm-6 col-12">
                                 <div class="mb-3">
                                     <label class="form-label">Danh mục game <span class="text-danger">*</span></label>
-                                    <select name="game_category_id"
+                                    <select name="game_category_id" id="game_category_id"
                                         class="form-select @error('game_category_id') is-invalid @enderror">
                                         <option value="">-- Chọn danh mục --</option>
                                         @foreach ($categories as $category)
                                             <option value="{{ $category->id }}"
+                                                data-slug="{{ $category->slug }}"
+                                                data-platform="{{ $category->platform }}"
+                                                data-group="{{ optional($category->gameGroup)->slug }}"
                                                 {{ old('game_category_id') == $category->id ? 'selected' : '' }}>
-                                                {{ $category->name }}
+                                                {{ $category->name }} {{ $category->gameGroup ? '(' . $category->gameGroup->name . ')' : '' }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -86,14 +89,30 @@
                             <div class="col-lg-12">
                                 <hr class="my-4">
                                 <div class="mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
                                         <div>
-                                            <h6 class="mb-1 fw-bold">Thuộc tính đa dạng (Liên Quân, FF, Valorant...)</h6>
-                                            <p class="text-muted mb-0 small">Thêm các thuộc tính như Rank, Tướng, Trang phục,...</p>
+                                            <h6 class="mb-1 fw-bold">Thuộc tính đa dạng (Liên Quân, FF, Blox Fruits, NRO...)</h6>
+                                            <p class="text-muted mb-0 small">Thêm các thuộc tính hoặc chọn mẫu game để nạp nhanh</p>
                                         </div>
-                                        <button type="button" class="btn btn-outline-primary btn-sm" id="add-attribute">
-                                            <i class="ti ti-plus me-1"></i> Thêm thuộc tính
-                                        </button>
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-outline-success btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="ti ti-wand me-1"></i> Nạp mẫu thuộc tính nhanh
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                    @foreach($gamePresets as $presetKey => $presetData)
+                                                        <li>
+                                                            <a class="dropdown-item btn-load-preset" href="javascript:void(0)" data-preset="{{ $presetKey }}">
+                                                                {{ $presetData['name'] }}
+                                                            </a>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-attribute">
+                                                <i class="ti ti-plus me-1"></i> Thêm thuộc tính
+                                            </button>
+                                        </div>
                                     </div>
                                     <div id="dynamic-attributes" class="bg-light p-3 rounded border">
                                         <!-- Javascript sẽ render vào đây -->
@@ -109,12 +128,15 @@
                                 <div class="mb-3">
                                     <label class="form-label">Ảnh đại diện <span class="text-danger">*</span></label>
                                     <div class="image-upload" style="position: relative; border: 1px dashed #4680ff; background: rgba(70, 128, 255, 0.05); padding: 20px; border-radius: 8px; text-align: center;">
-                                        <input type="file" name="thumb" class="form-control @error('thumb') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                                        <input type="file" name="thumb" class="form-control @error('thumb') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="previewImage(this, 'preview-acc-thumb')">
                                         <div class="image-uploads mt-2">
                                             <i class="ti ti-photo-plus text-primary" style="font-size: 40px;"></i>
                                             <h5 class="mt-2 mb-0 fw-semibold">Kéo thả hoặc click để tải ảnh lên</h5>
-                                            <p class="text-muted small">Hỗ trợ JPG, PNG, GIF</p>
+                                            <p class="text-muted small">Hỗ trợ JPG, PNG, GIF, WEBP</p>
                                         </div>
+                                    </div>
+                                    <div class="mt-2 text-center">
+                                        <img id="preview-acc-thumb" src="" alt="Thumb Preview" style="max-height: 80px; display: none; object-fit: contain; margin: 0 auto; border-radius: 4px;">
                                     </div>
                                     @error('thumb')
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -125,13 +147,14 @@
                                 <div class="mb-3">
                                     <label class="form-label">Ảnh chi tiết (Nhiều ảnh)</label>
                                     <div class="image-upload" style="position: relative; border: 1px dashed #20c997; background: rgba(32, 201, 151, 0.05); padding: 20px; border-radius: 8px; text-align: center;">
-                                        <input type="file" name="images[]" multiple class="form-control @error('images') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                                        <input type="file" name="images[]" multiple class="form-control @error('images') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="previewMultipleImages(this, 'preview-acc-images')">
                                         <div class="image-uploads mt-2">
                                             <i class="ti ti-photos text-success" style="font-size: 40px;"></i>
                                             <h5 class="mt-2 mb-0 fw-semibold text-success">Kéo thả hoặc click để tải lên nhiều ảnh</h5>
                                             <p class="text-muted small">Hỗ trợ tải lên nhiều file cùng lúc</p>
                                         </div>
                                     </div>
+                                    <div id="preview-acc-images" class="d-flex flex-wrap gap-2 mt-2"></div>
                                     @error('images')
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
@@ -161,28 +184,158 @@
 
 @push('scripts')
 <script>
+const gamePresets = @json($gamePresets);
+
+function getPresetForCategory(slug, platform, groupSlug) {
+    const searchKeys = [slug, platform, groupSlug].filter(Boolean);
+    for (const key of searchKeys) {
+        const normKey = key.toLowerCase();
+        for (const [presetKey, preset] of Object.entries(gamePresets)) {
+            if (presetKey === normKey) return preset;
+            if (preset.aliases && preset.aliases.some(alias => normKey.includes(alias) || alias.includes(normKey))) {
+                return preset;
+            }
+        }
+    }
+    return null;
+}
+
 $(document).ready(function() {
     let attrIndex = 0;
-    $('#add-attribute').click(function() {
+
+    function addAttributeRow(key = '', value = '', options = null, suggestions = null) {
+        let valueInputHtml = '';
+        const datalistId = `dl-${attrIndex}-${Math.random().toString(36).substring(2, 7)}`;
+
+        if (options && Array.isArray(options) && options.length > 0) {
+            let optionsHtml = `<option value="">-- Chọn ${key} --</option>`;
+            options.forEach(opt => {
+                const selected = opt === value ? 'selected' : '';
+                optionsHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
+            });
+            valueInputHtml = `
+                <select name="details[${attrIndex}][value]" class="form-select form-select-sm" required>
+                    ${optionsHtml}
+                </select>
+            `;
+        } else if (suggestions && Array.isArray(suggestions) && suggestions.length > 0) {
+            let dlHtml = `<datalist id="${datalistId}">`;
+            suggestions.forEach(sug => {
+                dlHtml += `<option value="${sug}">`;
+            });
+            dlHtml += `</datalist>`;
+            valueInputHtml = `
+                <input type="text" list="${datalistId}" name="details[${attrIndex}][value]" value="${value}" class="form-control form-control-sm" placeholder="Nhập hoặc chọn gợi ý..." required>
+                ${dlHtml}
+            `;
+        } else {
+            valueInputHtml = `
+                <input type="text" name="details[${attrIndex}][value]" value="${value}" class="form-control form-control-sm" placeholder="Giá trị..." required>
+            `;
+        }
+
         $('#dynamic-attributes').append(`
-            <div class="row align-items-center mb-2 attribute-row">
-                <div class="col-5">
-                    <input type="text" name="details[${attrIndex}][key]" class="form-control" placeholder="Tên thuộc tính (VD: Rank)" required>
+            <div class="row align-items-center mb-2 attribute-row bg-white p-2 rounded border mx-0 shadow-sm">
+                <div class="col-md-4 col-12 mb-1 mb-md-0">
+                    <input type="text" name="details[${attrIndex}][key]" value="${key}" class="form-control form-control-sm fw-semibold" placeholder="Tên thuộc tính (VD: Rank)" required>
                 </div>
-                <div class="col-5">
-                    <input type="text" name="details[${attrIndex}][value]" class="form-control" placeholder="Giá trị (VD: Kim Cương)" required>
+                <div class="col-md-6 col-10">
+                    ${valueInputHtml}
                 </div>
-                <div class="col-2">
-                    <button type="button" class="btn btn-danger btn-sm remove-attribute">Xóa</button>
+                <div class="col-md-2 col-2 text-end">
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-attribute"><i class="ti ti-trash"></i></button>
                 </div>
             </div>
         `);
         attrIndex++;
+    }
+
+    function loadPreset(presetKey) {
+        if (!gamePresets[presetKey]) return;
+        const preset = gamePresets[presetKey];
+        $('#dynamic-attributes').empty();
+        attrIndex = 0;
+        
+        preset.attributes.forEach(attr => {
+            addAttributeRow(attr.key, '', attr.options || null, attr.suggestions || null);
+        });
+    }
+
+    // Manual preset click
+    $(document).on('click', '.btn-load-preset', function() {
+        const presetKey = $(this).data('preset');
+        loadPreset(presetKey);
+    });
+
+    // Auto load preset when category changes if dynamic attributes are empty
+    $('#game_category_id').on('change', function() {
+        const selected = $(this).find('option:selected');
+        const slug = selected.data('slug') || '';
+        const platform = selected.data('platform') || '';
+        const groupSlug = selected.data('group') || '';
+
+        if (!slug && !platform && !groupSlug) return;
+
+        const preset = getPresetForCategory(slug, platform, groupSlug);
+        if (preset) {
+            // Find key of preset
+            for (const [key, p] of Object.entries(gamePresets)) {
+                if (p === preset) {
+                    if ($('#dynamic-attributes .attribute-row').length === 0) {
+                        loadPreset(key);
+                    }
+                    break;
+                }
+            }
+        }
+    });
+
+    $('#add-attribute').click(function() {
+        addAttributeRow();
     });
 
     $(document).on('click', '.remove-attribute', function() {
         $(this).closest('.attribute-row').remove();
     });
+
+    // Trigger change if category already pre-selected
+    if ($('#game_category_id').val() && $('#dynamic-attributes .attribute-row').length === 0) {
+        $('#game_category_id').trigger('change');
+    }
 });
+
+function previewImage(input, previewId) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var img = document.getElementById(previewId);
+            img.src = e.target.result;
+            img.style.display = 'block';
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function previewMultipleImages(input, previewId) {
+    var preview = document.getElementById(previewId);
+    preview.innerHTML = '';
+    if (input.files) {
+        Array.from(input.files).forEach(file => {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var div = document.createElement('div');
+                div.className = 'border rounded p-1 bg-white';
+                var img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.height = '70px';
+                img.style.width = 'auto';
+                img.style.objectFit = 'contain';
+                div.appendChild(img);
+                preview.appendChild(div);
+            }
+            reader.readAsDataURL(file);
+        });
+    }
+}
 </script>
 @endpush

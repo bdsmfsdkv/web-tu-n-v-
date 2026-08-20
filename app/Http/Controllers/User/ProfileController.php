@@ -391,7 +391,7 @@ class ProfileController extends Controller
                 'type' => 'gold',
                 'game' => $request->game,
                 'character_name' => $request->character_name,
-                'server' => $request->server,
+                'server' => $request->input('server'),
                 'user_note' => $request->user_note,
                 'status' => 'processing',
             ]);
@@ -453,7 +453,7 @@ class ProfileController extends Controller
                 'amount' => $request->amount,
                 'type' => 'gem',
                 'character_name' => $request->character_name,
-                'server' => $request->server,
+                'server' => $request->input('server'),
                 'user_note' => $request->user_note,
                 'status' => 'processing',
             ]);

@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // ---- Mobile Nav Dropdown Toggle ----
     document.querySelectorAll('.nav-dropdown > .nav-link-item, .nav-mega-dropdown > .nav-link-item').forEach(function (link) {
         link.addEventListener('click', function (e) {
-            if (window.innerWidth <= 768) {
+            if (window.innerWidth <= 1024) {
                 e.preventDefault();
                 this.parentElement.classList.toggle('open');
             }

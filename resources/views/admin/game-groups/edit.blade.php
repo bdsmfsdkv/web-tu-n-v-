@@ -67,16 +67,17 @@
                                 <div class="mb-3">
                                     <label class="form-label">Ảnh đại diện (Thumbnail)</label>
                                     <div class="image-upload" style="position: relative; border: 1px dashed #4680ff; background: rgba(70, 128, 255, 0.05); padding: 20px; border-radius: 8px; text-align: center;">
-                                        <input type="file" name="thumbnail" class="form-control @error('thumbnail') is-invalid @enderror" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                                        <input type="file" name="thumbnail" class="form-control @error('thumbnail') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="previewImage(this, 'preview-gg-edit-thumb')">
                                         <div class="image-uploads mt-2">
                                             @if($gameGroup->thumbnail)
-                                                <img src="{{ asset($gameGroup->thumbnail) }}" alt="img" style="max-height: 80px; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
+                                                <img id="preview-gg-edit-thumb" src="{{ asset($gameGroup->thumbnail) }}" alt="img" style="max-height: 80px; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
                                                 <h5 class="mb-0 fw-semibold">Đổi ảnh đại diện (Kéo thả hoặc click)</h5>
                                             @else
+                                                <img id="preview-gg-edit-thumb" src="" alt="Preview" style="max-height: 80px; display:none; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
                                                 <i class="ti ti-cloud-upload text-primary" style="font-size: 40px;"></i>
                                                 <h5 class="mt-2 mb-0 fw-semibold">Kéo thả hoặc click để tải ảnh lên</h5>
                                             @endif
-                                            <p class="text-muted small mt-1">Hỗ trợ JPG, PNG, GIF</p>
+                                            <p class="text-muted small mt-1">Hỗ trợ JPG, PNG, GIF, WEBP</p>
                                         </div>
                                     </div>
                                     @error('thumbnail')

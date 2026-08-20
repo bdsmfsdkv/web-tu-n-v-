@@ -95,7 +95,7 @@
                                                 <div class="modal fade" id="successModal{{ $withdrawal->id }}"
                                                     tabindex="-1" aria-hidden="true">
                                                     <div class="modal-dialog modal-dialog-centered">
-                                                        <div class="modal-">
+                                                        <div class="modal-content">
                                                             <div class="modal-header">
                                                                 <h5 class="modal-title">Xác nhận duyệt rút tiền</h5>
                                                                 <button type="button" class="btn-close"
@@ -124,9 +124,9 @@
 
                                                 <!-- Error Modal -->
                                                 <div class="modal fade" id="errorModal{{ $withdrawal->id }}" tabindex="-1"
-                                                    aria-hidden="true">
+                                                     aria-hidden="true">
                                                     <div class="modal-dialog modal-dialog-centered">
-                                                        <div class="modal-">
+                                                        <div class="modal-content">
                                                             <div class="modal-header">
                                                                 <h5 class="modal-title">Xác nhận từ chối rút tiền</h5>
                                                                 <button type="button" class="btn-close"

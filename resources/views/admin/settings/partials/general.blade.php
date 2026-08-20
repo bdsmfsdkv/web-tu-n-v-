@@ -176,9 +176,9 @@
 
                             <div class="col-lg-3">
                                 <div class="mb-3">
-                                    <label class="form-label">Favicon trang web</label>
+                                    <label class="form-label">Favicon trang web <span class="text-muted small">(PNG hoặc ICO, tối đa 1MB)</span></label>
                                     <div class="image-upload" style="position: relative; border: 1px dashed #ff9f43; background: rgba(255, 159, 67, 0.05); padding: 20px; border-radius: 8px; text-align: center;">
-                                        <input type="file" name="site_favicon" class="form-control @error('site_favicon') is-invalid @enderror" accept="image/jpeg,image/png,image/jpg,image/gif" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="previewImage(this, 'preview-favicon')">
+                                        <input type="file" name="site_favicon" class="form-control @error('site_favicon') is-invalid @enderror" accept="image/png,image/x-icon,.ico" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="previewImage(this, 'preview-favicon')">
                                         <div class="image-uploads mt-2">
                                             @if(!empty($configs['site_favicon']))
                                                 <i class="ti ti-star text-warning" style="font-size: 40px; display:none;"></i>
@@ -202,6 +202,41 @@
                                     @else
                                         <img id="preview-favicon" src="" alt="Favicon Preview" class="img-fluid" style="max-height: 50px; display: none; object-fit: contain;">
                                         <span id="preview-favicon-placeholder" class="text-muted small">Chưa có favicon</span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Ảnh/GIF nút 'Xem ngay' <span class="text-muted small">(để trống sẽ dùng nút mặc định)</span></label>
+                                    <div class="image-upload" style="position: relative; border: 1px dashed #e11d48; background: rgba(225, 29, 72, 0.05); padding: 20px; border-radius: 8px; text-align: center;">
+                                        <input type="file" name="site_view_all_image" class="form-control @error('site_view_all_image') is-invalid @enderror" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp,image/svg+xml" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="previewImage(this, 'preview-view-all')">
+                                        <div class="image-uploads mt-2">
+                                            @if(!empty($configs['site_view_all_image']))
+                                                <i class="ti ti-click text-danger" style="font-size: 40px; display:none;"></i>
+                                                <h5 class="mt-2 mb-0 fw-semibold text-danger">Đổi Ảnh/GIF</h5>
+                                            @else
+                                                <i class="ti ti-click text-danger" style="font-size: 40px;"></i>
+                                                <h5 class="mt-2 mb-0 fw-semibold">Tải lên</h5>
+                                            @endif
+                                            <p class="text-muted small mt-1">Kéo thả hoặc click (hỗ trợ GIF)</p>
+                                        </div>
+                                    </div>
+                                    @error('site_view_all_image')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3 mt-3 text-center bg-light p-2 rounded border" style="min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+                                    <label class="form-label text-muted small w-100 text-start">Xem trước:</label>
+                                    @if (!empty($configs['site_view_all_image']))
+                                        <img id="preview-view-all" src="{{ asset($configs['site_view_all_image']) }}" alt="Xem ngay" class="img-fluid" style="max-height: 50px; object-fit: contain;">
+                                        <label class="form-check-label mt-2 text-danger small" style="cursor: pointer;">
+                                            <input type="checkbox" name="remove_site_view_all_image" value="1"> Xóa ảnh (dùng nút CSS)
+                                        </label>
+                                    @else
+                                        <img id="preview-view-all" src="" alt="Preview" class="img-fluid" style="max-height: 50px; display: none; object-fit: contain;">
+                                        <span id="preview-view-all-placeholder" class="text-muted small">Đang dùng nút CSS mặc định</span>
                                     @endif
                                 </div>
                             </div>
@@ -316,8 +351,8 @@
             if (input.files && input.files[0]) {
                 var reader = new FileReader();
                 reader.onload = function(e) {
-                    $('#' + previewId).attr('src', e.target.result);
-                    $('#' + previewId).css('display', 'block');
+                    $('#' + previewId).attr('src', e.target.result).show();
+                    $('#' + previewId + '-placeholder').hide();
                 }
                 reader.readAsDataURL(input.files[0]);
             }

@@ -33,7 +33,8 @@ class GameGroupController extends Controller
             $request->validate([
                 'name' => 'required|string|unique:game_groups,name',
                 'order' => 'nullable|integer',
-                'active' => 'boolean'
+                'active' => 'boolean',
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             ]);
 
             DB::beginTransaction();
@@ -43,12 +44,23 @@ class GameGroupController extends Controller
             $data['active'] = $request->boolean('active');
             if (!isset($data['order'])) $data['order'] = 0;
 
+            // Không để UploadedFile/null từ $request->all() lọt vào mass assignment
+            unset($data['thumbnail']);
+
+            if ($request->hasFile('thumbnail')) {
+                $data['thumbnail'] = UploadHelper::upload($request->file('thumbnail'), self::UPLOAD_DIR);
+            }
+
             GameGroup::create($data);
 
             DB::commit();
 
             return redirect()->route('admin.game-groups.index')
                 ->with('success', 'Danh mục mẹ đã được thêm thành công!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error creating game group: ' . $e->getMessage());
@@ -70,7 +82,8 @@ class GameGroupController extends Controller
             $request->validate([
                 'name' => 'required|string|unique:game_groups,name,' . $gameGroup->id,
                 'order' => 'nullable|integer',
-                'active' => 'boolean'
+                'active' => 'boolean',
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             ]);
 
             DB::beginTransaction();
@@ -80,12 +93,27 @@ class GameGroupController extends Controller
             $data['active'] = $request->boolean('active');
             if (!isset($data['order'])) $data['order'] = 0;
 
+            // Không có file mới => giữ nguyên ảnh cũ (tránh $request->all() ghi đè thành null)
+            unset($data['thumbnail']);
+
+            if ($request->hasFile('thumbnail')) {
+                if ($gameGroup->thumbnail) {
+                    UploadHelper::deleteByUrl($gameGroup->thumbnail);
+                }
+
+                $data['thumbnail'] = UploadHelper::upload($request->file('thumbnail'), self::UPLOAD_DIR);
+            }
+
             $gameGroup->update($data);
 
             DB::commit();
 
             return redirect()->route('admin.game-groups.index')
                 ->with('success', 'Cập nhật danh mục mẹ thành công!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error updating game group: ' . $e->getMessage());

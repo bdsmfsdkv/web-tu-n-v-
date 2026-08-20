@@ -13,11 +13,41 @@
             <form action="" method="GET" class="filter-inline-bar">
                 <input type="text" name="code" class="filter-input" placeholder="Mã số..." value="{{ request('code') }}">
                 
-                <input type="number" name="price_from" class="filter-input" placeholder="Giá từ..." value="{{ request('price_from') }}">
-                <input type="number" name="price_to" class="filter-input" placeholder="Giá đến..." value="{{ request('price_to') }}">
+                <select name="price_range" class="filter-select">
+                    <option value="">Khoảng giá</option>
+                    <option value="0-50000" {{ request('price_range') == '0-50000' ? 'selected' : '' }}>Dưới 50K</option>
+                    <option value="50000-200000" {{ request('price_range') == '50000-200000' ? 'selected' : '' }}>50K - 200K</option>
+                    <option value="200000-500000" {{ request('price_range') == '200000-500000' ? 'selected' : '' }}>200K - 500K</option>
+                    <option value="500000-1000000" {{ request('price_range') == '500000-1000000' ? 'selected' : '' }}>500K - 1 Triệu</option>
+                    <option value="1000000" {{ request('price_range') == '1000000' ? 'selected' : '' }}>Trên 1 Triệu</option>
+                </select>
+
+                @php
+                    $presetAttrs = [];
+                    if (isset($presetConfig) && isset($presetConfig['attributes'])) {
+                        foreach ($presetConfig['attributes'] as $attr) {
+                            $presetAttrs[$attr['key']] = $attr;
+                        }
+                    }
+                @endphp
 
                 @foreach($dynamicKeys as $key)
-                    <input type="text" name="details[{{ $key }}]" class="filter-input" placeholder="Tìm {{ $key }}..." value="{{ request("details.{$key}") }}">
+                    @php
+                        $attrMeta = $presetAttrs[$key] ?? null;
+                        $hasOptions = $attrMeta && !empty($attrMeta['options']);
+                        $currentVal = request("details.{$key}");
+                    @endphp
+
+                    @if($hasOptions)
+                        <select name="details[{{ $key }}]" class="filter-select">
+                            <option value="">{{ $attrMeta['label'] ?? $key }} (Tất cả)</option>
+                            @foreach($attrMeta['options'] as $opt)
+                                <option value="{{ $opt }}" {{ $currentVal == $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                            @endforeach
+                        </select>
+                    @else
+                        <input type="text" name="details[{{ $key }}]" class="filter-input" placeholder="Tìm {{ $key }}..." value="{{ $currentVal }}">
+                    @endif
                 @endforeach
 
                 <select name="status" class="filter-select">
@@ -52,11 +82,11 @@
                             @endphp
                             
                             @if(count($details) > 0)
-                                <div class="account-row" style="flex-wrap: wrap; gap: 16px 8px; margin-bottom: 8px; border: none;">
-                                    @foreach(array_slice($details, 0, 4) as $detail)
-                                    <div class="info-item" style="width: 45%;">
-                                        <span class="info-item__title">{{ $detail['key'] ?? '' }}:</span>
-                                        <span class="info-value">{{ $detail['value'] ?? '' }}</span>
+                                <div class="account-row" style="flex-wrap: wrap; gap: 8px; margin-bottom: 8px; border: none;">
+                                    @foreach(array_slice($details, 0, 6) as $detail)
+                                    <div class="info-item" style="width: 48%; padding: 4px 6px; background: rgba(0,0,0,0.03); border-radius: 4px; display: flex; align-items: center; justify-content: space-between;">
+                                        <span class="info-item__title text-muted small" style="font-weight: 500;">{{ $detail['key'] ?? '' }}:</span>
+                                        <span class="info-value fw-semibold small text-truncate" style="max-width: 60%; text-align: right;" title="{{ $detail['value'] ?? '' }}">{{ $detail['value'] ?? '' }}</span>
                                     </div>
                                     @endforeach
                                 </div>

@@ -11,7 +11,7 @@
                         @if ($category->active)
                             <a href="{{ route('lucky.index', ['slug' => $category->slug]) }}" class="category-card" style="position: relative;">
                                 <div class="category-img">
-                                    <img src="{{ $category->thumbnail }}" alt="{{ $category->name }}">
+                                    <img src="{{ asset($category->thumbnail) }}" alt="{{ $category->name }}">
                                 </div>
                                 <div class="category-body" style="display: flex; flex-direction: column;">
                                     <div class="category-name">{{ $category->name }}</div>
@@ -21,8 +21,15 @@
                                     <div style="color: var(--primary); font-weight: 700; font-size: 1.1rem; margin-bottom: 12px;">
                                         {{ number_format($category->price_per_spin) }}đ / 1 lượt
                                     </div>
-                                    <div style="text-align: center; margin-top: auto;">
-                                        <img src="/img/tag_69e1555d8bab7.gif" alt="Xem Tất Cả" style="max-width: 140px; transition: transform 0.2s; border-radius: 8px;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onerror="this.src='https://i.imgur.com/J3t1e5r.gif'">
+                                    <div class="category-cta-wrapper">
+                                        @if(config_get('site_view_all_image'))
+                                            <img src="{{ asset(config_get('site_view_all_image')) }}" alt="Xem ngay" class="category-cta-img">
+                                        @else
+                                            <span class="category-btn-cta">
+                                                <span>Xem ngay</span>
+                                                <i class="fa-solid fa-arrow-right cta-icon"></i>
+                                            </span>
+                                        @endif
                                     </div>
                                 </div>
                             </a>

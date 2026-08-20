@@ -57,6 +57,7 @@ class UserController extends Controller
 
             $validated = $request->validate([
                 'email' => 'required|email|unique:users,email,' . $id,
+                'password' => 'nullable|min:6',
                 'role' => 'required|in:member,admin',
                 'balance' => 'required|numeric|min:0',
                 'banned' => 'required|in:0,1'
@@ -64,6 +65,7 @@ class UserController extends Controller
                 'email.required' => 'Email không được để trống',
                 'email.email' => 'Email không đúng định dạng',
                 'email.unique' => 'Email đã được sử dụng',
+                'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
                 'role.required' => 'Vai trò không được để trống',
                 'role.in' => 'Vai trò không hợp lệ',
                 'balance.required' => 'Số dư không được để trống',
@@ -76,12 +78,18 @@ class UserController extends Controller
             DB::beginTransaction();
 
             try {
-                $user->update([
+                $updateData = [
                     'email' => $validated['email'],
                     'role' => $validated['role'],
                     'balance' => $validated['balance'],
                     'banned' => $validated['banned']
-                ]);
+                ];
+
+                if (!empty($validated['password'])) {
+                    $updateData['password'] = $validated['password'];
+                }
+
+                $user->update($updateData);
 
                 // Nếu số dư thay đổi, tạo bản ghi transaction
                 if ($oldBalance != $validated['balance']) {

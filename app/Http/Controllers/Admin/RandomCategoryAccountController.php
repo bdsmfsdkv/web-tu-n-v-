@@ -58,7 +58,7 @@ class RandomCategoryAccountController extends Controller
                 'random_category_id' => 'required|exists:random_categories,id',
                 'accounts' => 'required|string',
                 'price' => 'required|numeric|min:0',
-                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
                 'note' => 'nullable|string',
                 'note_buyer' => 'nullable|string',
             ]);
@@ -156,7 +156,7 @@ class RandomCategoryAccountController extends Controller
                 'password' => 'nullable|string|max:100',
                 'price' => 'required|numeric|min:0',
                 'note' => 'nullable|string',
-                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             ]);
 
             DB::beginTransaction();

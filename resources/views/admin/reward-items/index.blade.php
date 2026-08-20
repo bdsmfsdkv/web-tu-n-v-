@@ -80,7 +80,7 @@
                                     <td><span class="fw-medium">{{ $loop->iteration }}</span></td>
                                     <td class="text-center">
                                         @if($item->icon)
-                                            <img src="{{ $item->icon }}" alt="{{ $item->name }}" style="width: 40px; height: 40px; object-fit: contain;" class="rounded border shadow-sm">
+                                            <img src="{{ asset($item->icon) }}" alt="{{ $item->name }}" style="width: 40px; height: 40px; object-fit: contain;" class="rounded border shadow-sm">
                                         @else
                                             <div class="bg-light rounded d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
                                                 <i class="ti ti-photo text-muted"></i>

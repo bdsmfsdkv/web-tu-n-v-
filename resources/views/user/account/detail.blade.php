@@ -126,10 +126,10 @@
                             Mua Bằng ATM, Momo<br>
                             <small>{{ number_format($account->price) }} Đ</small>
                         </button>
-                        <button class="ecom-btn" style="margin-top: 10px; width: 100%; background: #3b82f6; border-color: #3b82f6; color: white;" onclick="showInstallmentModal()">
+                        {{-- <button class="ecom-btn" style="margin-top: 10px; width: 100%; background: #3b82f6; border-color: #3b82f6; color: white;" onclick="showInstallmentModal()">
                             <i class="fas fa-hand-holding-usd"></i> Mua Trả Góp<br>
                             <small>Trả trước từ {{ number_format($account->price * 0.2) }} Đ</small>
-                        </button>
+                        </button> --}}
                     @else
                         <div class="detail__purchased" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; padding: 20px; border-radius: 8px; text-align: center; font-weight: 700; font-size: 1.1rem;">
                             <i class="fas fa-lock"></i> TÀI KHOẢN NÀY ĐÃ ĐƯỢC BÁN

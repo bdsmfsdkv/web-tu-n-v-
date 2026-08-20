@@ -33,6 +33,7 @@ class ConfigController extends Controller
             'site_keywords' => config_get('site_keywords', 'Mua bán tài khoản game Ngọc Rồng'),
             'site_logo' => config_get('site_logo'),
             'site_logo_footer' => config_get('site_logo_footer'),
+            'site_view_all_image' => config_get('site_view_all_image'),
             'site_share_image' => config_get('site_share_image'),
             'site_banner' => config_get('site_banner'),
             'site_favicon' => config_get('site_favicon'),
@@ -105,6 +106,7 @@ class ConfigController extends Controller
             'site_keywords' => config_get('site_keywords', 'Mua bán tài khoản game Ngọc Rồng'),
             'site_logo' => config_get('site_logo'),
             'site_logo_footer' => config_get('site_logo_footer'),
+            'site_view_all_image' => config_get('site_view_all_image'),
             'site_share_image' => config_get('site_share_image'),
             'site_banner' => config_get('site_banner'),
             'site_favicon' => config_get('site_favicon'),
@@ -134,12 +136,13 @@ class ConfigController extends Controller
             'email' => 'nullable|email|max:255',
             'min_withdraw_gold' => 'nullable|integer|min:0',
             'max_withdraw_gold' => 'nullable|integer|gte:min_withdraw_gold',
-            'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'site_logo_footer' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'site_share_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120',
+            'site_logo_footer' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120',
+            'site_view_all_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120',
+            'site_share_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'site_banner' => 'nullable|array',
-            'site_banner.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
-            'site_favicon' => 'nullable|mimes:ico,png|max:1024',
+            'site_banner.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'site_favicon' => 'nullable|mimes:ico,png,jpg,jpeg,webp,svg|max:2048',
         ]);
 
         try {
@@ -149,12 +152,19 @@ class ConfigController extends Controller
             $fieldImages = [
                 'logo',
                 'logo_footer',
+                'view_all_image',
                 'favicon',
                 'share_image',
             ];
 
             foreach ($fieldImages as $key) {
-                if ($request->hasFile('site_' . $key)) {
+                if ($request->has('remove_site_' . $key) && $request->input('remove_site_' . $key) == '1') {
+                    $oldImage = config_get('site_' . $key);
+                    if ($oldImage) {
+                        UploadHelper::deleteByUrl($oldImage);
+                    }
+                    config_set('site_' . $key, '');
+                } elseif ($request->hasFile('site_' . $key)) {
                     // Xóa file cũ nếu có
                     $oldImage = config_get('site_' . $key);
                     if ($oldImage) {

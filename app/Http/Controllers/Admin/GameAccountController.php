@@ -45,8 +45,9 @@ class GameAccountController extends Controller
     public function create()
     {
         $title = 'Thêm tài khoản game mới';
-        $categories = GameCategory::where('active', true)->get();
-        return view('admin.accounts.create', compact('title', 'categories'));
+        $categories = GameCategory::with('gameGroup')->where('active', true)->get();
+        $gamePresets = config('game_attributes.games', []);
+        return view('admin.accounts.create', compact('title', 'categories', 'gamePresets'));
     }
 
     public function store(Request $request)
@@ -59,8 +60,8 @@ class GameAccountController extends Controller
                 'price' => 'required|numeric|min:0',
                 'note' => 'nullable|string',
                 'details' => 'nullable|array',
-                'thumb' => 'required|image|mimes:jpeg,png,jpg,gif',
-                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+                'thumb' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
                 'status' => 'required|in:available,sold'
             ]);
 
@@ -101,8 +102,9 @@ class GameAccountController extends Controller
     public function edit(GameAccount $account)
     {
         $title = 'Chỉnh sửa tài khoản game';
-        $categories = GameCategory::where('active', true)->get();
-        return view('admin.accounts.edit', compact('title', 'account', 'categories'));
+        $categories = GameCategory::with('gameGroup')->where('active', true)->get();
+        $gamePresets = config('game_attributes.games', []);
+        return view('admin.accounts.edit', compact('title', 'account', 'categories', 'gamePresets'));
     }
 
     public function update(Request $request, GameAccount $account)
@@ -115,8 +117,8 @@ class GameAccountController extends Controller
                 'price' => 'required|numeric|min:0',
                 'note' => 'nullable|string',
                 'details' => 'nullable|array',
-                'thumb' => 'nullable|image|mimes:jpeg,png,jpg,gif',
-                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif'
+                'thumb' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120'
             ]);
 
             DB::beginTransaction();

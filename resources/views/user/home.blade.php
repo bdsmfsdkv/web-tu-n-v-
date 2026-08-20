@@ -63,7 +63,7 @@
                         @endphp
                         @if(count($banners) > 0)
                             @foreach($banners as $index => $banner)
-                                <div class="slide {{ $index == 0 ? 'active' : '' }}" style="background:url('{{ $banner }}') center/cover no-repeat;"></div>
+                                <div class="slide {{ $index == 0 ? 'active' : '' }}" style="background:url('{{ asset($banner) }}') center/cover no-repeat;"></div>
                             @endforeach
                         @else
                             <div class="slide active" style="background:url('https://via.placeholder.com/800x400?text=No+Banner') center/cover no-repeat;"></div>
@@ -124,7 +124,7 @@
 <style>
     .custom-marquee-container {
         display: flex;
-        min-height: 52px;
+        min-height: 48px;
         align-items: stretch;
         overflow: hidden;
         border-radius: 12px;
@@ -142,24 +142,24 @@
         display: flex;
         flex-shrink: 0;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
         border-right: 1px solid rgba(59, 130, 246, 0.15);
         background: rgba(59, 130, 246, 0.05);
-        padding: 12px 20px;
+        padding: 8px 14px;
     }
     .marquee-icon {
         position: relative;
         display: flex;
-        height: 32px;
-        width: 32px;
+        height: 28px;
+        width: 28px;
         flex-shrink: 0;
         align-items: center;
         justify-content: center;
-        border-radius: 10px;
+        border-radius: 8px;
         background-color: #3b82f6;
         color: #fff;
-        font-size: 12px;
-        box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.35);
+        font-size: 11px;
+        box-shadow: 0 4px 10px -2px rgba(59, 130, 246, 0.35);
         animation: pulse-blue 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
     .marquee-badge-text {
@@ -197,6 +197,22 @@
     }
     @media (min-width: 768px) {
         .marquee-divider { display: block; }
+    }
+    @media (max-width: 576px) {
+        .custom-marquee-container {
+            min-height: 40px;
+            margin-top: 12px !important;
+            margin-bottom: 12px !important;
+            border-radius: 8px;
+        }
+        .marquee-badge {
+            padding: 6px 10px;
+        }
+        .marquee-icon {
+            width: 24px;
+            height: 24px;
+            font-size: 10px;
+        }
     }
     .marquee-content-wrapper {
         position: relative;
@@ -387,7 +403,7 @@
                 @foreach($flashSales as $fs)
                     <a href="{{ $fs->is_random ? route('random.index', ['slug' => $fs->slug]) : route('category.index', ['slug' => $fs->slug]) }}" class="fs-card" style="text-decoration: none; display: block;">
                         <div class="fs-card-img">
-                            <img src="{{ $fs->thumbnail }}" onerror="this.src='https://via.placeholder.com/200x120?text=Flash+Sale'" alt="{{ $fs->name }}">
+                            <img src="{{ asset($fs->thumbnail) }}" onerror="this.src='https://via.placeholder.com/200x120?text=Flash+Sale'" alt="{{ $fs->name }}">
                             @if($fs->flash_sale_old_price > 0 && $fs->flash_sale_new_price > 0 && $fs->flash_sale_old_price > $fs->flash_sale_new_price)
                                 @php
                                     $discountPercent = round((($fs->flash_sale_old_price - $fs->flash_sale_new_price) / $fs->flash_sale_old_price) * 100);
@@ -463,11 +479,11 @@
                 @foreach ($group as $category)
                     <a href="{{ $category->url ?? route('category.index', ['slug' => $category->slug]) }}" class="category-card" style="position: relative;">
                         @if($category->tag_image)
-                        <img src="{{ $category->tag_image }}" alt="Tag" style="position: absolute; top: 0; right: 0; max-width: 60px; z-index: 10;">
+                        <img src="{{ asset($category->tag_image) }}" alt="Tag" style="position: absolute; top: 0; right: 0; max-width: 60px; z-index: 10;">
                         @endif
                         <div class="category-img" style="display: flex; align-items: center; justify-content: center; background: rgba(220, 38, 38, 0.05); color: var(--primary); border: 1px solid rgba(220, 38, 38, 0.1);">
                             @if($category->thumbnail)
-                            <img src="{{ $category->thumbnail }}" alt="{{ $category->name }}">
+                            <img src="{{ asset($category->thumbnail) }}" alt="{{ $category->name }}">
                             @else
                             <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 1024 1024" data-icon="ant-design:appstore-outlined" style="font-size:2.5rem;" class="iconify iconify--ant-design"><path fill="currentColor" d="M464 144H160c-8.8 0-16 7.2-16 16v304c0 8.8 7.2 16 16 16h304c8.8 0 16-7.2 16-16V160c0-8.8-7.2-16-16-16m-52 268H212V212h200zm452-268H560c-8.8 0-16 7.2-16 16v304c0 8.8 7.2 16 16 16h304c8.8 0 16-7.2 16-16V160c0-8.8-7.2-16-16-16m-52 268H612V212h200zM464 544H160c-8.8 0-16 7.2-16 16v304c0 8.8 7.2 16 16 16h304c8.8 0 16-7.2 16-16V560c0-8.8-7.2-16-16-16m-52 268H212V612h200zm452-268H560c-8.8 0-16 7.2-16 16v304c0 8.8 7.2 16 16 16h304c8.8 0 16-7.2 16-16V560c0-8.8-7.2-16-16-16m-52 268H612V612h200z"></path></svg>
                             @endif
@@ -479,13 +495,15 @@
                                 <span style="color:#64748b;">Còn lại: {{ number_format($category->allAccount) }}</span>
                                 <span style="color:#64748b;">| Đã bán: {{ number_format($category->soldCount) }}</span>
                             </div>
-                            @if(!empty($category->price))
-                                <div style="color: var(--primary); font-weight: 700; font-size: 1.1rem; margin-bottom: 12px;">
-                                    {{ number_format($category->price) }}đ
-                                </div>
-                            @endif
-                            <div style="text-align: center; margin-top: auto;">
-                                <img src="/img/tag_69e1555d8bab7.gif" alt="Xem Tất Cả" style="max-width: 140px; transition: transform 0.2s; border-radius: 8px;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onerror="this.src='https://i.imgur.com/J3t1e5r.gif'">
+                            <div class="category-cta-wrapper">
+                                @if(config_get('site_view_all_image'))
+                                    <img src="{{ asset(config_get('site_view_all_image')) }}" alt="Xem ngay" class="category-cta-img">
+                                @else
+                                    <span class="category-btn-cta">
+                                        <span>Xem ngay</span>
+                                        <i class="fa-solid fa-arrow-right cta-icon"></i>
+                                    </span>
+                                @endif
                             </div>
                         </div>
                     </a>
@@ -511,7 +529,7 @@
                 @if ($wheel->active)
                     <a href="{{ route('lucky.index', ['slug' => $wheel->slug]) }}" class="category-card" style="position: relative;">
                         <div class="category-img">
-                            <img src="{{ $wheel->thumbnail }}" alt="{{ $wheel->name }}">
+                            <img src="{{ asset($wheel->thumbnail) }}" alt="{{ $wheel->name }}">
                         </div>
                         <div class="category-body" style="display: flex; flex-direction: column;">
                             <div class="category-name">{{ $wheel->name }}</div>
@@ -521,8 +539,15 @@
                             <div style="color: var(--primary); font-weight: 700; font-size: 1.1rem; margin-bottom: 12px;">
                                 {{ number_format($wheel->price_per_spin) }}đ / 1 lượt
                             </div>
-                            <div style="text-align: center; margin-top: auto;">
-                                <img src="/img/tag_69e1555d8bab7.gif" alt="Xem Tất Cả" style="max-width: 140px; transition: transform 0.2s; border-radius: 8px;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onerror="this.src='https://i.imgur.com/J3t1e5r.gif'">
+                            <div class="category-cta-wrapper">
+                                @if(config_get('site_view_all_image'))
+                                    <img src="{{ asset(config_get('site_view_all_image')) }}" alt="Xem ngay" class="category-cta-img">
+                                @else
+                                    <span class="category-btn-cta">
+                                        <span>Xem ngay</span>
+                                        <i class="fa-solid fa-arrow-right cta-icon"></i>
+                                    </span>
+                                @endif
                             </div>
                         </div>
                     </a>
@@ -546,15 +571,22 @@
                 @if ($service->active)
                     <a href="{{ route('service.show', ['slug' => $service->slug]) }}" class="category-card">
                         <div class="category-img">
-                            <img src="{{ $service->thumbnail }}" alt="{{ $service->name }}">
+                            <img src="{{ asset($service->thumbnail) }}" alt="{{ $service->name }}">
                         </div>
                         <div class="category-body" style="display: flex; flex-direction: column;">
                             <div class="category-name">{{ $service->name }}</div>
                             <div class="category-count" style="display:flex;gap:8px;font-size:0.8rem;margin-bottom:10px;">
                                 <span style="color:#999;">{{ number_format($service->orderCount) }} giao dịch</span>
                             </div>
-                            <div style="text-align: center; margin-top: auto;">
-                                <img src="https://i.imgur.com/J3t1e5r.gif" alt="Xem Tất Cả" style="max-width: 130px; border-radius: 4px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <div class="category-cta-wrapper">
+                                @if(config_get('site_view_all_image'))
+                                    <img src="{{ asset(config_get('site_view_all_image')) }}" alt="Xem ngay" class="category-cta-img">
+                                @else
+                                    <span class="category-btn-cta">
+                                        <span>Xem ngay</span>
+                                        <i class="fa-solid fa-arrow-right cta-icon"></i>
+                                    </span>
+                                @endif
                             </div>
                         </div>
                     </a>
@@ -565,85 +597,79 @@
 </section>
 @endif
 
-<!-- Reviews Section -->
-<section class="section">
+<!-- About Shop Section -->
+<section class="section" style="margin-top: 20px;">
     <div class="container">
-        <div class="section-header" style="text-align:center; margin-bottom: 25px;">
-            <h2 class="section-title" style="display:inline-block; font-size: 1.5rem; justify-content: center; width: 100%;">
-                <span class="iconify" data-icon="ant-design:star-filled" style="color:#faad14; font-size: 1.6rem; vertical-align: middle;"></span> 
-                Nhận xét của khách hàng khi sử dụng dịch vụ tại shop 
-                <span class="iconify" data-icon="ant-design:star-filled" style="color:#faad14; font-size: 1.6rem; vertical-align: middle;"></span>
-            </h2>
-        </div>
-        
-        <div class="review-grid">
-            @php
-                $fakeTexts = [
-                    'Giao dịch nhanh gọn, uy tín',
-                    'Đã ủng hộ lần t2 rất uy tín ok',
-                    'Sản phẩm chất lượng.',
-                    'Acc ngon, giá rẻ',
-                    'Nhân viên hỗ trợ nhiệt tình',
-                    'Lần tới sẽ ủng hộ tiếp'
-                ];
-                $displayReviews = [];
-                if(isset($recentPurchases)) {
-                    foreach($recentPurchases as $purchase) {
-                        $username = $purchase->user ? $purchase->user->username : 'KhachHang';
-                        $maskedName = substr($username, 0, 3) . '****' . substr($username, -2);
-                        $displayReviews[] = [
-                            'name' => $maskedName,
-                            'id' => $purchase->game_account_id ?? rand(100000, 999999),
-                            'text' => $fakeTexts[array_rand($fakeTexts)],
-                            'avatar' => 'https://shoptrautft.com/unknown-avatar.jpeg'
-                        ];
-                    }
-                }
-                
-                $staticReviews = [
-                    ['name' => 'Tan****ng', 'id' => '245477', 'text' => 'Giao dịch nhanh gọn, uy tín', 'avatar' => 'https://shoptrautft.com/unknown-avatar.jpeg'],
-                    ['name' => 'Mạn****ễn', 'id' => '241301', 'text' => 'Giao dịch nhanh gọn, uy tín', 'avatar' => 'https://shoptrautft.com/unknown-avatar.jpeg'],
-                    ['name' => 'Dch****15', 'id' => '166182', 'text' => 'Đã ủng hộ lần t2 rất uy tín ok', 'avatar' => 'https://shoptrautft.com/unknown-avatar.jpeg'],
-                    ['name' => 'xku****11', 'id' => '211127', 'text' => 'Sản phẩm chất lượng.', 'avatar' => 'https://shoptrautft.com/unknown-avatar.jpeg'],
-                    ['name' => 'luc****an', 'id' => '209673', 'text' => 'Acc ngon, giá rẻ', 'avatar' => 'https://shoptrautft.com/unknown-avatar.jpeg'],
-                    ['name' => 'LyT****39', 'id' => '165709', 'text' => 'Nhân viên hỗ trợ nhiệt tình', 'avatar' => 'https://shoptrautft.com/unknown-avatar.jpeg'],
-                    ['name' => 'LyT****39', 'id' => '203838', 'text' => 'Giao dịch nhanh gọn, uy tín', 'avatar' => 'https://shoptrautft.com/unknown-avatar.jpeg'],
-                    ['name' => 'ryo****uo', 'id' => '203701', 'text' => 'Lần tới sẽ ủng hộ tiếp', 'avatar' => 'https://shoptrautft.com/unknown-avatar.jpeg']
-                ];
+        <div class="shop-intro-card" style="background: #fff; border: 1px solid #f0f0f0; border-radius: 12px; padding: 28px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            <div class="section-header" style="text-align: center; margin-bottom: 24px;">
+                <h2 class="section-title" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 1.5rem; margin-bottom: 8px; width: 100%;">
+                    <span class="iconify" data-icon="ant-design:shop-filled" style="color: var(--primary); font-size: 1.6rem;"></span>
+                    GIỚI THIỆU VỀ SHOP {{ mb_strtoupper(config_get('site_name', 'SHOP GAME')) }}
+                </h2>
+                <p style="color: #64748b; font-size: 0.95rem; margin: 0; max-width: 750px; margin: 0 auto; line-height: 1.6;">
+                    {{ config_get('site_description', 'Hệ thống cung cấp tài khoản game tự động uy tín hàng đầu, giao dịch nhanh chóng và bảo mật 100%.') }}
+                </p>
+            </div>
 
-                $needed = 8 - count($displayReviews);
-                for($i = 0; $i < $needed; $i++) {
-                    $displayReviews[] = $staticReviews[$i];
-                }
-            @endphp
-            @foreach($displayReviews as $review)
-                <div class="review-card">
-                    <div class="review-header">
-                        <img src="{{ $review['avatar'] }}" alt="Avatar" class="review-avatar" onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($review['name']) }}&background=random'">
-                        <div class="review-info">
-                            <div class="review-name">{{ $review['name'] }}</div>
-                            <div class="review-meta">
-                                <span class="review-stars">
-                                    <span class="iconify" data-icon="ant-design:star-filled"></span>
-                                    <span class="iconify" data-icon="ant-design:star-filled"></span>
-                                    <span class="iconify" data-icon="ant-design:star-filled"></span>
-                                    <span class="iconify" data-icon="ant-design:star-filled"></span>
-                                    <span class="iconify" data-icon="ant-design:star-filled"></span>
-                                </span>
-                                <span class="review-id">đã mua nick {{ $review['id'] }}</span>
-                            </div>
-                        </div>
+            <div class="shop-features-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 20px;">
+                <div class="shop-feature-box" style="background: rgba(220, 38, 38, 0.03); border: 1px solid rgba(220, 38, 38, 0.08); border-radius: 10px; padding: 20px 16px; text-align: center; transition: all 0.2s;">
+                    <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(220, 38, 38, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 1.5rem;">
+                        <span class="iconify" data-icon="ant-design:safety-certificate-filled"></span>
                     </div>
-                    <div class="review-text">{{ $review['text'] }}</div>
+                    <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; color: #1e293b;">Uy Tín & Bảo Mật</div>
+                    <div style="font-size: 0.85rem; color: #64748b; line-height: 1.5;">Thông tin tài khoản an toàn tuyệt đối, chính sách bảo hành rõ ràng, minh bạch.</div>
                 </div>
-            @endforeach
-        </div>
-        
-        <div class="view-all-reviews" style="margin-top: 15px;">
-            <a href="{{ route('reviews') }}" class="btn-view-all-reviews" style="display: inline-block; text-decoration: none;">Xem tất cả</a>
+
+                <div class="shop-feature-box" style="background: rgba(220, 38, 38, 0.03); border: 1px solid rgba(220, 38, 38, 0.08); border-radius: 10px; padding: 20px 16px; text-align: center; transition: all 0.2s;">
+                    <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(220, 38, 38, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 1.5rem;">
+                        <span class="iconify" data-icon="ant-design:thunderbolt-filled"></span>
+                    </div>
+                    <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; color: #1e293b;">Giao Dịch Tự Động</div>
+                    <div style="font-size: 0.85rem; color: #64748b; line-height: 1.5;">Nhận thông tin tài khoản ngay lập tức 24/7 sau khi thanh toán thành công.</div>
+                </div>
+
+                <div class="shop-feature-box" style="background: rgba(220, 38, 38, 0.03); border: 1px solid rgba(220, 38, 38, 0.08); border-radius: 10px; padding: 20px 16px; text-align: center; transition: all 0.2s;">
+                    <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(220, 38, 38, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 1.5rem;">
+                        <span class="iconify" data-icon="ant-design:dollar-circle-filled"></span>
+                    </div>
+                    <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; color: #1e293b;">Giá Tốt Hàng Đầu</div>
+                    <div style="font-size: 0.85rem; color: #64748b; line-height: 1.5;">Cam kết mức giá cạnh tranh nhất thị trường kèm nhiều khuyến mãi hấp dẫn.</div>
+                </div>
+
+                <div class="shop-feature-box" style="background: rgba(220, 38, 38, 0.03); border: 1px solid rgba(220, 38, 38, 0.08); border-radius: 10px; padding: 20px 16px; text-align: center; transition: all 0.2s;">
+                    <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(220, 38, 38, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 1.5rem;">
+                        <span class="iconify" data-icon="ant-design:customer-service-filled"></span>
+                    </div>
+                    <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; color: #1e293b;">Hỗ Trợ Tận Tâm</div>
+                    <div style="font-size: 0.85rem; color: #64748b; line-height: 1.5;">Đội ngũ CSKH sẵn sàng hỗ trợ, giải đáp mọi thắc mắc của khách hàng.</div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
+
+<style>
+    @media (max-width: 992px) {
+        .shop-features-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    }
+    @media (max-width: 576px) {
+        .shop-features-grid { grid-template-columns: 1fr !important; }
+    }
+    [data-theme="dark"] .shop-intro-card {
+        background: #1a1a1a !important;
+        border-color: #2a2a2a !important;
+    }
+    [data-theme="dark"] .shop-feature-box {
+        background: #262626 !important;
+        border-color: #333333 !important;
+    }
+    [data-theme="dark"] .shop-feature-box div {
+        color: #cbd5e1 !important;
+    }
+    [data-theme="dark"] .shop-feature-box .shop-feature-title {
+        color: #f8fafc !important;
+    }
+</style>
 
 <!-- Announcement Modal -->
 @if (config_get('welcome_modal', false))
@@ -748,102 +774,6 @@
     [data-theme="dark"] .announce-footer { border-color: #404040; background: #1f1f1f; }
     [data-theme="dark"] .btn-close-now { background: #404040; color: #f9fafb; }
     [data-theme="dark"] .btn-close-now:hover { background: #525252; }
-
-    /* Reviews Section Styles */
-    .review-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-    @media (max-width: 1024px) {
-        .review-grid { grid-template-columns: repeat(3, 1fr); }
-    }
-    @media (max-width: 768px) {
-        .review-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 480px) {
-        .review-grid { grid-template-columns: 1fr; }
-    }
-    .review-card {
-        background: #fff;
-        border-radius: 8px;
-        padding: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        border: 1px solid #f0f0f0;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .review-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-    [data-theme="dark"] .review-card {
-        background: #1f1f1f;
-        border-color: #333;
-    }
-    .review-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 12px;
-    }
-    .review-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-    }
-    .review-info {
-        flex: 1;
-    }
-    .review-name {
-        font-weight: 700;
-        font-size: 0.95rem;
-        color: #1f2937;
-        margin-bottom: 4px;
-    }
-    [data-theme="dark"] .review-name {
-        color: #f3f4f6;
-    }
-    .review-meta {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.8rem;
-    }
-    .review-stars {
-        color: #faad14;
-        display: flex;
-        gap: 2px;
-    }
-    .review-id {
-        color: #9ca3af;
-    }
-    .review-text {
-        font-size: 0.9rem;
-        color: #4b5563;
-        line-height: 1.5;
-    }
-    [data-theme="dark"] .review-text {
-        color: #9ca3af;
-    }
-    .view-all-reviews {
-        text-align: center;
-    }
-    .btn-view-all-reviews {
-        background: #9ca3af;
-        color: #fff;
-        border: none;
-        padding: 6px 16px;
-        border-radius: 4px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-    .btn-view-all-reviews:hover {
-        background: #6b7280;
-    }
 
     /* Flash Sale Styles */
     .flash-sale-wrapper {

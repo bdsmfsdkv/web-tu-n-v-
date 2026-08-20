@@ -21,16 +21,23 @@ class GameCategoryController extends Controller
         }
 
         // Base queries
-        if ($request->hasAny(['code', 'price_range', 'status'])) {
+        if ($request->hasAny(['code', 'price_range', 'price_from', 'price_to', 'status'])) {
             if ($request->filled('code')) {
                 $accounts->where('id', $request->code);
             }
             if ($request->filled('price_range')) {
                 $range = explode('-', $request->price_range);
                 if (count($range) == 2) {
-                    $accounts->whereBetween('price', $range);
+                    $accounts->whereBetween('price', [(float)$range[0], (float)$range[1]]);
                 } else {
-                    $accounts->where('price', '>=', $range[0]);
+                    $accounts->where('price', '>=', (float)$range[0]);
+                }
+            } else {
+                if ($request->filled('price_from')) {
+                    $accounts->where('price', '>=', (float)$request->price_from);
+                }
+                if ($request->filled('price_to')) {
+                    $accounts->where('price', '<=', (float)$request->price_to);
                 }
             }
             if ($request->filled('status')) {
@@ -56,6 +63,17 @@ class GameCategoryController extends Controller
                 }
             }
         }
+
+        // Match game presets to pass to view for smart filters
+        $presetResolveFn = config('game_attributes.resolve_preset');
+        $matchedPresetKey = null;
+        if (is_callable($presetResolveFn)) {
+            $category->loadMissing('gameGroup');
+            $matchedPresetKey = $presetResolveFn($category->slug) 
+                ?? $presetResolveFn($category->platform) 
+                ?? ($category->gameGroup ? $presetResolveFn($category->gameGroup->slug) : null);
+        }
+        $presetConfig = $matchedPresetKey ? config("game_attributes.games.{$matchedPresetKey}") : null;
 
         // Apply dynamic detail filters via Collection
         if ($request->has('details') && is_array($request->details)) {
@@ -95,7 +113,7 @@ class GameCategoryController extends Controller
         );
         $accounts = $paginatedAccounts;
 
-        return view('user.category.show', compact('category', 'accounts', 'dynamicKeys'));
+        return view('user.category.show', compact('category', 'accounts', 'dynamicKeys', 'presetConfig'));
     }
 
     public function showAll()

@@ -154,7 +154,7 @@
                 @foreach($newsList as $news)
                     <a href="{{ route('news.show', $news->slug) }}" class="news-card">
                         <div class="news-thumb-wrapper">
-                            <img src="{{ $news->thumbnail }}" alt="{{ $news->title }}" class="news-thumb" onerror="this.src='https://via.placeholder.com/400x200?text=News'">
+                            <img src="{{ asset($news->thumbnail) }}" alt="{{ $news->title }}" class="news-thumb" onerror="this.src='https://via.placeholder.com/400x200?text=News'">
                         </div>
                         <div class="news-content">
                             <h3 class="news-title">{{ $news->title }}</h3>

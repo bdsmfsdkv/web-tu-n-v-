@@ -108,7 +108,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            z-index: 999;
+            z-index: 9999;
         }
         .support-item {
             position: relative;
@@ -244,17 +244,17 @@
 
     <!-- Live Purchase Toast -->
     <div id="live-purchase-toast" class="live-purchase-toast">
-        <div class="toast-close" onclick="document.getElementById('live-purchase-toast').classList.remove('show')">×</div>
+        <button type="button" class="toast-close" onclick="document.getElementById('live-purchase-toast').classList.remove('show')" aria-label="Đóng">×</button>
         <div class="toast-body">
             <div class="toast-icon-bg">
-                <i class="fa-solid fa-user-check"></i>
+                <i class="fa-solid fa-cart-shopping"></i>
             </div>
             <div class="toast-content">
-                <div class="toast-text-desc"><strong class="toast-username" id="toast-username">1148****</strong> đã mua <span id="toast-type">dịch vụ</span></div>
-                <div class="toast-item" id="toast-item">Tài khoản Random Liên Quân VIP</div>
+                <div class="toast-text-desc"><strong class="toast-username" id="toast-username">nguyen***</strong> vừa mua</div>
+                <div class="toast-item" id="toast-item">Acc Liên Quân VIP</div>
                 <div class="toast-meta">
-                    <span class="toast-price" id="toast-price">59.000đ</span>
-                    <span class="toast-time" id="toast-time">14 giây trước</span>
+                    <span class="toast-price" id="toast-price">50.000đ</span>
+                    <span class="toast-time" id="toast-time">vừa xong</span>
                 </div>
             </div>
         </div>
@@ -264,99 +264,100 @@
         .live-purchase-toast {
             position: fixed;
             bottom: 20px;
-            left: -350px;
+            left: -320px;
             background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            width: 320px;
-            border-left: 5px solid #0d6efd;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            width: 260px;
+            border-left: 4px solid #0d6efd;
             z-index: 10000;
-            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+            transform: translateX(0);
+            opacity: 0;
+            pointer-events: none;
             font-family: inherit;
         }
         .live-purchase-toast.show {
-            left: 20px;
+            transform: translateX(340px);
+            opacity: 1;
+            pointer-events: auto;
         }
         .live-purchase-toast .toast-close {
             position: absolute;
-            top: 8px;
-            right: 8px;
+            top: 4px;
+            right: 6px;
             cursor: pointer;
-            color: #6c757d;
-            font-size: 16px;
+            color: #9ca3af;
+            font-size: 14px;
             line-height: 1;
-            background: #f8f9fa;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
+            background: transparent;
+            border: none;
+            padding: 2px;
+            transition: color 0.15s;
         }
         .live-purchase-toast .toast-close:hover {
-            background: #e9ecef;
-            color: #dc3545;
+            color: #ef4444;
         }
         .live-purchase-toast .toast-body {
             display: flex;
-            padding: 16px 16px 16px 12px;
+            padding: 9px 10px;
             align-items: center;
+            gap: 9px;
         }
         .live-purchase-toast .toast-icon-bg {
-            width: 45px;
-            height: 45px;
-            background: #e7f1ff;
-            color: #0d6efd;
-            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            background: #eff6ff;
+            color: #2563eb;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 14px;
             flex-shrink: 0;
-            font-size: 1.3rem;
+            font-size: 0.95rem;
         }
         .live-purchase-toast .toast-content {
             flex: 1;
+            min-width: 0;
         }
         .live-purchase-toast .toast-text-desc {
-            font-size: 0.9rem;
-            color: #6c757d;
-            margin-bottom: 2px;
+            font-size: 0.76rem;
+            color: #6b7280;
+            line-height: 1.2;
         }
         .live-purchase-toast .toast-username {
-            color: #212529;
-            font-weight: 700;
+            color: #111827;
+            font-weight: 600;
         }
         .live-purchase-toast .toast-item {
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: #0d6efd;
-            margin-bottom: 4px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: #2563eb;
+            line-height: 1.25;
+            margin: 1px 0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 200px;
         }
         .live-purchase-toast .toast-meta {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-size: 0.74rem;
+            line-height: 1;
         }
         .live-purchase-toast .toast-price {
-            color: #ef4444;
+            color: #dc2626;
             font-weight: 700;
-            font-size: 0.95rem;
         }
         .live-purchase-toast .toast-time {
-            color: #adb5bd;
-            font-size: 0.8rem;
+            color: #9ca3af;
         }
 
         /* Dark mode */
         [data-theme="dark"] .live-purchase-toast {
             background: #1f2937;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
             border-left-color: #3b82f6;
         }
         [data-theme="dark"] .live-purchase-toast .toast-text-desc {
@@ -368,80 +369,90 @@
         [data-theme="dark"] .live-purchase-toast .toast-item {
             color: #60a5fa;
         }
-        [data-theme="dark"] .live-purchase-toast .toast-close {
-            background: #374151;
-            color: #9ca3af;
-        }
-        [data-theme="dark"] .live-purchase-toast .toast-close:hover {
-            background: #4b5563;
-        }
         [data-theme="dark"] .live-purchase-toast .toast-icon-bg {
-            background: rgba(59, 130, 246, 0.2);
+            background: rgba(59, 130, 246, 0.15);
             color: #60a5fa;
         }
         
         @media (max-width: 768px) {
             .live-purchase-toast {
                 left: 50%;
-                bottom: -150px;
-                transform: translateX(-50%);
-                width: 90%;
-                max-width: 340px;
-                transition: bottom 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                bottom: 12px;
+                transform: translate(-50%, 80px);
+                width: calc(100% - 32px);
+                max-width: 280px;
             }
             .live-purchase-toast.show {
-                left: 50%;
-                bottom: 20px;
+                transform: translate(-50%, 0);
             }
         }
     </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const types = ['tài khoản', 'dịch vụ', 'vòng quay', 'tài khoản random'];
+            const firstNames = ['nguyen', 'tran', 'le', 'pham', 'hoang', 'huynh', 'phan', 'vu', 'vo', 'dang', 'bui', 'do', 'ho', 'ngo', 'duong', 'ly', 'tuan', 'hieu', 'nam', 'duc', 'dat', 'long', 'khanh', 'huy', 'tung', 'minh', 'quan', 'son', 'linh', 'trang', 'anh', 'phong', 'thanh', 'hai', 'viet', 'hung', 'thang', 'trung', 'kien', 'quang', 'bao', 'khoa', 'tai'];
+            const suffixes = ['pro', 'vip', 'boy', 'gaming', '99', '2k', '2k1', '2k2', '2k3', '2k4', '2k5', '2k6', '2k7', '2k8', 'ff', 'lq', 'yt', 'tv', 'vn'];
+            const phonePrefixes = ['098', '097', '096', '086', '091', '094', '088', '090', '093', '089', '070', '079', '077', '076', '078', '032', '033', '034', '035', '036', '037', '038', '039', '056', '058'];
+
+            function generateRealisticUsername() {
+                const mode = Math.floor(Math.random() * 4);
+                if (mode === 0) {
+                    const p = phonePrefixes[Math.floor(Math.random() * phonePrefixes.length)];
+                    const d = Math.floor(10 + Math.random() * 90);
+                    return `${p}${d}***`;
+                } else if (mode === 1) {
+                    const name = firstNames[Math.floor(Math.random() * firstNames.length)];
+                    const num = Math.floor(10 + Math.random() * 990);
+                    const sep = Math.random() > 0.7 ? '_' : '';
+                    return `${name}${sep}${num}***`;
+                } else if (mode === 2) {
+                    const name = firstNames[Math.floor(Math.random() * firstNames.length)];
+                    const suf = suffixes[Math.floor(Math.random() * suffixes.length)];
+                    const sep = Math.random() > 0.6 ? '_' : '';
+                    return `${name}${sep}${suf}***`;
+                } else {
+                    const f = firstNames[Math.floor(Math.random() * firstNames.length)];
+                    const s = firstNames[Math.floor(Math.random() * firstNames.length)];
+                    return `${f}${s}***`;
+                }
+            }
+
             const items = [
-                'Acc Liên Quân VIP', 'Acc Free Fire', 'Random 50k', 'Random Blox Fruits', 
-                'Cày thuê Rank', 'Vòng Quay May Mắn', 'Vòng Quay Kim Cương', 'Acc Ngọc Rồng',
-                'Nạp quân huy', 'Nạp kim cương', 'Acc Roblox Mật Khẩu'
+                'Acc Liên Quân VIP', 'Acc Free Fire', 'Random Blox Fruits', 'Acc Ngọc Rồng',
+                'Random 50k', 'Cày thuê Rank', 'Nạp Quân Huy', 'Nạp Kim Cương', 'Acc Roblox'
             ];
             
+            const prices = [20000, 50000, 70000, 100000, 150000, 200000, 350000];
+            const timeLabels = ['vừa xong', '12s trước', '25s trước', '41s trước', '1p trước'];
+
             function showFakePurchase() {
                 const toast = document.getElementById('live-purchase-toast');
                 if (!toast) return;
                 
-                // Randomize data
-                const prefix = Math.floor(1000 + Math.random() * 9000);
-                document.getElementById('toast-username').textContent = prefix + '****';
+                document.getElementById('toast-username').textContent = generateRealisticUsername();
+                document.getElementById('toast-item').textContent = items[Math.floor(Math.random() * items.length)];
                 
-                const type = types[Math.floor(Math.random() * types.length)];
-                document.getElementById('toast-type').textContent = type;
-                
-                const item = items[Math.floor(Math.random() * items.length)];
-                document.getElementById('toast-item').textContent = item;
-                
-                const prices = [10000, 20000, 50000, 100000, 150000, 200000, 500000];
                 const price = prices[Math.floor(Math.random() * prices.length)];
                 document.getElementById('toast-price').textContent = new Intl.NumberFormat('vi-VN').format(price) + 'đ';
+                document.getElementById('toast-time').textContent = timeLabels[Math.floor(Math.random() * timeLabels.length)];
                 
-                const time = Math.floor(1 + Math.random() * 59);
-                document.getElementById('toast-time').textContent = time + ' giây trước';
-                
-                // Show
                 toast.classList.add('show');
                 
-                // Hide after 4 seconds
+                // Giữ 3.2s
                 setTimeout(() => {
                     toast.classList.remove('show');
-                }, 4000);
+                    scheduleNextPurchase();
+                }, 3200);
             }
 
-            // Start loop after 3 seconds, then every 15-25 seconds
-            setTimeout(() => {
-                showFakePurchase();
-                setInterval(() => {
-                    showFakePurchase();
-                }, Math.floor(15000 + Math.random() * 10000));
-            }, 3000);
+            function scheduleNextPurchase() {
+                // Tần suất thưa hơn: cách 25s - 55s mới hiện 1 lần
+                const nextDelay = Math.floor(25000 + Math.random() * 30000);
+                setTimeout(showFakePurchase, nextDelay);
+            }
+
+            // Lần đầu xuất hiện sau 8s - 15s kể từ khi vào web
+            setTimeout(showFakePurchase, Math.floor(8000 + Math.random() * 7000));
         });
     </script>
     

@@ -81,7 +81,7 @@
                                         <td>{{ $service->id }}</td>
                                         <td class="text-bolds">{{ $service->name }}</td>
                                         <td>
-                                            <img src="{{ $service->thumbnail }}" alt="{{ $service->name }}"
+                                            <img src="{{ asset($service->thumbnail) }}" alt="{{ $service->name }}"
                                                 class="img-thumbnail" style="max-width: 200px;">
                                         </td>
                                         <td>

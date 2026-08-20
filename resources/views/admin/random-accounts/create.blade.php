@@ -82,12 +82,15 @@
                                 <div class="mb-3">
                                     <label class="form-label">Ảnh đại diện <span class="text-muted">(Không bắt buộc)</span></label>
                                     <div class="image-upload" style="position: relative; border: 1px dashed #4680ff; background: rgba(70, 128, 255, 0.05); padding: 20px; border-radius: 8px; text-align: center;">
-                                        <input type="file" name="thumbnail" class="form-control @error('thumbnail') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                                        <input type="file" name="thumbnail" class="form-control @error('thumbnail') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="previewImage(this, 'preview-ra-thumb')">
                                         <div class="image-uploads mt-2">
                                             <i class="ti ti-photo-plus text-primary" style="font-size: 40px;"></i>
                                             <h5 class="mt-2 mb-0 fw-semibold">Kéo thả hoặc click để tải ảnh lên</h5>
-                                            <p class="text-muted small">Hỗ trợ JPG, PNG, GIF</p>
+                                            <p class="text-muted small">Hỗ trợ JPG, PNG, GIF, WEBP</p>
                                         </div>
+                                    </div>
+                                    <div class="mt-2 text-center">
+                                        <img id="preview-ra-thumb" src="" alt="Thumbnail Preview" style="max-height: 80px; display: none; object-fit: contain; margin: 0 auto; border-radius: 4px;">
                                     </div>
                                     @error('thumbnail')
                                         <div class="invalid-feedback d-block">{{ $message }}</div>

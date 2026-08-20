@@ -22,7 +22,7 @@
     <meta property="og:site_name" content="{{ config_get('site_name') }}" />
     <meta property="og:title" content="@yield('title', config_get('site_name')) - {{ config_get('site_name') }}" />
     <meta property="og:description" content="{{ config_get('site_description') }}" />
-    <meta property="og:image" content="{{ config_get('site_share_image', config_get('site_logo')) }}" />
+    <meta property="og:image" content="{{ asset(config_get('site_share_image', config_get('site_logo'))) }}" />
     <meta property="og:image:alt" content="{{ config_get('site_name') }}" />
     <meta property="og:locale" content="vi_VN" />
 
@@ -31,13 +31,13 @@
     <meta name="twitter:url" content="{{ url()->current() }}" />
     <meta name="twitter:title" content="@yield('title', config_get('site_name')) - {{ config_get('site_name') }}" />
     <meta name="twitter:description" content="{{ config_get('site_description') }}" />
-    <meta name="twitter:image" content="{{ config_get('site_share_image', config_get('site_logo')) }}" />
+    <meta name="twitter:image" content="{{ asset(config_get('site_share_image', config_get('site_logo'))) }}" />
     <meta name="twitter:image:alt" content="{{ config_get('site_name') }}" />
 
     <!-- Favicon -->
-    <link rel="icon" href="{{ config_get('site_favicon') }}" type="image/png" />
-    <link rel="shortcut icon" href="{{ config_get('site_favicon') }}" type="image/png" />
-    <link rel="apple-touch-icon" href="{{ config_get('site_favicon') }}" />
+    <link rel="icon" href="{{ asset(config_get('site_favicon')) }}" type="image/png" />
+    <link rel="shortcut icon" href="{{ asset(config_get('site_favicon')) }}" type="image/png" />
+    <link rel="apple-touch-icon" href="{{ asset(config_get('site_favicon')) }}" />
 
     <!-- Canonical URL -->
     <link rel="canonical" href="{{ url()->current() }}" />
@@ -48,7 +48,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/antd@4.24.16/dist/antd.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lelinh014756/fui-toast-js@master/assets/css/toast@1.0.1/fuiToast.min.css">
     <link href="/css/style.css" rel="stylesheet">
@@ -56,73 +56,6 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <style>
-        body {
-            font-family: "Roboto", sans-serif;
-            background-color: #fbf8f8ff;
-        }
-
-         :root {
-            --primary: #dc2626;
-            --primary-dark: #b91c1c;
-            --primary-light: #ef4444;
-            --primary-glow: rgba(220, 38, 38, 0.2);
-            --accent: #f59e0b;
-            --ant-primary-color: #dc2626;
-        }
-
-        .ant-btn-primary,
-        .ant-btn-primary:focus {
-            background: #dc2626;
-            border-color: #dc2626;
-        }
-
-        .ant-btn-primary:hover {
-            background: #b91c1c;
-            border-color: #b91c1c;
-        }
-
-        a {
-            color: #dc2626;
-        }
-
-        a:hover {
-            color: #b91c1c;
-        }
-
-        .ant-pagination-item-active {
-            border-color: #dc2626;
-        }
-
-        .ant-pagination-item-active a {
-            color: #dc2626;
-        }
-
-        .ant-menu-item-selected,
-        .ant-menu-item-selected a {
-            color: #dc2626 !important;
-        }
-
-        .ant-input:focus,
-        .ant-input-focused,
-        .ant-select-focused .ant-select-selector {
-            border-color: #dc2626 !important;
-            box-shadow: 0 0 0 2px var(--primary-glow) !important;
-        }
-
-        .brand-icon {
-            background: linear-gradient(135deg, #dc2626, #b91c1c);
-        }
-
-        .category-card {
-            border: 2px solid #e6e6e6;
-        }
-
-        .category-grid {
-            grid-template-columns: repeat(5, 1fr);
-        }
-
-            </style>
     <script>
         window.__defaultTheme = 'light';
     </script>
@@ -150,82 +83,7 @@
 
     <!-- Page-specific CSS -->
     @stack('css')
-           <style>
-      
-        /* Ant Design Preloader */
-        #global-preloader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            z-index: 999999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-
-        #global-preloader.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .ant-spin-dot-global {
-            position: relative;
-            display: inline-block;
-            font-size: 32px;
-            width: 32px;
-            height: 32px;
-            transform: rotate(45deg);
-            animation: antGlobalRotate 1.2s infinite linear;
-        }
-
-        .ant-spin-dot-global-item {
-            position: absolute;
-            display: block;
-            width: 14px;
-            height: 14px;
-            background-color: var(--ant-primary);
-            border-radius: 100%;
-            transform: scale(0.75);
-            transform-origin: 50% 50%;
-            opacity: 0.3;
-            animation: antGlobalSpinMove 1s infinite linear alternate;
-        }
-
-        .ant-spin-dot-global-item:nth-child(1) {
-            top: 0;
-            left: 0;
-        }
-
-        .ant-spin-dot-global-item:nth-child(2) {
-            top: 0;
-            right: 0;
-            animation-delay: 0.4s;
-        }
-
-        .ant-spin-dot-global-item:nth-child(3) {
-            right: 0;
-            bottom: 0;
-            animation-delay: 0.8s;
-        }
-
-        .ant-spin-dot-global-item:nth-child(4) {
-            bottom: 0;
-            left: 0;
-            animation-delay: 1.2s;
-        }
-
-        @keyframes antGlobalSpinMove {
-            to {
-                opacity: 1;
-            }
-        }
-
+    <style>
         /* Language Switcher Styling */
         .ant-header-lang-dropdown {
             position: relative;
@@ -319,28 +177,6 @@
             var el = document.getElementById(id);
             if (el) el.style.display = 'block';
         }
-
-        // Preloader Logic
-        window.addEventListener('load', function () {
-            var pl = document.getElementById('global-preloader');
-            if (pl) pl.classList.add('hidden');
-        });
-        document.addEventListener('click', function (e) {
-            var link = e.target.closest('a');
-            if (link) {
-                var href = link.getAttribute('href');
-                var target = link.getAttribute('target');
-                if (href && !href.startsWith('#') && !href.startsWith('javascript:') && target !== '_blank' && !link.hasAttribute('download')) {
-                    if (!link.classList.contains('no-loader')) {
-                        var pl = document.getElementById('global-preloader');
-                        if (pl) pl.classList.remove('hidden');
-
-                        // Fallback hide after 5s in case page doesn't navigate
-                        setTimeout(() => { if (pl) pl.classList.add('hidden'); }, 5000);
-                    }
-                }
-            }
-        });
 
         // Google Translate Integration for Premium Multi-Language Switcher
         function googleTranslateElementInit() {

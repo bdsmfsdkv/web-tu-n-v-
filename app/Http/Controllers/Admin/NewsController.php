@@ -31,7 +31,7 @@ class NewsController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255|unique:news,title',
-            'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'description' => 'required|string',
             'content' => 'required|string',
             'active' => 'boolean'
@@ -70,7 +70,7 @@ class NewsController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255|unique:news,title,' . $news->id,
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'description' => 'required|string',
             'content' => 'required|string',
             'active' => 'boolean'

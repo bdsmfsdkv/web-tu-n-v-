@@ -42,6 +42,17 @@
                             </div>
                             <div class="col-lg-4 col-sm-6 col-12">
                                 <div class="mb-3">
+                                    <label class="form-label">Mật khẩu mới (để trống nếu không đổi)</label>
+                                    <input type="password" name="password"
+                                        class="form-control @error('password') is-invalid @enderror"
+                                        placeholder="Nhập mật khẩu mới">
+                                    @error('password')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-sm-6 col-12">
+                                <div class="mb-3">
                                     <label class="form-label">Vai trò</label>
                                     <select name="role" class="form-select @error('role') is-invalid @enderror">
                                         <option value="member" {{ $user->role == 'member' ? 'selected' : '' }}>Người dùng

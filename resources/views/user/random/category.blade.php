@@ -20,7 +20,7 @@
             <div class="card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px;">
                 <div style="display: flex; gap: 24px; flex-wrap: wrap;">
                     <div style="flex: 0 0 auto; width: 260px; max-width: 100%;">
-                        <img src="{{ $category->thumbnail ?? 'https://via.placeholder.com/300x180' }}" alt="{{ $category->name }}" style="width: 100%; border-radius: 12px; object-fit: cover; border: 1px solid var(--border-color);">
+                        <img src="{{ !empty($category->thumbnail) ? asset($category->thumbnail) : 'https://via.placeholder.com/300x180' }}" alt="{{ $category->name }}" style="width: 100%; border-radius: 12px; object-fit: cover; border: 1px solid var(--border-color);">
                     </div>
                     <div style="flex: 1; min-width: 280px; display: flex; flex-direction: column; justify-content: center;">
                         <h2 style="margin: 0 0 12px 0; font-size: 1.4rem; color: var(--text-color); font-weight: 700;">Mua Tài Khoản Ngẫu Nhiên</h2>
@@ -65,7 +65,7 @@
             
             <div style="padding: 24px;">
                 <div style="display: flex; gap: 16px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 12px; margin-bottom: 24px; border: 1px solid var(--border-color);">
-                    <img src="{{ $category->thumbnail ?? 'https://via.placeholder.com/150' }}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;">
+                    <img src="{{ !empty($category->thumbnail) ? asset($category->thumbnail) : 'https://via.placeholder.com/150' }}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;">
                     <div style="display: flex; flex-direction: column; justify-content: center;">
                         <h4 style="margin:0 0 4px 0; font-size: 1.05rem; font-weight: 600; color: var(--text-color);">{{ $category->name }}</h4>
                         <div style="color: var(--text-muted); font-size: 0.9rem;">

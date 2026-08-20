@@ -1,10 +1,14 @@
-<footer class="footer" style="color:#4a4a4a;margin-top:auto;">
+<footer class="footer" style="margin-top:auto;padding:32px 0 20px;">
     <div class="container">
-        <div class="footer-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:40px;margin-bottom:40px;">
+        <div class="footer-grid">
             <!-- Brand -->
             <div class="footer-brand">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-                    <img src="<?php echo e(config_get('site_logo_footer', config_get('site_logo'))); ?>" alt="<?php echo e(config_get('site_name')); ?>" width="120" height="32" style="height:32px; width:auto;" loading="lazy">
+                    <?php if(config_get('site_logo_footer', config_get('site_logo'))): ?>
+                        <img src="<?php echo e(asset(config_get('site_logo_footer', config_get('site_logo')))); ?>" alt="<?php echo e(config_get('site_name')); ?>" width="120" height="32" style="height:32px; width:auto; object-fit:contain;" loading="lazy">
+                    <?php else: ?>
+                        <span class="brand-text" style="font-weight:700;font-size:1.2rem;"><?php echo e(config_get('site_name', 'ShopGame')); ?></span>
+                    <?php endif; ?>
                 </div>
                 <p style="font-size:0.85rem;line-height:1.7;margin:0;">
                     <?php echo e(config_get('site_description')); ?>
@@ -13,32 +17,32 @@
             </div>
 
             <!-- Quick Links -->
-            <div>
-                <h4 style="color:#1a1a1a;font-size:0.9rem;margin-bottom:14px;text-transform:uppercase;letter-spacing:1px;">Truy cập nhanh</h4>
-                <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;">
-                    <li><a href="/" class="footer-link" style="color:#333;text-decoration:none;font-size:0.85rem;transition:color .2s;">Trang Chủ</a></li>
-                    <li><a href="<?php echo e(route('profile.deposit-card')); ?>" class="footer-link" style="color:#333;text-decoration:none;font-size:0.85rem;transition:color .2s;">Nạp Tiền</a></li>
-                    <li><a href="<?php echo e(route('profile.transaction-history')); ?>" class="footer-link" style="color:#333;text-decoration:none;font-size:0.85rem;transition:color .2s;">Lịch Sử Mua</a></li>
-                    <li><a href="<?php echo e(route('news.index')); ?>" class="footer-link" style="color:#333;text-decoration:none;font-size:0.85rem;transition:color .2s;">Tin Tức</a></li>
+            <div class="footer-col">
+                <h4>Truy cập nhanh</h4>
+                <ul>
+                    <li><a href="/" class="footer-link">Trang Chủ</a></li>
+                    <li><a href="<?php echo e(route('profile.deposit-card')); ?>" class="footer-link">Nạp Tiền</a></li>
+                    <li><a href="<?php echo e(route('profile.transaction-history')); ?>" class="footer-link">Lịch Sử Mua</a></li>
+                    <li><a href="<?php echo e(route('news.index')); ?>" class="footer-link">Tin Tức</a></li>
                 </ul>
             </div>
 
             <!-- Support -->
-            <div>
-                <h4 style="color:#1a1a1a;font-size:0.9rem;margin-bottom:14px;text-transform:uppercase;letter-spacing:1px;">Hỗ trợ</h4>
-                <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;">
-                    <li><a href="#" class="footer-link" style="color:#333;text-decoration:none;font-size:0.85rem;">Liên hệ</a></li>
-                    <li><a href="<?php echo e(route('faq')); ?>" class="footer-link" style="color:#333;text-decoration:none;font-size:0.85rem;">Câu hỏi thường gặp</a></li>
-                    <li><a href="<?php echo e(route('terms')); ?>" class="footer-link" style="color:#333;text-decoration:none;font-size:0.85rem;">Điều khoản sử dụng</a></li>
-                    <li><a href="<?php echo e(route('privacy')); ?>" class="footer-link" style="color:#333;text-decoration:none;font-size:0.85rem;">Chính sách bảo mật</a></li>
+            <div class="footer-col">
+                <h4>Hỗ trợ</h4>
+                <ul>
+                    <li><a href="<?php echo e(config_get('zalo') ? 'https://zalo.me/' . config_get('zalo') : '#'); ?>" class="footer-link" <?php echo e(config_get('zalo') ? 'target="_blank" rel="noopener noreferrer"' : ''); ?>>Liên hệ</a></li>
+                    <li><a href="<?php echo e(route('faq')); ?>" class="footer-link">Câu hỏi thường gặp</a></li>
+                    <li><a href="<?php echo e(route('terms')); ?>" class="footer-link">Điều khoản sử dụng</a></li>
+                    <li><a href="<?php echo e(route('privacy')); ?>" class="footer-link">Chính sách bảo mật</a></li>
                 </ul>
             </div>
 
             <!-- Contact -->
-            <div>
-                <h4 style="color:#1a1a1a;font-size:0.9rem;margin-bottom:14px;text-transform:uppercase;letter-spacing:1px;">Liên hệ</h4>
-                <div style="display:flex;flex-direction:column;gap:10px;font-size:0.85rem;">
-                    <div>Email: <a href="mailto:<?php echo e(config_get('email')); ?>"><?php echo e(config_get('email')); ?></a></div>
+            <div class="footer-col">
+                <h4>Liên hệ</h4>
+                <div class="footer-contact-list" style="display:flex;flex-direction:column;gap:10px;font-size:0.85rem;">
+                    <div>Email: <a href="mailto:<?php echo e(config_get('email')); ?>" class="footer-link"><?php echo e(config_get('email')); ?></a></div>
                     <div>Hotline: <?php echo e(config_get('phone')); ?></div>
                     <div>Giờ làm việc: <?php echo e(config_get('working_hours')); ?></div>
                 </div>
@@ -57,43 +61,68 @@
         </div>
 
         <!-- Bottom bar -->
-        <div style="border-top:1px solid #e5e7eb;padding:20px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:0.8rem;">
+        <div class="footer-bottom-bar" style="border-top:1px solid #e5e7eb;padding:20px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:0.8rem;">
             <div>© <?php echo e(date('Y')); ?> <?php echo e(config_get('site_name')); ?>. Tất cả quyền được bảo lưu.</div>
             <div style="display:flex;align-items:center;gap:8px;">
-                Thiết kế bởi <a href="https://cmsbvq.com" rel="noopener noreferrer" style="font-weight:700;color:var(--primary,#dc2626);text-decoration:none;" target="_blank">CMSBVQ.COM</a>
+                <?php if(config_get('zalo')): ?>
+                    <a href="https://zalo.me/<?php echo e(config_get('zalo')); ?>" target="_blank" rel="noopener noreferrer" style="color:#0068ff;text-decoration:none;font-weight:600;">Zalo: <?php echo e(config_get('zalo')); ?></a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 </footer>
 
-<!-- Mobile Bottom Nav -->
+<!-- Mobile Bottom Nav with Glassmorphism & Floating Action Button -->
 <nav class="mobile-bottom-nav">
-    <a href="/" class="bottom-nav-item active">
-        <span class="iconify" data-icon="ant-design:home-outlined"></span>
-        <span>Trang chủ</span>
-    </a>
-    <a href="/#categories" class="bottom-nav-item">
-        <span class="iconify" data-icon="ant-design:appstore-outlined"></span>
-        <span>Danh mục</span>
-    </a>
-    <a href="javascript:void(0)" class="bottom-nav-item " onclick="document.getElementById('depositMethodModal').style.display='flex'">
-        <span class="iconify" data-icon="ant-design:wallet-outlined"></span>
-        <span>Nạp tiền</span>
-    </a>
-    <a href="<?php echo e(route('profile.transaction-history')); ?>" class="bottom-nav-item ">
-        <span class="iconify" data-icon="ant-design:history-outlined"></span>
-        <span>Lịch sử</span>
-    </a>
-    <?php if(Auth::check()): ?>
-    <a href="/profile" class="bottom-nav-item ">
-        <span class="iconify" data-icon="ant-design:user-outlined"></span>
-        <span>Tài khoản</span>
-    </a>
-    <?php else: ?>
-    <a href="<?php echo e(route('login')); ?>" class="bottom-nav-item ">
-        <span class="iconify" data-icon="ant-design:login-outlined"></span>
-        <span>Đăng nhập</span>
-    </a>
-    <?php endif; ?>
+    <div class="mobile-bottom-nav-container">
+        <a href="/" class="bottom-nav-item <?php echo e(request()->is('/') ? 'active' : ''); ?>">
+            <div class="bottom-nav-icon-wrap">
+                <span class="iconify" data-icon="ant-design:home-outlined"></span>
+            </div>
+            <span class="bottom-nav-label">Trang chủ</span>
+            <span class="bottom-nav-indicator"></span>
+        </a>
+        <a href="/#categories" class="bottom-nav-item">
+            <div class="bottom-nav-icon-wrap">
+                <span class="iconify" data-icon="ant-design:appstore-outlined"></span>
+            </div>
+            <span class="bottom-nav-label">Danh mục</span>
+            <span class="bottom-nav-indicator"></span>
+        </a>
+        
+        <!-- Floating Center Action Button for Deposit -->
+        <a href="javascript:void(0)" class="bottom-nav-item bottom-nav-fab" onclick="document.getElementById('depositMethodModal').style.display='flex'">
+            <div class="bottom-fab-btn">
+                <i class="fa-solid fa-wallet"></i>
+                <div class="bottom-fab-pulse"></div>
+            </div>
+            <span class="bottom-nav-label fab-label">Nạp tiền</span>
+        </a>
+
+        <a href="<?php echo e(route('profile.transaction-history')); ?>" class="bottom-nav-item <?php echo e(request()->routeIs('profile.transaction-history') ? 'active' : ''); ?>">
+            <div class="bottom-nav-icon-wrap">
+                <span class="iconify" data-icon="ant-design:history-outlined"></span>
+            </div>
+            <span class="bottom-nav-label">Lịch sử</span>
+            <span class="bottom-nav-indicator"></span>
+        </a>
+        <?php if(Auth::check()): ?>
+        <a href="/profile" class="bottom-nav-item <?php echo e(request()->is('profile*') && !request()->routeIs('profile.transaction-history') ? 'active' : ''); ?>">
+            <div class="bottom-nav-icon-wrap">
+                <span class="iconify" data-icon="ant-design:user-outlined"></span>
+            </div>
+            <span class="bottom-nav-label">Tài khoản</span>
+            <span class="bottom-nav-indicator"></span>
+        </a>
+        <?php else: ?>
+        <a href="<?php echo e(route('login')); ?>" class="bottom-nav-item <?php echo e(request()->routeIs('login') ? 'active' : ''); ?>">
+            <div class="bottom-nav-icon-wrap">
+                <span class="iconify" data-icon="ant-design:login-outlined"></span>
+            </div>
+            <span class="bottom-nav-label">Đăng nhập</span>
+            <span class="bottom-nav-indicator"></span>
+        </a>
+        <?php endif; ?>
+    </div>
 </nav>
 <?php /**PATH C:\xampp\htdocs\resources\views/layouts/user/footer.blade.php ENDPATH**/ ?>

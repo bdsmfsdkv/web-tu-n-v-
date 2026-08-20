@@ -70,7 +70,7 @@
                         <div class="detail__images-list">
                             <!-- Using data-src instead of src for SimpleLightbox -->
                             <a href="{{ $account->thumbnail }}" title="Xem ảnh lớn" class="detail__images-link">
-                                <img src="{{ $account->thumbnail }}" alt="Tài khoản Random #{{ $account->id }}"
+                                <img src="{{ asset($account->thumbnail) }}" alt="Tài khoản Random #{{ $account->id }}"
                                     class="detail__images-item">
                             </a>
                         </div>

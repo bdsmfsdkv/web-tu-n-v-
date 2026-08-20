@@ -23,31 +23,6 @@
                             </div>
 
                             <div class="info-content">
-                                <style>
-                                    .info-content { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-                                    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px dashed #e2e8f0; }
-                                    .info-row:last-child { border-bottom: none; padding-bottom: 0; }
-                                    .info-row:first-child { padding-top: 0; }
-                                    .info-label { color: #64748b; font-weight: 500; font-size: 0.95rem; display: flex; align-items: center; }
-                                    .info-label i { width: 24px; color: #94a3b8; }
-                                    .info-value { color: #0f172a; font-weight: 600; font-size: 1rem; text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
-                                    .info-value--highlight { color: #ef4444; font-size: 1.1rem; }
-                                    .change-password-link { background: #fef2f2; color: #ef4444; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; text-decoration: none; transition: 0.2s; border: 1px solid #fecaca; }
-                                    .change-password-link:hover { background: #fee2e2; color: #dc2626; }
-                                    
-                                    /* Dark mode */
-                                    [data-theme="dark"] .info-content { background: #171717; border: 1px solid #2a2a2a; }
-                                    [data-theme="dark"] .info-row { border-bottom-color: #333; }
-                                    [data-theme="dark"] .info-label { color: #9ca3af; }
-                                    [data-theme="dark"] .info-value { color: #f8fafc; }
-                                    [data-theme="dark"] .change-password-link { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); }
-                                    [data-theme="dark"] .change-password-link:hover { background: rgba(239, 68, 68, 0.2); }
-                                    
-                                    @media (max-width: 576px) {
-                                        .info-row { flex-direction: column; align-items: flex-start; gap: 8px; }
-                                        .info-value { width: 100%; justify-content: space-between; flex-direction: row-reverse; }
-                                    }
-                                </style>
                                 <div class="info-row">
                                     <div class="info-label">
                                         <i class="fa-solid fa-id-card me-2"></i> ID tài khoản

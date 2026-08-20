@@ -20,7 +20,15 @@
         if (input.files && input.files[0]) {
             var reader = new FileReader();
             reader.onload = function(e) {
-                document.getElementById(previewId).src = e.target.result;
+                var el = document.getElementById(previewId);
+                if (el) {
+                    el.src = e.target.result;
+                    el.style.display = 'block';
+                }
+                var placeholder = document.getElementById(previewId + '-placeholder');
+                if (placeholder) {
+                    placeholder.style.display = 'none';
+                }
             }
             reader.readAsDataURL(input.files[0]);
         }
@@ -28,6 +36,7 @@
 
     function previewMultipleImages(input, previewId) {
         var preview = document.getElementById(previewId);
+        if (!preview) return;
         preview.innerHTML = '';
         if (input.files) {
             Array.from(input.files).forEach(file => {

@@ -126,7 +126,7 @@
                                 <div class="mb-3">
                                     <label class="form-label">Ảnh đại diện <span class="text-danger">*</span></label>
                                     <div class="image-upload" style="position: relative; border: 1px dashed #4680ff; background: rgba(70, 128, 255, 0.05); padding: 20px; border-radius: 8px; text-align: center;">
-                                        <input type="file" name="thumbnail" class="form-control @error('thumbnail') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" id="thumbnail">
+                                        <input type="file" name="thumbnail" class="form-control @error('thumbnail') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" id="thumbnail" onchange="previewImage(this, 'preview-thumbnail')">
                                         <div class="image-uploads mt-2">
                                             @if($luckyWheel->thumbnail)
                                                 <i class="ti ti-photo-plus text-primary" style="font-size: 40px; display:none;"></i>
@@ -148,7 +148,7 @@
                                 <div class="mb-3">
                                     <label class="form-label">Ảnh vòng quay <span class="text-danger">*</span></label>
                                     <div class="image-upload" style="position: relative; border: 1px dashed #20c997; background: rgba(32, 201, 151, 0.05); padding: 20px; border-radius: 8px; text-align: center;">
-                                        <input type="file" name="wheel_image" class="form-control @error('wheel_image') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" id="wheel_image">
+                                        <input type="file" name="wheel_image" class="form-control @error('wheel_image') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" id="wheel_image" onchange="previewImage(this, 'preview-wheel')">
                                         <div class="image-uploads mt-2">
                                             @if($luckyWheel->wheel_image)
                                                 <i class="ti ti-loader text-success" style="font-size: 40px; display:none;"></i>

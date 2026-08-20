@@ -67,7 +67,7 @@
                                 <td>{{ $news->id }}</td>
                                 <td>
                                     <a class="product-img">
-                                        <img src="{{ $news->thumbnail }}" alt="tin tức">
+                                        <img src="{{ asset($news->thumbnail) }}" alt="tin tức">
                                     </a>
                                 </td>
                                 <td>{{ $news->title }}</td>

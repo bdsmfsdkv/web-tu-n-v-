@@ -76,7 +76,7 @@
                                 <label class="form-label fw-bold">Icon (Hình ảnh)</label>
                                 @if($rewardItem->icon)
                                     <div class="mb-2">
-                                        <img src="{{ $rewardItem->icon }}" alt="Icon" class="rounded border shadow-sm" style="width: 80px; height: 80px; object-fit: contain;">
+                                        <img src="{{ asset($rewardItem->icon) }}" alt="Icon" class="rounded border shadow-sm" style="width: 80px; height: 80px; object-fit: contain;">
                                     </div>
                                 @endif
                                 <input type="file" class="form-control" name="icon" accept="image/*">

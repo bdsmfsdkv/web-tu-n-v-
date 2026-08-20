@@ -83,7 +83,7 @@
                                         <td><span class="fw-medium">#{{ $wheel->id }}</span></td>
                                         <td><span class="fw-bold text-auto">{{ $wheel->name }}</span></td>
                                         <td class="text-center">
-                                            <img src="{{ $wheel->thumbnail }}" alt="{{ $wheel->name }}" style="width: 80px; height: 80px; object-fit: cover;" class="rounded border shadow-sm">
+                                            <img src="{{ asset($wheel->thumbnail) }}" alt="{{ $wheel->name }}" style="width: 80px; height: 80px; object-fit: cover;" class="rounded border shadow-sm">
                                         </td>
                                         <td class="text-end fw-bold text-primary">{{ number_format($wheel->price_per_spin) }} đ</td>
                                         <td>

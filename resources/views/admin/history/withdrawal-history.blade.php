@@ -95,13 +95,15 @@
                                                 <div class="modal fade" id="successModal{{ $withdrawal->id }}"
                                                     tabindex="-1" aria-hidden="true">
                                                     <div class="modal-dialog modal-dialog-centered">
-                                                        <div class="modal-">
+                                                        <div class="modal-content">
                                                             <div class="modal-header">
                                                                 <h5 class="modal-title">Xác nhận duyệt rút tiền</h5>
                                                                 <button type="button" class="btn-close"
                                                                     data-bs-dismiss="modal" aria-label="Close"></button>
                                                             </div>
-                                                            <form {{-- action="{{ route('admin.withdrawals.success', $withdrawal) }}" --}} method="POST">
+                                                            <form
+                                                                action="{{ route('admin.withdrawals.approve', $withdrawal) }}"
+                                                                method="POST">
                                                                 @csrf
                                                                 <div class="modal-body">
                                                                     <div class="mb-3">
@@ -124,13 +126,15 @@
                                                 <div class="modal fade" id="errorModal{{ $withdrawal->id }}" tabindex="-1"
                                                     aria-hidden="true">
                                                     <div class="modal-dialog modal-dialog-centered">
-                                                        <div class="modal-">
+                                                        <div class="modal-content">
                                                             <div class="modal-header">
                                                                 <h5 class="modal-title">Xác nhận từ chối rút tiền</h5>
                                                                 <button type="button" class="btn-close"
                                                                     data-bs-dismiss="modal" aria-label="Close"></button>
                                                             </div>
-                                                            <form {{-- action="{{ route('admin.withdrawals.error', $withdrawal) }}" --}} method="POST">
+                                                            <form
+                                                                action="{{ route('admin.withdrawals.reject', $withdrawal) }}"
+                                                                method="POST">
                                                                 @csrf
                                                                 <div class="modal-body">
                                                                     <div class="mb-3">

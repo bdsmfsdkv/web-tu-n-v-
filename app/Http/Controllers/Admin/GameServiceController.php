@@ -37,7 +37,7 @@ class GameServiceController extends Controller
                 'description' => 'required|string',
                 'type' => 'required|in:gold,gem,leveling',
                 'active' => 'required|boolean',
-                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             ]);
 
             DB::beginTransaction();
@@ -84,7 +84,7 @@ class GameServiceController extends Controller
                 'description' => 'required|string',
                 'type' => 'required|in:gold,gem,leveling',
                 'active' => 'required|boolean',
-                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             ]);
 
             DB::beginTransaction();

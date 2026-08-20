@@ -2,9 +2,13 @@
     <div class="navbar-wrapper">
         <div class="m-header">
            <a href="{{ route('admin.index') }}" class="d-flex justify-content-center align-items-center">
-    <img src="{{ config_get('site_logo') }}"
+    @if(config_get('site_logo'))
+    <img src="{{ asset(config_get('site_logo')) }}"
          alt="Logo"
-         style="height: 50px; width: auto;">
+         style="height: 50px; width: auto; object-fit: contain;">
+    @else
+    <span class="fw-bold text-white fs-4">{{ config_get('site_name', 'Admin') }}</span>
+    @endif
 </a>
         </div>
         <div class="navbar-content">
@@ -49,12 +53,12 @@
                     </ul>
                 </li>
                 
-                <li class="pc-item {{ request()->routeIs('admin.installments.*') ? 'active' : '' }}">
+                {{-- <li class="pc-item {{ request()->routeIs('admin.installments.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.installments.index') }}" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-receipt"></i></span>
                         <span class="pc-mtext">Quản lý Trả Góp</span>
                     </a>
-                </li>
+                </li> --}}
                 
                 <li class="pc-item {{ request()->routeIs('admin.flash-sales.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.flash-sales.index') }}" class="pc-link">
