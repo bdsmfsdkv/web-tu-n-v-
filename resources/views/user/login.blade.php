@@ -16,11 +16,21 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('login') }}">
+        <form method="POST" action="{{ route('login') }}" autocomplete="on">
             @csrf
             <div class="form-group">
                 <label for="username" class="form-label">Tên tài khoản hoặc Email</label>
-                <input id="username" type="text" class="form-input" name="username" value="{{ old('username') }}" required autofocus placeholder="Nhập tài khoản">
+                <input id="username"
+                       type="text"
+                       class="form-input"
+                       name="username"
+                       value="{{ old('username') }}"
+                       required
+                       autofocus
+                       autocomplete="username"
+                       autocapitalize="none"
+                       spellcheck="false"
+                       placeholder="Nhập tài khoản hoặc email">
                 @error('username')
                     <span class="form-error">{{ $message }}</span>
                 @enderror
@@ -28,7 +38,13 @@
 
             <div class="form-group">
                 <label for="password" class="form-label">Mật khẩu</label>
-                <input id="password" type="password" class="form-input" name="password" required placeholder="••••••••">
+                <input id="password"
+                       type="password"
+                       class="form-input"
+                       name="password"
+                       required
+                       autocomplete="current-password"
+                       placeholder="••••••••">
                 @error('password')
                     <span class="form-error">{{ $message }}</span>
                 @enderror
