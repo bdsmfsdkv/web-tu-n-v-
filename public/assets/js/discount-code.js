@@ -204,3 +204,12 @@ async function checkDiscountCode(contextSelector, quantity = 1) {
 function getDiscountInfo() {
     return discountHandler.getDiscountInfo();
 }
+
+/**
+ * Account/random purchase screens previously opened the generic deposit chooser
+ * after the user had already clicked NẠP ATM. Override that helper after the
+ * page-specific script has loaded so ATM goes straight to the bank/QR page.
+ */
+window.showRechargeModal = function () {
+    window.location.href = '/profile/deposit/atm';
+};
