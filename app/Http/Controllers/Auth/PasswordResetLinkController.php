@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\View\View;
 
@@ -26,26 +27,56 @@ class PasswordResetLinkController extends Controller
             'email.exists' => 'Không tìm thấy tài khoản với địa chỉ email này.',
         ]);
 
+        $broker = Password::broker();
+        $user = $broker->getUser([
+            'email' => $validated['email'],
+        ]);
+
+        if (! $user) {
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors(['email' => 'Không tìm thấy tài khoản với địa chỉ email này.']);
+        }
+
+        $repository = $broker->getRepository();
+
+        if ($repository->recentlyCreatedToken($user)) {
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors(['email' => 'Bạn vừa yêu cầu email đặt lại mật khẩu. Vui lòng đợi khoảng 60 giây rồi thử lại.']);
+        }
+
+        $token = $broker->createToken($user);
+        $resetUrl = route('password.reset', [
+            'token' => $token,
+            'email' => $user->getEmailForPasswordReset(),
+        ]);
+
         try {
-            $status = Password::sendResetLink([
+            $body = "KUNCHEAP - Đặt lại mật khẩu\n\n"
+                . "Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản KUNCHEAP.\n\n"
+                . "Mở liên kết sau để tạo mật khẩu mới:\n"
+                . $resetUrl . "\n\n"
+                . "Liên kết đặt lại mật khẩu có thời hạn. Nếu bạn không yêu cầu thao tác này, hãy bỏ qua email này.\n\n"
+                . "KUNCHEAP\n"
+                . "admin@kuncheap.site";
+
+            Mail::raw($body, function ($message) use ($validated) {
+                $message
+                    ->to($validated['email'])
+                    ->subject('KUNCHEAP - Đặt lại mật khẩu');
+            });
+
+            Log::info('Đã gửi email đặt lại mật khẩu trực tiếp qua SMTP', [
                 'email' => $validated['email'],
             ]);
 
-            if ($status === Password::RESET_LINK_SENT) {
-                return back()->with('status', 'Đã gửi liên kết đặt lại mật khẩu. Vui lòng kiểm tra hộp thư và cả mục Spam/Thư rác.');
-            }
-
-            if ($status === Password::RESET_THROTTLED) {
-                return back()
-                    ->withInput($request->only('email'))
-                    ->withErrors(['email' => 'Bạn vừa yêu cầu email đặt lại mật khẩu. Vui lòng đợi khoảng 60 giây rồi thử lại.']);
-            }
-
-            return back()
-                ->withInput($request->only('email'))
-                ->withErrors(['email' => 'Không thể gửi liên kết đặt lại mật khẩu. Vui lòng thử lại sau.']);
+            return back()->with('status', 'Đã gửi liên kết đặt lại mật khẩu. Vui lòng kiểm tra hộp thư và cả mục Spam/Thư rác.');
         } catch (\Throwable $e) {
-            Log::error('Lỗi gửi link đặt lại mật khẩu', [
+            // Xóa token vừa tạo nếu email không gửi được để người dùng có thể thử lại ngay.
+            $repository->delete($user);
+
+            Log::error('Lỗi gửi link đặt lại mật khẩu trực tiếp', [
                 'email' => $validated['email'],
                 'exception' => get_class($e),
                 'error' => $e->getMessage(),
