@@ -112,6 +112,105 @@ html body #avatarDropdown form {
     box-sizing: border-box !important;
 }
 
+/* Avatar tài khoản: chỉ hiện nút hình người, menu mặc định ẩn. */
+html body nav.navbar #avatarWrapper {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    height: 64px !important;
+    z-index: 12040 !important;
+}
+
+html body nav.navbar #avatarWrapper .nav-user-profile {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    z-index: 12042 !important;
+}
+
+html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar {
+    position: relative !important;
+    display: inline-flex !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+    color: transparent !important;
+    font-size: 0 !important;
+    background: #fff !important;
+    border: 1px solid #dbe2ea !important;
+    border-radius: 50% !important;
+    box-shadow: 0 2px 8px rgba(15,23,42,.08) !important;
+    cursor: pointer !important;
+    z-index: 12043 !important;
+}
+
+html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar::before {
+    content: "\f007" !important;
+    display: block !important;
+    color: #64748b !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-size: 16px !important;
+    font-style: normal !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+}
+
+html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar:hover,
+html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar:focus-visible {
+    background: #fff7f7 !important;
+    border-color: rgba(220,38,38,.42) !important;
+    box-shadow: 0 0 0 3px rgba(220,38,38,.08) !important;
+}
+
+html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar:hover::before,
+html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar:focus-visible::before {
+    color: #dc2626 !important;
+}
+
+/* Khóa dropdown ở trạng thái ẩn cho tới khi hover hoặc click. */
+html body nav.navbar #avatarWrapper #avatarDropdown {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Click avatar: JS thêm class show. */
+html body nav.navbar #avatarWrapper #avatarDropdown.show {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* Desktop: rê chuột vào avatar/menu thì mở, rê ra ngoài thì đóng. */
+@media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
+    html body nav.navbar #avatarWrapper:hover #avatarDropdown {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+}
+
+@media (max-width: 1199px) {
+    html body nav.navbar #avatarWrapper {
+        height: 56px !important;
+    }
+
+    html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+    }
+}
+
 [data-theme="dark"] body #avatarDropdown .dropdown-divider {
     background: #303030 !important;
 }
@@ -125,4 +224,13 @@ html body #avatarDropdown form {
 [data-theme="dark"] body #avatarDropdown .dropdown-logout:hover {
     color: #f87171 !important;
     background: #2a1c1c !important;
+}
+
+[data-theme="dark"] body nav.navbar #avatarWrapper #avatarBtn.nav-avatar {
+    background: #222 !important;
+    border-color: #383838 !important;
+}
+
+[data-theme="dark"] body nav.navbar #avatarWrapper #avatarBtn.nav-avatar::before {
+    color: #d1d5db !important;
 }
