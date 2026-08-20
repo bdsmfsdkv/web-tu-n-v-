@@ -1,21 +1,25 @@
 /* =========================================================
-   FINAL MOBILE/TABLET HEADER
-   - Desktop-like horizontal navigation on top
-   - No bottom/vertical legacy navigation
-   - Scroll horizontally on narrow screens
+   FINAL RESPONSIVE HEADER OVERRIDE
+   This file intentionally uses high-specificity selectors because
+   header.blade.php still contains legacy inline responsive CSS.
    ========================================================= */
 
-/* Legacy footer navigation must never render. */
-html body .mobile-bottom-nav,
+/* Never render the old footer/mobile navigation. */
 html body nav.mobile-bottom-nav,
+html body .mobile-bottom-nav,
 html body .mobile-bottom-nav-container {
     display: none !important;
     visibility: hidden !important;
     pointer-events: none !important;
 }
 
+/* =========================================================
+   TABLET + MOBILE
+   Row 1: logo + account controls
+   Row 2: horizontal desktop-like navigation
+   ========================================================= */
 @media (max-width: 1199px) {
-    html body .navbar {
+    html body nav.navbar {
         position: fixed !important;
         top: 0 !important;
         right: 0 !important;
@@ -24,16 +28,18 @@ html body .mobile-bottom-nav-container {
         width: 100% !important;
         height: 106px !important;
         min-height: 106px !important;
+        margin: 0 !important;
+        padding: 0 !important;
         overflow: visible !important;
         z-index: 12000 !important;
         background: rgba(255,255,255,.985) !important;
         border-bottom: 1px solid #e5e7eb !important;
-        box-shadow: 0 3px 14px rgba(15,23,42,.06) !important;
+        box-shadow: 0 4px 18px rgba(15,23,42,.06) !important;
         backdrop-filter: blur(16px) !important;
         -webkit-backdrop-filter: blur(16px) !important;
     }
 
-    html body .navbar > .nav-container {
+    html body nav.navbar > .nav-container {
         position: relative !important;
         display: grid !important;
         grid-template-columns: minmax(0,1fr) auto !important;
@@ -45,77 +51,126 @@ html body .mobile-bottom-nav-container {
         margin: 0 !important;
         padding: 0 !important;
         gap: 0 !important;
+        align-items: center !important;
         overflow: visible !important;
+        box-sizing: border-box !important;
     }
 
-    html body .navbar .nav-brand {
+    /* Real logo: one copy only. */
+    html body nav.navbar > .nav-container > .nav-brand {
         grid-column: 1 !important;
         grid-row: 1 !important;
         display: flex !important;
-        align-items: center !important;
         width: max-content !important;
-        max-width: 150px !important;
+        max-width: 145px !important;
+        min-width: 0 !important;
         margin: 0 0 0 14px !important;
         padding: 0 !important;
+        align-items: center !important;
     }
 
-    html body .navbar .nav-brand img {
+    html body nav.navbar > .nav-container > .nav-brand img {
         display: block !important;
         width: auto !important;
         height: 31px !important;
-        max-width: 120px !important;
+        max-width: 118px !important;
         object-fit: contain !important;
     }
 
-    html body .navbar .nav-user {
+    /* Right controls stay on the first row. */
+    html body nav.navbar > .nav-container > .nav-user {
         grid-column: 2 !important;
         grid-row: 1 !important;
         position: static !important;
         display: flex !important;
+        width: auto !important;
         height: 56px !important;
         margin: 0 12px 0 auto !important;
         padding: 0 !important;
         align-items: center !important;
         justify-content: flex-end !important;
         gap: 7px !important;
+        overflow: visible !important;
     }
 
-    html body .navbar .nav-user-profile .nav-user-info { display: none !important; }
-
-    html body .navbar .theme-toggle,
-    html body .navbar .nav-avatar {
+    html body nav.navbar .nav-user .theme-toggle,
+    html body nav.navbar .nav-user .nav-avatar {
+        display: inline-flex !important;
         width: 34px !important;
         height: 34px !important;
         min-width: 34px !important;
         flex: 0 0 34px !important;
     }
 
-    html body .nav-user > .ant-header-lang-dropdown {
-        width: 0 !important;
-        max-width: 0 !important;
+    html body nav.navbar .nav-user-profile .nav-user-info {
+        display: none !important;
+    }
+
+    /* Guest auth belongs in the top-right, not inside nav-links. */
+    html body nav.navbar .nav-user .nav-guest-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 7px !important;
         margin: 0 !important;
         padding: 0 !important;
-        overflow: hidden !important;
-        opacity: 0 !important;
+    }
+
+    html body nav.navbar .nav-user .btn-nav-login,
+    html body nav.navbar .nav-user .btn-nav-register {
+        display: inline-flex !important;
+        height: 34px !important;
+        padding: 0 10px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 5px !important;
+        border-radius: 9px !important;
+        font-size: .77rem !important;
+        font-weight: 750 !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+    }
+
+    /* These are legacy drawer elements. They caused the duplicate logo,
+       duplicate login/register buttons and the stray X in the screenshot. */
+    html body nav.navbar ul.nav-links > li.nav-offcanvas-header,
+    html body nav.navbar ul.nav-links > li.mobile-auth-banner,
+    html body nav.navbar .nav-offcanvas-header,
+    html body nav.navbar .mobile-auth-banner,
+    html body nav.navbar button.nav-toggle,
+    html body nav.navbar .nav-toggle,
+    html body nav.navbar .nav-close {
+        display: none !important;
         visibility: hidden !important;
         pointer-events: none !important;
     }
 
+    /* When logged in JS moves language into profile. Hide only the old
+       top-level copy for authenticated layouts. */
+    html body nav.navbar .nav-user:has(.nav-avatar-wrapper) > .ant-header-lang-dropdown {
+        display: none !important;
+        width: 0 !important;
+        max-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        overflow: hidden !important;
+    }
+
     html body #avatarDropdown .profile-language-section .ant-header-lang-dropdown {
+        display: block !important;
         width: 100% !important;
         max-width: none !important;
-        overflow: visible !important;
         opacity: 1 !important;
         visibility: visible !important;
         pointer-events: auto !important;
+        overflow: visible !important;
     }
 
-    html body .navbar .nav-toggle,
-    html body .navbar .nav-offcanvas-header,
-    html body .navbar .mobile-auth-banner { display: none !important; }
-
-    html body .navbar .nav-links,
-    html body .navbar .nav-links.show {
+    /* Horizontal menu, always visible. */
+    html body nav.navbar > .nav-container > ul.nav-links,
+    html body nav.navbar > .nav-container > ul.nav-links.show {
         grid-column: 1 / -1 !important;
         grid-row: 2 !important;
         position: static !important;
@@ -131,7 +186,7 @@ html body .mobile-bottom-nav-container {
         flex-wrap: nowrap !important;
         align-items: center !important;
         justify-content: flex-start !important;
-        gap: 4px !important;
+        gap: 3px !important;
         overflow-x: auto !important;
         overflow-y: hidden !important;
         overscroll-behavior-x: contain !important;
@@ -141,16 +196,22 @@ html body .mobile-bottom-nav-container {
         visibility: visible !important;
         pointer-events: auto !important;
         transform: none !important;
-        background: rgba(255,255,255,.98) !important;
+        background: rgba(255,255,255,.985) !important;
         border-top: 1px solid #f1f5f9 !important;
         border-bottom: 0 !important;
         border-radius: 0 !important;
         box-shadow: none !important;
+        list-style: none !important;
+        box-sizing: border-box !important;
     }
 
-    html body .navbar .nav-links::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+    html body nav.navbar > .nav-container > ul.nav-links::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
 
-    html body .navbar .nav-links > li {
+    html body nav.navbar > .nav-container > ul.nav-links > li:not(.nav-offcanvas-header):not(.mobile-auth-banner) {
         display: block !important;
         width: auto !important;
         min-width: max-content !important;
@@ -160,7 +221,7 @@ html body .mobile-bottom-nav-container {
         border: 0 !important;
     }
 
-    html body .navbar .nav-links .nav-link-item {
+    html body nav.navbar ul.nav-links > li > .nav-link-item {
         display: inline-flex !important;
         width: auto !important;
         min-width: max-content !important;
@@ -173,36 +234,38 @@ html body .mobile-bottom-nav-container {
         gap: 5px !important;
         white-space: nowrap !important;
         border-radius: 9px !important;
-        font-size: .8rem !important;
+        font-size: .79rem !important;
+        font-weight: 650 !important;
         line-height: 1 !important;
         transition: background-color .15s ease, color .15s ease, transform .15s ease !important;
     }
 
-    html body .navbar .nav-links .nav-link-item.active,
-    html body .navbar .nav-links .nav-link-item:hover {
-        background: #fff1f2 !important;
+    html body nav.navbar ul.nav-links > li > .nav-link-item:hover,
+    html body nav.navbar ul.nav-links > li > .nav-link-item.active {
         color: #dc2626 !important;
+        background: #fff1f2 !important;
     }
 
-    html body .navbar .nav-links .nav-arrow {
+    html body nav.navbar .nav-arrow {
         transition: transform .2s cubic-bezier(.22,1,.36,1), color .15s ease !important;
         transform-origin: center !important;
     }
 
-    html body .navbar .nav-dropdown.open > .nav-link-item .nav-arrow,
-    html body .navbar .nav-mega-dropdown.open > .nav-link-item .nav-arrow {
+    html body nav.navbar .nav-dropdown.open > .nav-link-item .nav-arrow,
+    html body nav.navbar .nav-mega-dropdown.open > .nav-link-item .nav-arrow {
         transform: rotate(180deg) !important;
         color: #dc2626 !important;
     }
 
-    /* Danh Muc + Nap Tien share one animation system. */
-    html body .navbar .nav-dropdown > .modern-dropdown-menu,
-    html body .navbar .nav-mega-dropdown > .mega-menu {
+    /* Mobile/tablet category + deposit panels share exactly one motion system. */
+    html body nav.navbar .nav-dropdown > .modern-dropdown-menu,
+    html body nav.navbar .nav-mega-dropdown > .mega-menu {
         display: block !important;
         position: fixed !important;
         top: 106px !important;
         right: 8px !important;
         left: 8px !important;
+        bottom: auto !important;
         width: auto !important;
         min-width: 0 !important;
         max-width: none !important;
@@ -214,7 +277,7 @@ html body .mobile-bottom-nav-container {
         background: rgba(255,255,255,.995) !important;
         border: 1px solid #e5e7eb !important;
         border-radius: 0 0 14px 14px !important;
-        box-shadow: 0 18px 42px rgba(15,23,42,.17) !important;
+        box-shadow: 0 18px 42px rgba(15,23,42,.16) !important;
         z-index: 12020 !important;
         opacity: 0 !important;
         visibility: hidden !important;
@@ -223,44 +286,49 @@ html body .mobile-bottom-nav-container {
         transform-origin: top center !important;
         will-change: opacity, transform !important;
         backface-visibility: hidden !important;
-        transition: opacity .16s ease, transform .21s cubic-bezier(.22,1,.36,1), visibility 0s linear .21s !important;
+        transition: opacity .15s ease, transform .2s cubic-bezier(.22,1,.36,1), visibility 0s linear .2s !important;
         animation: none !important;
+        box-sizing: border-box !important;
     }
 
-    html body .navbar .nav-dropdown.open > .modern-dropdown-menu,
-    html body .navbar .nav-mega-dropdown.open > .mega-menu {
+    html body nav.navbar .nav-dropdown.open > .modern-dropdown-menu,
+    html body nav.navbar .nav-mega-dropdown.open > .mega-menu {
         opacity: 1 !important;
         visibility: visible !important;
         pointer-events: auto !important;
         transform: translate3d(0,0,0) scale(1) !important;
-        transition: opacity .14s ease, transform .21s cubic-bezier(.22,1,.36,1), visibility 0s linear 0s !important;
+        transition: opacity .13s ease, transform .2s cubic-bezier(.22,1,.36,1), visibility 0s linear 0s !important;
     }
 
-    html body .navbar .modern-dropdown-menu .dropdown-link-card {
+    html body nav.navbar .modern-dropdown-menu .dropdown-link-card {
         min-height: 58px !important;
         padding: 10px 12px !important;
         border-radius: 10px !important;
-        transition: background-color .15s ease, transform .15s ease, opacity .15s ease !important;
+        transition: background-color .15s ease, transform .15s ease, box-shadow .15s ease !important;
     }
 
-    html body .navbar .modern-dropdown-menu .dropdown-link-card:active { transform: scale(.992) !important; }
+    html body nav.navbar .mega-menu-container {
+        width: 100% !important;
+        max-width: none !important;
+        padding: 0 !important;
+    }
 
-    html body .navbar .mega-menu-container { width: 100% !important; max-width: none !important; padding: 0 !important; }
-
-    html body .navbar .mega-menu-grid {
+    html body nav.navbar .mega-menu-grid {
         display: grid !important;
         grid-template-columns: repeat(3,minmax(0,1fr)) !important;
         gap: 8px !important;
     }
 
-    html body .navbar .mega-menu-column { padding: 9px !important; border-radius: 10px !important; }
-    html body .navbar .mega-menu-list { display: flex !important; flex-direction: column !important; max-height: 230px !important; }
-
-    html body .navbar .mega-menu-item {
-        transition: background-color .15s ease, border-color .15s ease, color .15s ease, transform .15s ease !important;
+    html body nav.navbar .mega-menu-column {
+        padding: 9px !important;
+        border-radius: 10px !important;
     }
 
-    html body .navbar .mega-menu-item:active { transform: scale(.994) !important; }
+    html body nav.navbar .mega-menu-list {
+        display: flex !important;
+        flex-direction: column !important;
+        max-height: 230px !important;
+    }
 
     html body .nav-overlay,
     html body .nav-overlay.show {
@@ -270,27 +338,80 @@ html body .mobile-bottom-nav-container {
         pointer-events: none !important;
     }
 
-    html body main { padding-top: 106px !important; }
-    html body:has(.navbar .nav-links.show) { overflow-y: auto !important; }
+    html body main {
+        padding-top: 106px !important;
+    }
+
+    html body:has(nav.navbar) {
+        overflow-x: hidden !important;
+    }
 }
 
-@media (max-width: 700px) {
-    html body .navbar .mega-menu-grid { grid-template-columns: 1fr !important; }
-    html body .navbar .mega-menu-column { padding: 8px !important; }
-    html body .navbar .mega-menu-list { max-height: 180px !important; }
+/* Compact phones: keep the first row clean without duplicate auth UI. */
+@media (max-width: 560px) {
+    html body nav.navbar > .nav-container > .nav-brand {
+        margin-left: 9px !important;
+        max-width: 95px !important;
+    }
+
+    html body nav.navbar > .nav-container > .nav-brand img {
+        height: 29px !important;
+        max-width: 86px !important;
+    }
+
+    html body nav.navbar > .nav-container > .nav-user {
+        margin-right: 8px !important;
+        gap: 5px !important;
+    }
+
+    html body nav.navbar .nav-user > .ant-header-lang-dropdown {
+        display: none !important;
+    }
+
+    html body nav.navbar .nav-user .btn-nav-login,
+    html body nav.navbar .nav-user .btn-nav-register {
+        height: 32px !important;
+        padding: 0 8px !important;
+        font-size: .7rem !important;
+        gap: 4px !important;
+    }
+
+    html body nav.navbar .nav-user .theme-toggle {
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        flex-basis: 32px !important;
+    }
+
+    html body nav.navbar > .nav-container > ul.nav-links {
+        padding-left: 7px !important;
+        padding-right: 7px !important;
+    }
+
+    html body nav.navbar ul.nav-links > li > .nav-link-item {
+        padding: 0 9px !important;
+        font-size: .75rem !important;
+    }
+
+    html body nav.navbar .mega-menu-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body nav.navbar .mega-menu-column {
+        padding: 8px !important;
+    }
+
+    html body nav.navbar .mega-menu-list {
+        max-height: 180px !important;
+    }
 }
 
-@media (max-width: 430px) {
-    html body .navbar .nav-brand { margin-left: 9px !important; }
-    html body .navbar .nav-user { margin-right: 8px !important; gap: 5px !important; }
-    html body .navbar .nav-links { padding-left: 7px !important; padding-right: 7px !important; }
-    html body .navbar .nav-links .nav-link-item { padding: 0 9px !important; font-size: .76rem !important; }
-}
-
-/* ================= DESKTOP: UNIFIED CATEGORY + DEPOSIT MOTION ================= */
+/* =========================================================
+   DESKTOP: CATEGORY + DEPOSIT SHARE THE SAME MOTION
+   ========================================================= */
 @media (min-width: 1200px) {
-    html body .navbar .nav-mega-dropdown > .mega-menu,
-    html body .navbar .nav-dropdown > .modern-dropdown-menu {
+    html body nav.navbar .nav-mega-dropdown > .mega-menu,
+    html body nav.navbar .nav-dropdown > .modern-dropdown-menu {
         display: block !important;
         opacity: 0 !important;
         visibility: hidden !important;
@@ -299,87 +420,77 @@ html body .mobile-bottom-nav-container {
         transform-origin: top center !important;
         will-change: opacity, transform !important;
         backface-visibility: hidden !important;
-        transition: opacity .16s ease, transform .21s cubic-bezier(.22,1,.36,1), visibility 0s linear .21s !important;
+        transition: opacity .15s ease, transform .2s cubic-bezier(.22,1,.36,1), visibility 0s linear .2s !important;
         animation: none !important;
     }
 
-    /* Nap Tien now follows the same hover timing as Danh Muc. The old 700ms JS helper class is intentionally ignored visually. */
-    html body .navbar .nav-mega-dropdown:hover > .mega-menu,
-    html body .navbar .nav-mega-dropdown:focus-within > .mega-menu,
-    html body .navbar .nav-dropdown:hover > .modern-dropdown-menu,
-    html body .navbar .nav-dropdown.deposit-click-open > .modern-dropdown-menu,
-    html body .navbar .nav-dropdown > .modern-dropdown-menu:hover {
+    html body nav.navbar .nav-mega-dropdown:hover > .mega-menu,
+    html body nav.navbar .nav-mega-dropdown:focus-within > .mega-menu,
+    html body nav.navbar .nav-dropdown:hover > .modern-dropdown-menu,
+    html body nav.navbar .nav-dropdown.deposit-click-open > .modern-dropdown-menu,
+    html body nav.navbar .nav-dropdown > .modern-dropdown-menu:hover {
         opacity: 1 !important;
         visibility: visible !important;
         pointer-events: auto !important;
         transform: translate3d(0,0,0) scale(1) !important;
-        transition: opacity .14s ease, transform .21s cubic-bezier(.22,1,.36,1), visibility 0s linear 0s !important;
+        transition: opacity .13s ease, transform .2s cubic-bezier(.22,1,.36,1), visibility 0s linear 0s !important;
     }
 
-    html body .navbar .nav-mega-dropdown > .nav-link-item .nav-arrow,
-    html body .navbar .nav-dropdown > .nav-link-item .nav-arrow {
+    html body nav.navbar .nav-mega-dropdown > .nav-link-item .nav-arrow,
+    html body nav.navbar .nav-dropdown > .nav-link-item .nav-arrow {
         transition: transform .2s cubic-bezier(.22,1,.36,1), color .15s ease !important;
     }
 
-    /* Deposit choices: hover one option, smoothly hide the others without changing layout. */
-    html body .navbar .modern-dropdown-menu > li {
+    /* Hover one deposit option -> softly hide the others without layout jump. */
+    html body nav.navbar .modern-dropdown-menu > li {
         opacity: 1 !important;
         visibility: visible !important;
         transform: translate3d(0,0,0) scale(1) !important;
         filter: none !important;
-        transition: opacity .16s ease, transform .18s cubic-bezier(.22,1,.36,1), filter .16s ease, visibility 0s linear 0s !important;
-        will-change: opacity, transform !important;
+        transition: opacity .14s ease, transform .17s cubic-bezier(.22,1,.36,1), filter .14s ease, visibility 0s linear 0s !important;
     }
 
-    html body .navbar .modern-dropdown-menu:has(> li:hover) > li:not(:hover) {
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-        transform: translate3d(6px,0,0) scale(.985) !important;
-        filter: blur(1px) !important;
-        transition: opacity .14s ease, transform .17s cubic-bezier(.22,1,.36,1), filter .14s ease, visibility 0s linear .14s !important;
-    }
-
-    html body .navbar .modern-dropdown-menu > li:hover {
-        opacity: 1 !important;
+    html body nav.navbar .modern-dropdown-menu:has(> li:hover) > li:not(:hover) {
+        opacity: .18 !important;
         visibility: visible !important;
-        pointer-events: auto !important;
-        transform: translate3d(0,0,0) scale(1.006) !important;
-        filter: none !important;
+        pointer-events: none !important;
+        transform: translate3d(4px,0,0) scale(.99) !important;
+        filter: saturate(.7) !important;
     }
 
-    html body .navbar .modern-dropdown-menu .dropdown-link-card {
-        transition: background-color .15s ease, color .15s ease, box-shadow .18s ease, transform .18s cubic-bezier(.22,1,.36,1) !important;
-    }
-
-    html body .navbar .modern-dropdown-menu > li:hover .dropdown-link-card {
+    html body nav.navbar .modern-dropdown-menu > li:hover .dropdown-link-card {
         transform: translate3d(2px,0,0) !important;
         box-shadow: 0 8px 22px rgba(15,23,42,.08) !important;
     }
 }
 
-[data-theme="dark"] body .navbar .nav-links {
-    background: rgba(23,23,23,.99) !important;
+/* Dark mode. */
+[data-theme="dark"] body nav.navbar,
+[data-theme="dark"] body nav.navbar > .nav-container > ul.nav-links {
+    background: rgba(23,23,23,.985) !important;
     border-color: #2d2d2d !important;
 }
 
-[data-theme="dark"] body .navbar .nav-links .nav-link-item.active,
-[data-theme="dark"] body .navbar .nav-links .nav-link-item:hover { background: rgba(248,113,113,.11) !important; }
+[data-theme="dark"] body nav.navbar ul.nav-links > li > .nav-link-item:hover,
+[data-theme="dark"] body nav.navbar ul.nav-links > li > .nav-link-item.active {
+    background: rgba(248,113,113,.11) !important;
+}
 
-[data-theme="dark"] body .navbar .modern-dropdown-menu,
-[data-theme="dark"] body .navbar .mega-menu {
+[data-theme="dark"] body nav.navbar .modern-dropdown-menu,
+[data-theme="dark"] body nav.navbar .mega-menu {
     background: #171717 !important;
     border-color: #303030 !important;
 }
 
+/* Accessibility/performance. */
 @media (prefers-reduced-motion: reduce) {
-    html body .navbar .modern-dropdown-menu,
-    html body .navbar .mega-menu,
-    html body .navbar .nav-arrow,
-    html body .navbar .nav-link-item,
-    html body .navbar .dropdown-link-card,
-    html body .navbar .mega-menu-item,
-    html body .navbar .modern-dropdown-menu > li {
+    html body nav.navbar .modern-dropdown-menu,
+    html body nav.navbar .mega-menu,
+    html body nav.navbar .nav-arrow,
+    html body nav.navbar .nav-link-item,
+    html body nav.navbar .dropdown-link-card,
+    html body nav.navbar .mega-menu-item,
+    html body nav.navbar .modern-dropdown-menu > li {
         transition-duration: .01ms !important;
         animation-duration: .01ms !important;
     }
