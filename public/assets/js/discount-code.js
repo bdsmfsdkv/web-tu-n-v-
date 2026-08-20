@@ -213,3 +213,40 @@ function getDiscountInfo() {
 window.showRechargeModal = function () {
     window.location.href = '/profile/deposit/atm';
 };
+
+/**
+ * Purchase modal payment flow:
+ * - If the server rendered NẠP THẺ CÀO / NẠP ATM, the balance is insufficient.
+ *   Keep those two deposit actions and never show a purchase-confirm button there.
+ * - If the balance is sufficient, the server renders only XÁC NHẬN MUA (plus ĐÓNG).
+ * - NẠP ATM always goes directly to the bank/QR deposit page.
+ */
+function syncAccountPurchaseModalActions() {
+    const modal = document.getElementById('purchaseModal');
+    if (!modal) return;
+
+    const cardButton = modal.querySelector('.modal__btn--card');
+    const atmButton = modal.querySelector('.modal__btn--wallet');
+    const confirmButton = modal.querySelector('.modal__btn--submit');
+
+    const needsDeposit = Boolean(cardButton || atmButton);
+
+    if (needsDeposit) {
+        if (confirmButton) {
+            confirmButton.style.display = 'none';
+        }
+
+        if (atmButton) {
+            atmButton.onclick = function (event) {
+                if (event) event.preventDefault();
+                window.location.href = '/profile/deposit/atm';
+            };
+        }
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', syncAccountPurchaseModalActions);
+} else {
+    syncAccountPurchaseModalActions();
+}
