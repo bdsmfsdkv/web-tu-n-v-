@@ -1,6 +1,6 @@
 @import url("/css/ui-fixes-base.css?v=20260820-4");
 
-/* Desktop Nạp Tiền: vùng giữ hover chỉ vừa đúng nút, đủ để rê xuống menu con. */
+/* Desktop Nạp Tiền: hover giống Danh Mục — chỉ mở khi con trỏ còn ở nút/menu. */
 @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown {
         position: relative !important;
@@ -8,6 +8,7 @@
         margin-bottom: -3px !important;
     }
 
+    /* Cầu hover chỉ đúng bề rộng nút, đủ để rê thẳng xuống menu. */
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown::after {
         content: "" !important;
         position: absolute !important;
@@ -22,6 +23,22 @@
 
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown > .modern-dropdown-menu {
         top: calc(100% - 1px) !important;
+    }
+
+    /* Bỏ trạng thái JS giữ menu 700ms/click-open trên desktop.
+       Nạp Tiền giờ hoạt động y như Danh Mục: hover vào mở, rời vùng đóng. */
+    html body nav.navbar > .nav-container .nav-links > li.nav-dropdown:not(:hover) > .modern-dropdown-menu,
+    html body nav.navbar > .nav-container .nav-links > li.nav-dropdown.deposit-hover-open:not(:hover) > .modern-dropdown-menu,
+    html body nav.navbar > .nav-container .nav-links > li.nav-dropdown.deposit-click-open:not(:hover) > .modern-dropdown-menu {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    html body nav.navbar > .nav-container .nav-links > li.nav-dropdown:hover > .modern-dropdown-menu {
+        display: block !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
     }
 }
 
