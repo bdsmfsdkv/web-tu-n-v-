@@ -261,6 +261,146 @@
         }
     }
 
+    /* ===== DESKTOP: remove hover gap + make Nạp Tiền display like Danh Mục ===== */
+    @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
+        /* Make the dropdown owners fill the full 64px header height.
+           The mouse can travel straight down to the panel without leaving :hover. */
+        html body nav.navbar .nav-links > li.nav-mega-dropdown,
+        html body nav.navbar .nav-links > li.nav-dropdown {
+            display: flex !important;
+            height: 64px !important;
+            min-height: 64px !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            align-items: center !important;
+        }
+
+        html body nav.navbar .nav-links > li.nav-dropdown {
+            position: relative !important;
+        }
+
+        html body nav.navbar .nav-links > li.nav-dropdown::after {
+            content: none !important;
+            display: none !important;
+            pointer-events: none !important;
+        }
+
+        /* Danh Mục panel begins exactly where the header ends. */
+        html body nav.navbar .nav-mega-dropdown > .mega-menu {
+            top: 64px !important;
+        }
+
+        /* Turn the old small Nạp Tiền popup into a full-width mega panel. */
+        html body nav.navbar .nav-dropdown > .modern-dropdown-menu {
+            position: fixed !important;
+            top: 64px !important;
+            right: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            min-width: 0 !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 18px max(20px, calc((100vw - 1260px) / 2 + 20px)) 22px !important;
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+            gap: 16px !important;
+            list-style: none !important;
+            background: rgba(255,255,255,.99) !important;
+            border-top: 1px solid #f1f5f9 !important;
+            border-right: 0 !important;
+            border-bottom: 1px solid #e5e7eb !important;
+            border-left: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: 0 18px 35px rgba(15,23,42,.10) !important;
+            transform-origin: top center !important;
+            z-index: 1050 !important;
+        }
+
+        html body nav.navbar .modern-dropdown-menu > li {
+            display: block !important;
+            min-width: 0 !important;
+            margin: 0 !important;
+            padding: 14px !important;
+            list-style: none !important;
+            background: #f8fafc !important;
+            border: 1px solid #eef2f7 !important;
+            border-radius: 12px !important;
+        }
+
+        html body nav.navbar .modern-dropdown-menu > li > .dropdown-link-card {
+            display: flex !important;
+            width: 100% !important;
+            min-height: 74px !important;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 12px 14px !important;
+            align-items: center !important;
+            gap: 13px !important;
+            color: #374151 !important;
+            background: #fff !important;
+            border: 1px solid #edf0f4 !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+
+        html body nav.navbar .modern-dropdown-menu > li > .dropdown-link-card:hover {
+            color: #dc2626 !important;
+            background: #fff !important;
+            border-color: rgba(220,38,38,.28) !important;
+            box-shadow: 0 7px 18px rgba(15,23,42,.06) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        html body nav.navbar .modern-dropdown-menu .dropdown-link-icon-box {
+            width: 40px !important;
+            height: 40px !important;
+            min-width: 40px !important;
+            flex: 0 0 40px !important;
+            border-radius: 9px !important;
+        }
+
+        html body nav.navbar .modern-dropdown-menu .dropdown-link-title {
+            display: block !important;
+            color: #111827 !important;
+            font-size: .88rem !important;
+            font-weight: 800 !important;
+            line-height: 1.3 !important;
+        }
+
+        html body nav.navbar .modern-dropdown-menu .dropdown-link-desc {
+            display: block !important;
+            margin-top: 4px !important;
+            color: #6b7280 !important;
+            font-size: .73rem !important;
+            line-height: 1.35 !important;
+        }
+
+        [data-theme="dark"] body nav.navbar .nav-dropdown > .modern-dropdown-menu {
+            background: rgba(23,23,23,.99) !important;
+            border-color: #2a2a2a !important;
+        }
+
+        [data-theme="dark"] body nav.navbar .modern-dropdown-menu > li {
+            background: #1d1d1d !important;
+            border-color: #2d2d2d !important;
+        }
+
+        [data-theme="dark"] body nav.navbar .modern-dropdown-menu > li > .dropdown-link-card {
+            color: #d1d5db !important;
+            background: #222 !important;
+            border-color: #303030 !important;
+        }
+
+        [data-theme="dark"] body nav.navbar .modern-dropdown-menu .dropdown-link-title {
+            color: #f3f4f6 !important;
+        }
+
+        [data-theme="dark"] body nav.navbar .modern-dropdown-menu .dropdown-link-desc {
+            color: #9ca3af !important;
+        }
+    }
+
     /* ===== TABLET/MOBILE: fix blurred hamburger panel ===== */
     @media (max-width: 1199px) {
         html body .nav-overlay {
