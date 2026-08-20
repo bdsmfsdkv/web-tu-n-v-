@@ -76,7 +76,7 @@
     @endif
 
     @stack('css')
-    <link href="/css/mobile-header-final.css?v=20260820-1" rel="stylesheet">
+    <link href="/css/mobile-header-final.css?v=20260820-4" rel="stylesheet">
 
     <style>
         .ant-header-lang-dropdown {
