@@ -2,6 +2,112 @@
 
 @section('title', $category->name)
 
+@push('css')
+<style>
+    /* Account attributes: keep every label/value readable and aligned. */
+    html body .account-card .account-info {
+        padding: 14px !important;
+        min-width: 0 !important;
+    }
+
+    html body .account-card .account-details-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+    }
+
+    html body .account-card .account-detail-tile {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 76px !important;
+        margin: 0 !important;
+        padding: 9px 10px !important;
+        gap: 5px !important;
+        text-align: center !important;
+        background: linear-gradient(145deg, #ffffff 0%, #f7f9ff 100%) !important;
+        border: 1px solid #e6eaf2 !important;
+        border-radius: 10px !important;
+        box-shadow: 0 3px 10px rgba(15, 23, 42, .045) !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease !important;
+    }
+
+    html body .account-card .account-detail-label {
+        display: block !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        color: #64748b !important;
+        font-size: .76rem !important;
+        font-weight: 700 !important;
+        line-height: 1.25 !important;
+        text-align: center !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+    }
+
+    html body .account-card .account-detail-value {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        color: #111827 !important;
+        font-size: .98rem !important;
+        font-weight: 800 !important;
+        line-height: 1.3 !important;
+        text-align: center !important;
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        overflow-wrap: anywhere !important;
+        word-break: normal !important;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        html body .account-card .account-detail-tile:hover {
+            transform: translateY(-2px) !important;
+            border-color: rgba(220, 38, 38, .24) !important;
+            box-shadow: 0 7px 16px rgba(15, 23, 42, .08) !important;
+        }
+    }
+
+    @media (max-width: 520px) {
+        html body .account-card .account-details-grid {
+            grid-template-columns: 1fr !important;
+            gap: 8px !important;
+        }
+
+        html body .account-card .account-detail-tile {
+            min-height: 62px !important;
+        }
+    }
+
+    [data-theme="dark"] body .account-card .account-detail-tile {
+        background: #202020 !important;
+        border-color: #303030 !important;
+        box-shadow: none !important;
+    }
+
+    [data-theme="dark"] body .account-card .account-detail-label {
+        color: #9ca3af !important;
+    }
+
+    [data-theme="dark"] body .account-card .account-detail-value {
+        color: #f3f4f6 !important;
+    }
+</style>
+@endpush
+
 @section('content')
     <!-- Hero Section -->
     <x-hero-header title="{{ $category->name }}" description="{{ $category->description }}" />
