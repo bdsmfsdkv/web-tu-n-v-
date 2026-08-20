@@ -1,0 +1,463 @@
+/* =========================================================
+   UI hotfixes: category CTA image, auth pages, header layout
+   Loaded after style.css + legacy-compat.css.
+   ========================================================= */
+
+/* ---------- Category card: keep custom "Xem ngay" image inside card ---------- */
+html body .category-card {
+    min-width: 0;
+    overflow: hidden !important;
+}
+
+html body .category-card .category-body {
+    width: 100%;
+    min-width: 0;
+}
+
+html body .category-card .category-cta-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-top: auto !important;
+    padding: 8px 8px 4px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+}
+
+html body .category-card .category-cta-img {
+    display: block !important;
+    width: 100% !important;
+    max-width: 240px !important;
+    height: 64px !important;
+    max-height: 64px !important;
+    object-fit: contain !important;
+    object-position: center !important;
+    margin: 0 auto !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    transform-origin: center center !important;
+}
+
+html body .category-card:hover .category-cta-img {
+    transform: scale(1.02) !important;
+}
+
+@media (max-width: 768px) {
+    html body .category-card .category-cta-wrapper {
+        padding: 6px 4px 2px !important;
+    }
+
+    html body .category-card .category-cta-img {
+        max-width: 100% !important;
+        height: 48px !important;
+        max-height: 48px !important;
+    }
+}
+
+/* ---------- Login / Register pages ---------- */
+html body .auth-page {
+    width: 100%;
+    min-height: calc(100vh - 64px);
+    padding: 44px 16px 64px !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    background: #f8fafc;
+    box-sizing: border-box;
+}
+
+html body .auth-card {
+    width: 100% !important;
+    max-width: 460px !important;
+    margin: 0 auto !important;
+    padding: 32px !important;
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 16px !important;
+    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08) !important;
+    box-sizing: border-box !important;
+}
+
+html body .auth-header {
+    margin-bottom: 26px !important;
+    text-align: center !important;
+}
+
+html body .auth-title {
+    margin: 0 0 8px !important;
+    color: #dc2626 !important;
+    font-size: 1.75rem !important;
+    line-height: 1.2 !important;
+    font-weight: 800 !important;
+}
+
+html body .auth-subtitle {
+    margin: 0 !important;
+    color: #64748b !important;
+    font-size: 0.9rem !important;
+    line-height: 1.55 !important;
+}
+
+html body .auth-card form {
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+html body .auth-card .form-group {
+    width: 100% !important;
+    margin: 0 0 18px !important;
+}
+
+html body .auth-card .form-label {
+    display: block !important;
+    margin: 0 0 7px !important;
+    color: #111827 !important;
+    font-size: 0.86rem !important;
+    line-height: 1.35 !important;
+    font-weight: 700 !important;
+}
+
+html body .auth-card .form-input {
+    display: block !important;
+    width: 100% !important;
+    height: 44px !important;
+    margin: 0 !important;
+    padding: 0 13px !important;
+    color: #111827 !important;
+    font-family: inherit !important;
+    font-size: 0.9rem !important;
+    line-height: 44px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 9px !important;
+    outline: none !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+    transition: border-color .18s ease, box-shadow .18s ease !important;
+}
+
+html body .auth-card .form-input:focus {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+}
+
+html body .auth-card .form-input::placeholder {
+    color: #9ca3af !important;
+}
+
+html body .auth-card .form-error {
+    display: block !important;
+    margin-top: 6px !important;
+    color: #dc2626 !important;
+    font-size: 0.78rem !important;
+}
+
+html body .auth-btn {
+    display: flex !important;
+    width: 100% !important;
+    min-height: 44px !important;
+    margin: 4px 0 0 !important;
+    padding: 10px 16px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #ffffff !important;
+    font-family: inherit !important;
+    font-size: 0.92rem !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    border: 1px solid #dc2626 !important;
+    border-radius: 9px !important;
+    box-shadow: 0 5px 14px rgba(220, 38, 38, 0.22) !important;
+    cursor: pointer !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease !important;
+}
+
+html body .auth-btn:hover {
+    color: #ffffff !important;
+    filter: brightness(.96) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 8px 18px rgba(220, 38, 38, 0.28) !important;
+}
+
+html body .auth-links {
+    margin-top: 20px !important;
+    color: #64748b !important;
+    font-size: 0.86rem !important;
+    text-align: center !important;
+}
+
+html body .auth-links a,
+html body .auth-card a {
+    text-decoration: none;
+}
+
+html body .auth-links a {
+    color: #dc2626 !important;
+    font-weight: 700 !important;
+}
+
+html body .social-divider {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin: 22px 0 14px !important;
+    color: #94a3b8 !important;
+    font-size: 0.78rem !important;
+    text-align: center !important;
+}
+
+html body .social-divider::before,
+html body .social-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #e5e7eb;
+}
+
+html body .social-btn {
+    display: flex !important;
+    width: 100% !important;
+    min-height: 42px !important;
+    margin-top: 10px !important;
+    padding: 9px 12px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    color: #334155 !important;
+    font-size: .86rem !important;
+    font-weight: 700 !important;
+    background: #fff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 9px !important;
+}
+
+html body .auth-card input[type="checkbox"] {
+    width: 15px !important;
+    height: 15px !important;
+    accent-color: #dc2626;
+}
+
+[data-theme="dark"] body .auth-page {
+    background: #0f0f0f !important;
+}
+
+[data-theme="dark"] body .auth-card {
+    background: #171717 !important;
+    border-color: #2f2f2f !important;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, .35) !important;
+}
+
+[data-theme="dark"] body .auth-card .form-label { color: #f3f4f6 !important; }
+[data-theme="dark"] body .auth-card .form-input {
+    color: #f3f4f6 !important;
+    background: #222 !important;
+    border-color: #3a3a3a !important;
+}
+[data-theme="dark"] body .auth-subtitle,
+[data-theme="dark"] body .auth-links { color: #9ca3af !important; }
+[data-theme="dark"] body .social-btn { background: #222 !important; border-color: #333 !important; color: #e5e7eb !important; }
+[data-theme="dark"] body .social-divider::before,
+[data-theme="dark"] body .social-divider::after { background: #333; }
+
+@media (max-width: 520px) {
+    html body .auth-page {
+        min-height: calc(100vh - 56px);
+        padding: 20px 12px 36px !important;
+    }
+
+    html body .auth-card {
+        max-width: 100% !important;
+        padding: 24px 18px !important;
+        border-radius: 13px !important;
+    }
+
+    html body .auth-title { font-size: 1.45rem !important; }
+}
+
+/* ---------- Header: prevent guest Login/Register from wrapping/breaking ---------- */
+@media (min-width: 1200px) {
+    html body .navbar .nav-container {
+        display: grid !important;
+        grid-template-columns: auto minmax(0, 1fr) auto !important;
+        align-items: center !important;
+        gap: 14px !important;
+        height: 64px !important;
+    }
+
+    html body .navbar .nav-links {
+        display: flex !important;
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-wrap: nowrap !important;
+        overflow: visible !important;
+    }
+
+    html body .navbar .nav-offcanvas-header,
+    html body .navbar .mobile-auth-banner,
+    html body .navbar .nav-toggle {
+        display: none !important;
+    }
+
+    html body .navbar .nav-guest-actions {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        flex-wrap: nowrap !important;
+        gap: 7px !important;
+        white-space: nowrap !important;
+    }
+
+    html body .navbar .btn-nav-login,
+    html body .navbar .btn-nav-register {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex: 0 0 auto !important;
+        min-width: 0 !important;
+        height: 34px !important;
+        padding: 0 10px !important;
+        white-space: nowrap !important;
+    }
+}
+
+/* Use drawer earlier so mid-size screens never squeeze the header into two rows. */
+@media (max-width: 1199px) {
+    html body .navbar .nav-container {
+        display: flex !important;
+        align-items: center !important;
+        height: 56px !important;
+        padding: 0 14px !important;
+        gap: 7px !important;
+    }
+
+    html body .navbar .nav-brand {
+        margin-right: auto !important;
+        min-width: 0 !important;
+    }
+
+    html body .navbar .nav-brand img {
+        height: 30px !important;
+        max-width: 118px !important;
+    }
+
+    html body .navbar .nav-user {
+        display: flex !important;
+        align-items: center !important;
+        margin-left: auto !important;
+        gap: 6px !important;
+    }
+
+    html body .navbar .nav-guest-actions {
+        display: none !important;
+    }
+
+    html body .navbar .nav-toggle {
+        display: flex !important;
+        flex: 0 0 36px !important;
+        width: 36px !important;
+        height: 36px !important;
+        margin-left: 2px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-direction: column !important;
+        gap: 4px !important;
+    }
+
+    html body .navbar .nav-links {
+        display: none !important;
+        position: fixed !important;
+        top: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        left: auto !important;
+        width: 330px !important;
+        max-width: 88vw !important;
+        height: 100vh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: flex-start !important;
+        flex-wrap: nowrap !important;
+        gap: 0 !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        background: #fff !important;
+        box-shadow: -12px 0 35px rgba(15, 23, 42, .2) !important;
+        z-index: 9999 !important;
+    }
+
+    html body .navbar .nav-links.show {
+        display: flex !important;
+    }
+
+    html body .navbar .nav-links > li {
+        width: 100% !important;
+        flex: 0 0 auto !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+    }
+
+    html body .navbar .nav-offcanvas-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+
+    html body .navbar .mobile-auth-banner {
+        display: block !important;
+    }
+
+    html body .navbar .nav-links .nav-link-item {
+        width: 100% !important;
+        min-height: 46px !important;
+        justify-content: flex-start !important;
+        border-radius: 0 !important;
+        padding: 12px 16px !important;
+    }
+
+    html body .navbar .nav-links .nav-link-item .nav-arrow {
+        margin-left: auto !important;
+    }
+
+    html body .navbar .nav-dropdown:hover > .modern-dropdown-menu,
+    html body .navbar .nav-mega-dropdown:hover > .mega-menu {
+        display: none !important;
+    }
+
+    html body .navbar .nav-dropdown.open > .modern-dropdown-menu,
+    html body .navbar .nav-mega-dropdown.open > .mega-menu {
+        display: block !important;
+    }
+
+    html body .navbar .modern-dropdown-menu,
+    html body .navbar .mega-menu {
+        position: static !important;
+        width: 100% !important;
+        min-width: 100% !important;
+        transform: none !important;
+        box-shadow: none !important;
+        border-left: 0 !important;
+        border-right: 0 !important;
+        border-radius: 0 !important;
+    }
+
+    [data-theme="dark"] body .navbar .nav-links {
+        background: #171717 !important;
+    }
+
+    [data-theme="dark"] body .navbar .nav-links > li {
+        border-color: #2a2a2a !important;
+    }
+}
