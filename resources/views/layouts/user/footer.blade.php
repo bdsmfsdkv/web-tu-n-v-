@@ -90,75 +90,314 @@
         pointer-events: none !important;
     }
 
-    /* Restore Nạp Tiền to the behavior from immediately before commit a65403e:
-       classic hover/display behavior, the smaller hover bridge, and the existing
-       700ms JS safety window. This intentionally overrides later motion experiments. */
-    @media (min-width: 1200px) {
-        html body nav.navbar.navbar .nav-links .nav-dropdown {
-            position: relative !important;
-            padding-bottom: 6px !important;
-            margin-bottom: -6px !important;
+    /* ===== FINAL NAV INTERACTIONS: one timing/easing for the whole header ===== */
+    html body nav.navbar {
+        --nav-fast: 140ms;
+        --nav-normal: 180ms;
+        --nav-ease: cubic-bezier(.2,.8,.2,1);
+    }
+
+    html body nav.navbar .nav-link-item,
+    html body nav.navbar .theme-toggle,
+    html body nav.navbar .nav-toggle,
+    html body nav.navbar .nav-avatar,
+    html body nav.navbar .btn-nav-login,
+    html body nav.navbar .btn-nav-register,
+    html body nav.navbar .btn-mobile-login,
+    html body nav.navbar .btn-mobile-reg,
+    html body nav.navbar .dropdown-link-card,
+    html body nav.navbar .mega-menu-item,
+    html body #avatarDropdown .dropdown-item,
+    html body #avatarDropdown .dropdown-btn-deposit {
+        transition:
+            color var(--nav-fast) ease,
+            background-color var(--nav-fast) ease,
+            border-color var(--nav-fast) ease,
+            box-shadow var(--nav-normal) ease,
+            transform var(--nav-normal) var(--nav-ease),
+            opacity var(--nav-fast) ease !important;
+    }
+
+    html body nav.navbar .nav-arrow {
+        transition: transform var(--nav-normal) var(--nav-ease), color var(--nav-fast) ease !important;
+    }
+
+    /* Fine-pointer hover only: avoids sticky hover states on phones. */
+    @media (hover: hover) and (pointer: fine) {
+        html body nav.navbar .nav-link-item:hover {
+            color: #dc2626 !important;
+            background: rgba(220,38,38,.075) !important;
         }
 
-        html body nav.navbar.navbar .nav-links .nav-dropdown::after {
+        html body nav.navbar .theme-toggle:hover,
+        html body nav.navbar .nav-toggle:hover,
+        html body nav.navbar .nav-avatar:hover {
+            border-color: rgba(220,38,38,.28) !important;
+            background: rgba(220,38,38,.055) !important;
+            box-shadow: 0 5px 14px rgba(15,23,42,.07) !important;
+        }
+
+        html body nav.navbar .dropdown-link-card:hover,
+        html body nav.navbar .mega-menu-item:hover,
+        html body #avatarDropdown .dropdown-item:hover {
+            color: #dc2626 !important;
+            background: #fff7f7 !important;
+            border-color: rgba(220,38,38,.18) !important;
+            transform: translate3d(2px,0,0) !important;
+        }
+
+        html body #avatarDropdown .dropdown-btn-deposit:hover {
+            filter: none !important;
+            transform: translate3d(0,-1px,0) !important;
+            box-shadow: 0 7px 16px rgba(220,38,38,.18) !important;
+        }
+    }
+
+    /* ===== DESKTOP: Danh Mục + Nạp Tiền use the same clean animation ===== */
+    @media (min-width: 1200px) {
+        html body nav.navbar .nav-dropdown {
+            position: relative !important;
+            padding-bottom: 7px !important;
+            margin-bottom: -7px !important;
+        }
+
+        /* Small invisible bridge: easy to move into Nạp Tiền without making it stay open too long. */
+        html body nav.navbar .nav-dropdown::after {
             content: "" !important;
             position: absolute !important;
-            top: calc(100% - 8px) !important;
-            left: -18px !important;
-            width: calc(100% + 36px) !important;
-            height: 24px !important;
+            top: calc(100% - 7px) !important;
+            left: -10px !important;
+            width: calc(100% + 20px) !important;
+            height: 15px !important;
             z-index: 1095 !important;
             pointer-events: auto !important;
         }
 
-        html body nav.navbar.navbar .nav-links .nav-dropdown > .modern-dropdown-menu {
-            display: none !important;
+        html body nav.navbar .nav-dropdown > .modern-dropdown-menu {
+            display: block !important;
             top: calc(100% - 1px) !important;
             left: -10px !important;
             width: 330px !important;
             min-width: 330px !important;
             margin: 0 !important;
             padding: 10px !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-            pointer-events: auto !important;
-            transform: none !important;
-            transition: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            transform: translate3d(0,-6px,0) !important;
+            transform-origin: top left !important;
             border-radius: 14px !important;
             box-shadow: 0 16px 40px rgba(15,23,42,.16) !important;
+            transition:
+                opacity var(--nav-fast) ease,
+                transform var(--nav-normal) var(--nav-ease),
+                visibility 0s linear var(--nav-normal) !important;
+            will-change: transform, opacity !important;
+            backface-visibility: hidden !important;
         }
 
-        html body nav.navbar.navbar .nav-links .nav-dropdown:hover > .modern-dropdown-menu,
-        html body nav.navbar.navbar .nav-links .nav-dropdown.deposit-hover-open > .modern-dropdown-menu,
-        html body nav.navbar.navbar .nav-links .nav-dropdown.deposit-click-open > .modern-dropdown-menu,
-        html body nav.navbar.navbar .nav-links .nav-dropdown > .modern-dropdown-menu:hover {
-            display: block !important;
+        html body nav.navbar .nav-dropdown:hover > .modern-dropdown-menu,
+        html body nav.navbar .nav-dropdown:focus-within > .modern-dropdown-menu,
+        html body nav.navbar .nav-dropdown.deposit-click-open > .modern-dropdown-menu {
             opacity: 1 !important;
             visibility: visible !important;
             pointer-events: auto !important;
-            transform: none !important;
+            transform: translate3d(0,0,0) !important;
+            transition-delay: 0s !important;
         }
 
-        html body nav.navbar.navbar .nav-links .nav-dropdown .dropdown-link-card {
-            min-height: 66px !important;
-            padding: 12px 14px !important;
-            gap: 13px !important;
-            border-radius: 11px !important;
-            transform: none !important;
-            transition: background-color .16s ease, box-shadow .16s ease !important;
+        html body nav.navbar .nav-mega-dropdown > .mega-menu {
+            display: block !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            transform: translate3d(0,-6px,0) !important;
+            transform-origin: top center !important;
+            transition:
+                opacity var(--nav-fast) ease,
+                transform var(--nav-normal) var(--nav-ease),
+                visibility 0s linear var(--nav-normal) !important;
+            will-change: transform, opacity !important;
+            backface-visibility: hidden !important;
         }
 
-        html body nav.navbar.navbar .modern-dropdown-menu:has(> li:hover) > li:not(:hover),
-        html body nav.navbar.navbar .modern-dropdown-menu > li {
+        html body nav.navbar .nav-mega-dropdown:hover > .mega-menu,
+        html body nav.navbar .nav-mega-dropdown:focus-within > .mega-menu {
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            transform: translate3d(0,0,0) !important;
+            transition-delay: 0s !important;
+        }
+
+        html body nav.navbar .nav-dropdown:hover > .nav-link-item .nav-arrow,
+        html body nav.navbar .nav-dropdown:focus-within > .nav-link-item .nav-arrow,
+        html body nav.navbar .nav-dropdown.deposit-click-open > .nav-link-item .nav-arrow,
+        html body nav.navbar .nav-mega-dropdown:hover > .nav-link-item .nav-arrow,
+        html body nav.navbar .nav-mega-dropdown:focus-within > .nav-link-item .nav-arrow {
+            transform: rotate(180deg) !important;
+        }
+
+        /* Never fade/hide sibling deposit choices on hover. */
+        html body nav.navbar .modern-dropdown-menu > li,
+        html body nav.navbar .modern-dropdown-menu:has(> li:hover) > li:not(:hover) {
             opacity: 1 !important;
             visibility: visible !important;
             pointer-events: auto !important;
             transform: none !important;
             filter: none !important;
         }
+    }
 
-        html body nav.navbar.navbar .modern-dropdown-menu > li:hover .dropdown-link-card {
+    /* ===== TABLET/MOBILE: fix blurred hamburger panel ===== */
+    @media (max-width: 1199px) {
+        html body .nav-overlay {
+            position: fixed !important;
+            top: 56px !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            z-index: 11940 !important;
+            background: rgba(15,23,42,.26) !important;
+            -webkit-backdrop-filter: none !important;
+            backdrop-filter: none !important;
+            filter: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            transition: opacity var(--nav-normal) ease, visibility 0s linear var(--nav-normal) !important;
+        }
+
+        html body .nav-overlay.show {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            transition-delay: 0s !important;
+        }
+
+        html body nav.navbar .nav-links {
+            z-index: 12030 !important;
+            background: #fff !important;
+            -webkit-backdrop-filter: none !important;
+            backdrop-filter: none !important;
+            filter: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            transform: translate3d(0,-9px,0) !important;
+            transform-origin: top center !important;
+            transition:
+                opacity var(--nav-fast) ease,
+                transform var(--nav-normal) var(--nav-ease),
+                visibility 0s linear var(--nav-normal) !important;
+            will-change: transform, opacity !important;
+            backface-visibility: hidden !important;
+        }
+
+        html body nav.navbar .nav-links.show {
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            transform: translate3d(0,0,0) !important;
+            transition-delay: 0s !important;
+        }
+
+        html body nav.navbar .nav-links .nav-link-item {
             transform: none !important;
+        }
+
+        html body nav.navbar .nav-links .nav-link-item:active,
+        html body nav.navbar .nav-dropdown.open > .nav-link-item,
+        html body nav.navbar .nav-mega-dropdown.open > .nav-link-item {
+            color: #dc2626 !important;
+            background: rgba(220,38,38,.075) !important;
+        }
+
+        /* Animate submenus without display:none/block jumps. */
+        html body nav.navbar .modern-dropdown-menu,
+        html body nav.navbar .mega-menu {
+            display: block !important;
+            position: static !important;
+            width: 100% !important;
+            min-width: 100% !important;
+            max-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 6px !important;
+            overflow: hidden !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            transform: translate3d(0,-4px,0) !important;
+            border-width: 0 !important;
+            box-shadow: none !important;
+            transition:
+                max-height 240ms var(--nav-ease),
+                opacity var(--nav-fast) ease,
+                transform var(--nav-normal) var(--nav-ease),
+                margin var(--nav-normal) ease,
+                padding var(--nav-normal) ease,
+                visibility 0s linear 240ms !important;
+            will-change: max-height, opacity, transform !important;
+        }
+
+        html body nav.navbar .nav-dropdown.open > .modern-dropdown-menu {
+            max-height: 320px !important;
+            margin: 4px 0 7px !important;
+            padding: 6px !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            transform: translate3d(0,0,0) !important;
+            border-width: 1px !important;
+            transition-delay: 0s !important;
+        }
+
+        html body nav.navbar .nav-mega-dropdown.open > .mega-menu {
+            max-height: min(68vh,720px) !important;
+            margin: 4px 0 7px !important;
+            padding: 6px !important;
+            overflow-y: auto !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            transform: translate3d(0,0,0) !important;
+            border-width: 1px !important;
+            transition-delay: 0s !important;
+        }
+
+        html body nav.navbar .nav-dropdown.open > .nav-link-item .nav-arrow,
+        html body nav.navbar .nav-mega-dropdown.open > .nav-link-item .nav-arrow {
+            transform: rotate(180deg) !important;
+        }
+
+        html body nav.navbar .dropdown-link-card:active,
+        html body nav.navbar .mega-menu-item:active {
+            color: #dc2626 !important;
+            background: #fff1f2 !important;
+        }
+    }
+
+    [data-theme="dark"] body nav.navbar .nav-links {
+        background: #171717 !important;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        [data-theme="dark"] body nav.navbar .dropdown-link-card:hover,
+        [data-theme="dark"] body nav.navbar .mega-menu-item:hover,
+        [data-theme="dark"] body #avatarDropdown .dropdown-item:hover {
+            background: #2a1d1d !important;
+            border-color: #4b2427 !important;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        html body nav.navbar *,
+        html body .nav-overlay,
+        html body #avatarDropdown * {
+            animation-duration: .01ms !important;
+            transition-duration: .01ms !important;
+            transition-delay: 0s !important;
         }
     }
 </style>
