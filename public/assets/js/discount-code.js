@@ -245,8 +245,138 @@ function syncAccountPurchaseModalActions() {
     }
 }
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', syncAccountPurchaseModalActions);
-} else {
+/**
+ * Desktop navbar precise-hover fix.
+ * Older CSS opens dropdowns from li:hover while the li fills the whole 64px
+ * header height. That makes invisible/empty areas around the visible button
+ * trigger the menu. Only the real button now opens it; a short close delay lets
+ * the pointer travel from the button into the panel without an invisible wide
+ * hover zone.
+ */
+function setupPreciseDesktopNavHover() {
+    const desktopPointer = window.matchMedia('(min-width: 1200px) and (hover: hover) and (pointer: fine)');
+    if (!desktopPointer.matches) return;
+
+    if (!document.getElementById('precise-desktop-nav-hover-style')) {
+        const style = document.createElement('style');
+        style.id = 'precise-desktop-nav-hover-style';
+        style.textContent = `
+            @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
+                html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown:hover:not(.pointer-open):not(.deposit-click-open):not(:focus-within) > .modern-dropdown-menu,
+                html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown:hover:not(.pointer-open):not(:focus-within) > .mega-menu {
+                    display: none !important;
+                    visibility: hidden !important;
+                    opacity: 0 !important;
+                    pointer-events: none !important;
+                    animation: none !important;
+                }
+
+                html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown.pointer-open > .modern-dropdown-menu,
+                html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown.deposit-click-open > .modern-dropdown-menu {
+                    display: grid !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                    pointer-events: auto !important;
+                }
+
+                html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown.pointer-open > .mega-menu {
+                    display: block !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                    pointer-events: auto !important;
+                }
+
+                html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown:hover:not(.pointer-open):not(.deposit-click-open) > .nav-link-item:not(:hover),
+                html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown:hover:not(.pointer-open) > .nav-link-item:not(:hover) {
+                    color: #242424 !important;
+                    background: transparent !important;
+                }
+
+                html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown:hover:not(.pointer-open):not(.deposit-click-open) > .nav-link-item:not(:hover) .nav-item-icon,
+                html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown:hover:not(.pointer-open):not(.deposit-click-open) > .nav-link-item:not(:hover) .nav-arrow,
+                html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown:hover:not(.pointer-open) > .nav-link-item:not(:hover) .nav-item-icon,
+                html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown:hover:not(.pointer-open) > .nav-link-item:not(:hover) .nav-arrow {
+                    color: #888 !important;
+                }
+
+                html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown:hover:not(.pointer-open):not(.deposit-click-open) > .nav-link-item .nav-arrow,
+                html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown:hover:not(.pointer-open) > .nav-link-item .nav-arrow {
+                    transform: rotate(0deg) !important;
+                }
+
+                html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown.pointer-open > .nav-link-item,
+                html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown.deposit-click-open > .nav-link-item,
+                html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown.pointer-open > .nav-link-item {
+                    color: var(--primary, #dc2626) !important;
+                    background: rgba(220, 38, 38, .07) !important;
+                }
+
+                html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown.pointer-open > .nav-link-item .nav-arrow,
+                html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown.deposit-click-open > .nav-link-item .nav-arrow,
+                html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown.pointer-open > .nav-link-item .nav-arrow {
+                    color: var(--primary, #dc2626) !important;
+                    transform: rotate(180deg) !important;
+                }
+
+                [data-theme="dark"] body nav.navbar > .nav-container > #navLinks > li.nav-dropdown:hover:not(.pointer-open):not(.deposit-click-open) > .nav-link-item:not(:hover),
+                [data-theme="dark"] body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown:hover:not(.pointer-open) > .nav-link-item:not(:hover) {
+                    color: #e5e7eb !important;
+                    background: transparent !important;
+                }
+
+                [data-theme="dark"] body nav.navbar > .nav-container > #navLinks > li.nav-dropdown.pointer-open > .nav-link-item,
+                [data-theme="dark"] body nav.navbar > .nav-container > #navLinks > li.nav-dropdown.deposit-click-open > .nav-link-item,
+                [data-theme="dark"] body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown.pointer-open > .nav-link-item {
+                    background: rgba(248, 113, 113, .1) !important;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    const owners = document.querySelectorAll('nav.navbar #navLinks > li.nav-dropdown, nav.navbar #navLinks > li.nav-mega-dropdown');
+
+    owners.forEach(owner => {
+        if (owner.dataset.preciseHoverReady === '1') return;
+
+        const trigger = owner.querySelector(':scope > .nav-link-item');
+        const panel = owner.querySelector(':scope > .modern-dropdown-menu, :scope > .mega-menu');
+        if (!trigger || !panel) return;
+
+        owner.dataset.preciseHoverReady = '1';
+        let closeTimer = null;
+
+        const openMenu = () => {
+            if (closeTimer) {
+                window.clearTimeout(closeTimer);
+                closeTimer = null;
+            }
+            owner.classList.add('pointer-open');
+        };
+
+        const scheduleClose = () => {
+            if (closeTimer) window.clearTimeout(closeTimer);
+            closeTimer = window.setTimeout(() => {
+                if (!trigger.matches(':hover') && !panel.matches(':hover') && !owner.matches(':focus-within')) {
+                    owner.classList.remove('pointer-open');
+                }
+            }, 220);
+        };
+
+        trigger.addEventListener('mouseenter', openMenu);
+        trigger.addEventListener('mouseleave', scheduleClose);
+        panel.addEventListener('mouseenter', openMenu);
+        panel.addEventListener('mouseleave', scheduleClose);
+    });
+}
+
+function runGlobalUiFixes() {
     syncAccountPurchaseModalActions();
+    setupPreciseDesktopNavHover();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', runGlobalUiFixes);
+} else {
+    runGlobalUiFixes();
 }
