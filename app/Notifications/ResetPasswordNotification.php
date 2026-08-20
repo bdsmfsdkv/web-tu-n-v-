@@ -1,28 +1,22 @@
 <?php
+
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\View;
 
-class ResetPasswordNotification extends Notification implements ShouldQueue
+class ResetPasswordNotification extends Notification
 {
     use Queueable;
 
     /**
-     * Token đặt lại mật khẩu
-     *
-     * @var string
+     * Token đặt lại mật khẩu.
      */
-    public $token;
+    public string $token;
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct(string $token)
     {
         $this->token = $token;
@@ -30,78 +24,45 @@ class ResetPasswordNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * Cấu hình động cho mail settings
+     * Ưu tiên cấu hình mail trong hệ thống nếu có, nếu không thì giữ cấu hình .env.
+     * Không tự ép sang Gmail vì làm vậy có thể khiến ứng dụng báo gửi thành công
+     * trong khi chưa có tài khoản SMTP hợp lệ.
      */
     protected function configureMailSettings(): void
     {
-        try {
-            // Lấy cấu hình email từ database
-            $mailDriver = config_get('mail_mailer');
-            $mailHost = config_get('mail_host');
-            $mailPort = config_get('mail_port');
-            $mailUsername = config_get('mail_username');
-            $mailPassword = config_get('mail_password');
-            $mailEncryption = config_get('mail_encryption');
-            $mailFromAddress = config_get('mail_from_address');
-            $mailFromName = config_get('mail_from_name');
+        $mailDriver = config_get('mail_mailer', config('mail.default', 'smtp')) ?: config('mail.default', 'smtp');
+        $mailHost = config_get('mail_host', config('mail.mailers.smtp.host')) ?: config('mail.mailers.smtp.host');
+        $mailPort = config_get('mail_port', config('mail.mailers.smtp.port')) ?: config('mail.mailers.smtp.port');
+        $mailUsername = config_get('mail_username', config('mail.mailers.smtp.username'));
+        $mailPassword = config_get('mail_password', config('mail.mailers.smtp.password'));
+        $mailEncryption = config_get('mail_encryption', config('mail.mailers.smtp.encryption'));
+        $mailFromAddress = config_get('mail_from_address', config('mail.from.address')) ?: config('mail.from.address');
+        $mailFromName = config_get('mail_from_name', config('mail.from.name')) ?: config_get('site_name', config('app.name', 'Shop Game'));
 
-            // Kiểm tra và sử dụng giá trị mặc định nếu không có cấu hình
-            if (empty($mailHost) || $mailHost === 'mailpit') {
-                $mailHost = 'smtp.gmail.com'; // Hoặc SMTP server khác
-            }
+        Config::set('mail.default', $mailDriver);
+        Config::set('mail.mailers.smtp.host', $mailHost);
+        Config::set('mail.mailers.smtp.port', $mailPort);
+        Config::set('mail.mailers.smtp.username', $mailUsername);
+        Config::set('mail.mailers.smtp.password', $mailPassword);
+        Config::set('mail.mailers.smtp.encryption', $mailEncryption);
+        Config::set('mail.from.address', $mailFromAddress);
+        Config::set('mail.from.name', $mailFromName);
 
-            if (empty($mailPort)) {
-                $mailPort = 587; // Port tiêu chuẩn cho SMTP với TLS
-            }
-
-            if (empty($mailEncryption) || $mailEncryption === 'null') {
-                $mailEncryption = 'tls';
-            }
-
-            if (empty($mailFromAddress) || $mailFromAddress === 'hello@example.com') {
-                $mailFromAddress = config_get('email', 'admin@example.com');
-            }
-
-            if (empty($mailFromName)) {
-                $mailFromName = config_get('site_name', 'Shop Game Ngọc Rồng');
-            }
-
-            // Thiết lập cấu hình mail động
-            Config::set('mail.default', $mailDriver);
-            Config::set('mail.mailers.smtp.host', $mailHost);
-            Config::set('mail.mailers.smtp.port', $mailPort);
-            Config::set('mail.mailers.smtp.username', $mailUsername);
-            Config::set('mail.mailers.smtp.password', $mailPassword);
-            Config::set('mail.mailers.smtp.encryption', $mailEncryption);
-            Config::set('mail.from.address', $mailFromAddress);
-            Config::set('mail.from.name', $mailFromName);
-
-            // Log cấu hình để debug
-            Log::info('Password reset email config:', [
-                'host' => config('mail.mailers.smtp.host'),
-                'port' => config('mail.mailers.smtp.port'),
-                'encryption' => config('mail.mailers.smtp.encryption'),
-                'username' => config('mail.mailers.smtp.username') ? 'set' : 'not-set',
-                'from_address' => config('mail.from.address'),
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Lỗi cấu hình email đặt lại mật khẩu: ' . $e->getMessage());
-        }
+        Log::info('Password reset mail transport prepared', [
+            'mailer' => config('mail.default'),
+            'host' => config('mail.mailers.smtp.host'),
+            'port' => config('mail.mailers.smtp.port'),
+            'encryption' => config('mail.mailers.smtp.encryption'),
+            'username_configured' => !empty(config('mail.mailers.smtp.username')),
+            'from_configured' => !empty(config('mail.from.address')),
+        ]);
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
         return ['mail'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
         $resetUrl = url(route('password.reset', [
@@ -109,7 +70,7 @@ class ResetPasswordNotification extends Notification implements ShouldQueue
             'email' => $notifiable->getEmailForPasswordReset(),
         ], false));
 
-        $siteName = config_get('site_name', 'Shop Game Ngọc Rồng');
+        $siteName = config_get('site_name', config('app.name', 'Shop Game'));
 
         return (new MailMessage)
             ->subject('Đặt lại mật khẩu - ' . $siteName)
@@ -119,15 +80,8 @@ class ResetPasswordNotification extends Notification implements ShouldQueue
             ]);
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(object $notifiable): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 }
