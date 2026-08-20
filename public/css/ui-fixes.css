@@ -385,3 +385,95 @@ html body nav.navbar #avatarWrapper #avatarDropdown.show {
         box-shadow: 0 12px 28px rgba(15, 23, 42, .12) !important;
     }
 }
+
+/* =========================================================
+   DESKTOP NAP TIEN — COMPACT OVERRIDE ONLY
+   Keeps the no-gap hover behavior, but prevents the full-width panel.
+   ========================================================= */
+@media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
+    html body nav.navbar > .nav-container > .nav-links > li.nav-dropdown {
+        position: relative !important;
+        height: 64px !important;
+        min-height: 64px !important;
+        align-items: center !important;
+    }
+
+    html body nav.navbar > .nav-container > .nav-links > li.nav-dropdown > ul.modern-dropdown-menu {
+        position: absolute !important;
+        top: calc(100% - 1px) !important;
+        right: auto !important;
+        left: -12px !important;
+        width: 520px !important;
+        min-width: 520px !important;
+        max-width: calc(100vw - 24px) !important;
+        padding: 9px !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+        background: #fff !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 12px !important;
+        box-shadow: 0 14px 34px rgba(15,23,42,.14) !important;
+        transform-origin: top left !important;
+        z-index: 1110 !important;
+    }
+
+    html body nav.navbar > .nav-container > .nav-links > li.nav-dropdown > ul.modern-dropdown-menu > li {
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 5px !important;
+        background: #f8fafc !important;
+        border: 1px solid #eef2f7 !important;
+        border-radius: 9px !important;
+    }
+
+    html body nav.navbar > .nav-container > .nav-links > li.nav-dropdown > ul.modern-dropdown-menu > li > a.dropdown-link-card {
+        min-height: 58px !important;
+        padding: 8px 10px !important;
+        gap: 10px !important;
+        background: #fff !important;
+        border: 1px solid #edf0f4 !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+
+    html body nav.navbar > .nav-container > .nav-links > li.nav-dropdown > ul.modern-dropdown-menu > li > a.dropdown-link-card:hover {
+        color: #dc2626 !important;
+        border-color: rgba(220,38,38,.24) !important;
+        box-shadow: 0 5px 14px rgba(15,23,42,.06) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    html body nav.navbar > .nav-container > .nav-links > li.nav-dropdown > ul.modern-dropdown-menu .dropdown-link-icon-box {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        flex: 0 0 34px !important;
+    }
+
+    html body nav.navbar > .nav-container > .nav-links > li.nav-dropdown > ul.modern-dropdown-menu .dropdown-link-title {
+        font-size: .82rem !important;
+        line-height: 1.25 !important;
+    }
+
+    html body nav.navbar > .nav-container > .nav-links > li.nav-dropdown > ul.modern-dropdown-menu .dropdown-link-desc {
+        margin-top: 2px !important;
+        font-size: .69rem !important;
+        line-height: 1.25 !important;
+    }
+
+    [data-theme="dark"] body nav.navbar > .nav-container > .nav-links > li.nav-dropdown > ul.modern-dropdown-menu {
+        background: #1b1b1b !important;
+        border-color: #303030 !important;
+    }
+
+    [data-theme="dark"] body nav.navbar > .nav-container > .nav-links > li.nav-dropdown > ul.modern-dropdown-menu > li {
+        background: #1d1d1d !important;
+        border-color: #2d2d2d !important;
+    }
+
+    [data-theme="dark"] body nav.navbar > .nav-container > .nav-links > li.nav-dropdown > ul.modern-dropdown-menu > li > a.dropdown-link-card {
+        background: #222 !important;
+        border-color: #303030 !important;
+    }
+}
