@@ -285,6 +285,16 @@
             pointer-events: none !important;
         }
 
+        /* Remove the old full-menu-width invisible bridge.
+           Nạp Tiền now gets the same real hover boundary as Danh Mục. */
+        html body nav.navbar .nav-links > li.nav-dropdown > .modern-dropdown-menu::before {
+            content: none !important;
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            pointer-events: none !important;
+        }
+
         /* Danh Mục panel begins exactly where the header ends. */
         html body nav.navbar .nav-mega-dropdown > .mega-menu {
             top: 64px !important;
