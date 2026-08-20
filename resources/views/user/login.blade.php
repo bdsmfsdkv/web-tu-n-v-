@@ -20,7 +20,7 @@
             @csrf
 
             <div class="form-group">
-                <label for="username" class="form-label">Tên tài khoản</label>
+                <label for="username" class="form-label">Tên tài khoản hoặc Email</label>
                 <input id="username"
                        type="text"
                        class="form-input"
@@ -33,7 +33,7 @@
                        autocapitalize="none"
                        autocorrect="off"
                        spellcheck="false"
-                       placeholder="Nhập tên tài khoản">
+                       placeholder="Nhập tên tài khoản hoặc email">
                 @error('username')
                     <span class="form-error">{{ $message }}</span>
                 @enderror

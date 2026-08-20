@@ -1,0 +1,543 @@
+/* =========================================================
+   UI FIXES - mobile top navigation / profile / auth / cards
+   ========================================================= */
+
+/* Smooth navigation transition on browsers that support it */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: shopPageOut .16s ease both; }
+::view-transition-new(root) { animation: shopPageIn .22s ease both; }
+@keyframes shopPageOut { to { opacity: 0; transform: translateY(-4px); } }
+@keyframes shopPageIn { from { opacity: 0; transform: translateY(7px); } }
+
+/* ================= CATEGORY CTA IMAGE ================= */
+html body .category-card { min-width: 0; overflow: hidden !important; }
+html body .category-card .category-body { width: 100%; min-width: 0; }
+html body .category-card .category-cta-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-top: auto !important;
+    padding: 8px 8px 4px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+}
+html body .category-card .category-cta-img {
+    display: block !important;
+    width: 100% !important;
+    max-width: 240px !important;
+    height: 64px !important;
+    max-height: 64px !important;
+    object-fit: contain !important;
+    object-position: center !important;
+    margin: 0 auto !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+}
+
+/* ================= AUTH ================= */
+html body .auth-page {
+    width: 100%;
+    min-height: calc(100vh - 64px);
+    padding: 44px 16px 64px !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    background: #f8fafc !important;
+    box-sizing: border-box !important;
+}
+html body .auth-card {
+    width: 100% !important;
+    max-width: 460px !important;
+    margin: 0 auto !important;
+    padding: 32px !important;
+    background: #fff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 16px !important;
+    box-shadow: 0 12px 35px rgba(15,23,42,.08) !important;
+    box-sizing: border-box !important;
+}
+html body .auth-header { margin-bottom: 26px !important; text-align: center !important; }
+html body .auth-title { margin: 0 0 8px !important; color: #dc2626 !important; font-size: 1.75rem !important; font-weight: 800 !important; }
+html body .auth-subtitle { margin: 0 !important; color: #64748b !important; font-size: .9rem !important; }
+html body .auth-card form,
+html body .auth-card .form-group { width: 100% !important; }
+html body .auth-card .form-group { margin: 0 0 18px !important; }
+html body .auth-card .form-label { display: block !important; margin: 0 0 7px !important; color: #111827 !important; font-size: .86rem !important; font-weight: 700 !important; }
+html body .auth-card .form-input {
+    display: block !important;
+    width: 100% !important;
+    height: 44px !important;
+    margin: 0 !important;
+    padding: 0 13px !important;
+    color: #111827 !important;
+    font-family: inherit !important;
+    font-size: .9rem !important;
+    background: #fff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 9px !important;
+    outline: none !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+}
+html body .auth-card .form-input:focus { border-color: #dc2626 !important; box-shadow: 0 0 0 3px rgba(220,38,38,.12) !important; }
+html body .auth-btn {
+    display: flex !important;
+    width: 100% !important;
+    min-height: 44px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #fff !important;
+    font-size: .92rem !important;
+    font-weight: 800 !important;
+    background: linear-gradient(135deg,#ef4444,#dc2626) !important;
+    border: 1px solid #dc2626 !important;
+    border-radius: 9px !important;
+}
+html body .auth-links { margin-top: 20px !important; color: #64748b !important; font-size: .86rem !important; text-align: center !important; }
+html body .auth-links a { color: #dc2626 !important; font-weight: 700 !important; text-decoration: none !important; }
+
+/* ================= DESKTOP HEADER ================= */
+html body .navbar {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 10000 !important;
+    background: rgba(255,255,255,.97) !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    box-shadow: 0 1px 8px rgba(15,23,42,.05) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+}
+html body .navbar > .nav-container {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 1360px !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    margin: 0 auto !important;
+    padding: 0 20px !important;
+    display: grid !important;
+    grid-template-columns: auto minmax(0,1fr) auto !important;
+    align-items: center !important;
+    gap: 14px !important;
+    box-sizing: border-box !important;
+}
+html body .navbar .nav-brand { position: static !important; display: flex !important; align-items: center !important; margin: 0 !important; padding: 0 !important; }
+html body .navbar .nav-brand img { width: auto !important; height: 34px !important; max-width: 135px !important; object-fit: contain !important; }
+html body .navbar .nav-links {
+    position: static !important;
+    display: flex !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 2px !important;
+    overflow: visible !important;
+    list-style: none !important;
+}
+html body .navbar .nav-links > li { width: auto !important; margin: 0 !important; padding: 0 !important; flex: 0 0 auto !important; }
+html body .navbar .nav-links .nav-link-item {
+    width: auto !important;
+    min-height: 36px !important;
+    padding: 7px 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    border-radius: 8px !important;
+    white-space: nowrap !important;
+    font-size: .82rem !important;
+}
+html body .navbar .nav-user { position: static !important; display: flex !important; height: 64px !important; align-items: center !important; justify-content: flex-end !important; gap: 8px !important; }
+html body .navbar .nav-offcanvas-header,
+html body .navbar .mobile-auth-banner,
+html body .navbar .nav-toggle { display: none !important; }
+html body main { padding-top: 64px !important; }
+
+/* ================= PROFILE DROPDOWN ================= */
+html body #avatarWrapper { position: relative !important; }
+html body #avatarDropdown {
+    width: 340px !important;
+    max-width: calc(100vw - 24px) !important;
+    border-radius: 18px !important;
+    border: 1px solid #e5e7eb !important;
+    background: #fff !important;
+    box-shadow: 0 22px 55px rgba(15,23,42,.18) !important;
+    overflow: visible !important;
+}
+html body #avatarDropdown .dropdown-user-card {
+    padding: 17px !important;
+    background: radial-gradient(circle at 92% 8%,rgba(239,68,68,.13),transparent 35%),linear-gradient(145deg,#fff,#fff8f8) !important;
+    border-radius: 18px 18px 0 0 !important;
+}
+html body #avatarDropdown .dropdown-user-header { display: flex !important; align-items: center !important; gap: 12px !important; }
+html body #avatarDropdown .dropdown-user-avatar {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #fff !important;
+    font-size: 1.05rem !important;
+    font-weight: 900 !important;
+    background: linear-gradient(135deg,#ef4444,#b91c1c) !important;
+    border: 3px solid #fff !important;
+    border-radius: 15px !important;
+    box-shadow: 0 8px 20px rgba(220,38,38,.25) !important;
+}
+html body #avatarDropdown .dropdown-name { color: #111827 !important; font-size: .96rem !important; font-weight: 850 !important; }
+html body #avatarDropdown .dropdown-email { margin-top: 4px !important; color: #8b96a7 !important; font-size: .76rem !important; }
+html body #avatarDropdown .dropdown-balance-box {
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) auto !important;
+    gap: 5px 12px !important;
+    margin-top: 14px !important;
+    padding: 12px 13px !important;
+    background: #fff !important;
+    border: 1px solid #fee2e2 !important;
+    border-radius: 13px !important;
+}
+html body #avatarDropdown .dropdown-balance-label { grid-column: 1 / -1 !important; color: #64748b !important; font-size: .69rem !important; font-weight: 800 !important; text-transform: uppercase !important; }
+html body #avatarDropdown .dropdown-balance-val { color: #dc2626 !important; font-size: 1.22rem !important; font-weight: 900 !important; }
+html body #avatarDropdown .dropdown-btn-deposit {
+    display: inline-flex !important;
+    min-height: 36px !important;
+    padding: 0 13px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    color: #fff !important;
+    font-size: .77rem !important;
+    font-weight: 850 !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+    background: linear-gradient(135deg,#ef4444,#dc2626) !important;
+    border-radius: 9px !important;
+}
+
+/* Language selector moved into profile by app.js */
+html body #avatarDropdown .profile-language-section { padding: 10px 12px 12px !important; background: #fff !important; }
+html body #avatarDropdown .profile-language-label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    margin-bottom: 7px !important;
+    color: #64748b !important;
+    font-size: .69rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+}
+html body #avatarDropdown .profile-language-section .ant-header-lang-dropdown { position: relative !important; width: 100% !important; }
+html body #avatarDropdown .profile-language-section .ant-header-lang-trigger {
+    display: flex !important;
+    width: 100% !important;
+    height: 40px !important;
+    padding: 0 11px !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: #f8fafc !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 10px !important;
+}
+html body #avatarDropdown .profile-language-section .lang-arrow { margin-left: auto !important; }
+html body #avatarDropdown .profile-language-section .ant-dropdown-menu {
+    position: static !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    transition: max-height .22s ease, opacity .18s ease, margin .22s ease, padding .22s ease !important;
+}
+html body #avatarDropdown .profile-language-section .ant-header-lang-dropdown.active .ant-dropdown-menu,
+html body #avatarDropdown .profile-language-section .ant-header-lang-dropdown:hover .ant-dropdown-menu {
+    max-height: 260px !important;
+    margin-top: 7px !important;
+    padding: 5px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 10px !important;
+}
+
+/* ================= DESKTOP DEPOSIT ================= */
+@media (min-width: 1200px) {
+    html body .nav-links .nav-dropdown { position: relative !important; padding-bottom: 6px !important; margin-bottom: -6px !important; }
+    html body .nav-links .nav-dropdown::after {
+        content: "";
+        position: absolute !important;
+        top: calc(100% - 8px) !important;
+        left: -18px !important;
+        width: calc(100% + 36px) !important;
+        height: 24px !important;
+        z-index: 1095 !important;
+    }
+    html body .nav-links .nav-dropdown > .modern-dropdown-menu {
+        top: calc(100% - 1px) !important;
+        left: -10px !important;
+        width: 330px !important;
+        min-width: 330px !important;
+        margin: 0 !important;
+        padding: 10px !important;
+        border-radius: 14px !important;
+        box-shadow: 0 16px 40px rgba(15,23,42,.16) !important;
+    }
+    html body .nav-links .nav-dropdown .dropdown-link-card { min-height: 66px !important; padding: 12px 14px !important; gap: 13px !important; border-radius: 11px !important; }
+}
+
+/* ================= TABLET + MOBILE: ONLY TOP HEADER ================= */
+@media (max-width: 1199px) {
+    /* Kill the old footer bottom menu that caused the vertical bar in the screenshot */
+    html body .mobile-bottom-nav,
+    html body nav.mobile-bottom-nav,
+    html body .mobile-bottom-nav-container { display: none !important; visibility: hidden !important; pointer-events: none !important; }
+
+    html body .navbar {
+        top: 0 !important;
+        right: 0 !important;
+        left: 0 !important;
+        bottom: auto !important;
+        width: 100% !important;
+        height: 56px !important;
+        min-height: 56px !important;
+        z-index: 12000 !important;
+    }
+    html body .navbar > .nav-container {
+        display: flex !important;
+        width: 100% !important;
+        height: 56px !important;
+        min-height: 56px !important;
+        padding: 0 12px !important;
+        align-items: center !important;
+        gap: 7px !important;
+    }
+    html body .navbar .nav-brand { margin-right: auto !important; flex: 0 1 auto !important; }
+    html body .navbar .nav-brand img { height: 30px !important; max-width: 116px !important; }
+    html body .navbar .nav-user { height: 56px !important; margin-left: auto !important; gap: 6px !important; }
+    html body .navbar .nav-user-profile .nav-user-info { display: none !important; }
+    html body .navbar .nav-avatar { width: 32px !important; height: 32px !important; min-width: 32px !important; }
+    html body .navbar .theme-toggle { width: 32px !important; height: 32px !important; min-width: 32px !important; }
+    html body .navbar .nav-guest-actions { display: none !important; }
+
+    html body .navbar .nav-toggle {
+        position: static !important;
+        display: flex !important;
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        margin: 0 !important;
+        padding: 7px !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 4px !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 9px !important;
+        background: #fff !important;
+        cursor: pointer !important;
+    }
+    html body .navbar .nav-toggle span { width: 18px !important; height: 2px !important; border-radius: 999px !important; background: #374151 !important; }
+
+    /* Top dropdown panel, not a right drawer and not a bottom bar */
+    html body .navbar .nav-links {
+        display: flex !important;
+        position: fixed !important;
+        top: 56px !important;
+        right: 0 !important;
+        bottom: auto !important;
+        left: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        max-height: calc(100vh - 56px) !important;
+        margin: 0 !important;
+        padding: 8px 10px 12px !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: flex-start !important;
+        gap: 2px !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        background: rgba(255,255,255,.985) !important;
+        border-bottom: 1px solid #e5e7eb !important;
+        border-radius: 0 0 16px 16px !important;
+        box-shadow: 0 18px 40px rgba(15,23,42,.16) !important;
+        z-index: 11990 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        transform: translateY(-12px) scaleY(.985) !important;
+        transform-origin: top center !important;
+        transition: opacity .2s ease, transform .24s cubic-bezier(.2,.8,.2,1), visibility .2s ease !important;
+    }
+    html body .navbar .nav-links.show {
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        transform: translateY(0) scaleY(1) !important;
+    }
+    html body .navbar .nav-links > li { width: 100% !important; border: 0 !important; }
+    html body .navbar .nav-links .nav-link-item {
+        width: 100% !important;
+        min-height: 44px !important;
+        padding: 11px 12px !important;
+        justify-content: flex-start !important;
+        border-radius: 10px !important;
+        font-size: .86rem !important;
+    }
+    html body .navbar .nav-links .nav-link-item .nav-arrow { margin-left: auto !important; }
+
+    /* Duplicate offcanvas title isn't needed because the real header stays visible */
+    html body .navbar .nav-offcanvas-header { display: none !important; }
+    html body .navbar .mobile-auth-banner { display: block !important; width: 100% !important; padding: 6px 0 8px !important; }
+
+    html body .navbar .modern-dropdown-menu,
+    html body .navbar .mega-menu {
+        display: none !important;
+        position: static !important;
+        width: 100% !important;
+        min-width: 100% !important;
+        margin: 3px 0 6px !important;
+        padding: 6px !important;
+        transform: none !important;
+        border: 1px solid #eef2f7 !important;
+        border-radius: 10px !important;
+        box-shadow: none !important;
+        background: #f8fafc !important;
+    }
+    html body .navbar .nav-dropdown.open > .modern-dropdown-menu,
+    html body .navbar .nav-mega-dropdown.open > .mega-menu { display: block !important; }
+
+    html body .navbar .mega-menu-container { padding: 0 !important; }
+    html body .navbar .mega-menu-grid { display: flex !important; flex-direction: column !important; gap: 6px !important; }
+    html body .navbar .mega-menu-column { padding: 8px !important; border-radius: 9px !important; }
+    html body .navbar .mega-menu-list { display: flex !important; flex-direction: column !important; max-height: 220px !important; }
+
+    html body .nav-overlay {
+        position: fixed !important;
+        top: 56px !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        background: rgba(15,23,42,.38) !important;
+        backdrop-filter: blur(2px) !important;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity .2s ease, visibility .2s ease !important;
+        z-index: 11980 !important;
+    }
+    html body .nav-overlay.show { display: block !important; opacity: 1 !important; visibility: visible !important; }
+
+    html body main { padding-top: 56px !important; }
+
+    /* Language should not remain beside the logo after JS moves it into profile */
+    html body .nav-user > .ant-header-lang-dropdown { max-width: 0 !important; opacity: 0 !important; overflow: hidden !important; pointer-events: none !important; margin: 0 !important; padding: 0 !important; }
+    html body #avatarDropdown .profile-language-section .ant-header-lang-dropdown { max-width: none !important; opacity: 1 !important; overflow: visible !important; pointer-events: auto !important; }
+}
+
+@media (max-width: 520px) {
+    html body .auth-card { padding: 24px 18px !important; }
+    html body #avatarDropdown { right: -46px !important; width: min(340px,calc(100vw - 16px)) !important; }
+    html body .navbar > .nav-container { padding: 0 9px !important; }
+}
+
+/* ================= DARK ================= */
+[data-theme="dark"] body .navbar { background: rgba(23,23,23,.98) !important; border-color: #2a2a2a !important; }
+[data-theme="dark"] body .navbar .nav-links { background: rgba(23,23,23,.99) !important; border-color: #303030 !important; }
+[data-theme="dark"] body .navbar .nav-toggle { background: #222 !important; border-color: #333 !important; }
+[data-theme="dark"] body .navbar .nav-toggle span { background: #e5e7eb !important; }
+[data-theme="dark"] body #avatarDropdown { background: #181818 !important; border-color: #303030 !important; }
+[data-theme="dark"] body #avatarDropdown .dropdown-user-card { background: linear-gradient(145deg,#1b1b1b,#24191a) !important; }
+[data-theme="dark"] body #avatarDropdown .dropdown-name { color: #f8fafc !important; }
+[data-theme="dark"] body #avatarDropdown .dropdown-balance-box { background: #202020 !important; border-color: #3c292b !important; }
+[data-theme="dark"] body #avatarDropdown .profile-language-section { background: #181818 !important; }
+[data-theme="dark"] body #avatarDropdown .profile-language-section .ant-header-lang-trigger { background: #222 !important; border-color: #333 !important; }
+[data-theme="dark"] body .auth-page { background: #0f0f0f !important; }
+[data-theme="dark"] body .auth-card { background: #171717 !important; border-color: #2f2f2f !important; }
+
+/* ================= DESKTOP NAP TIEN - LONGER + SMOOTHER ================= */
+@media (min-width: 1200px) {
+    /* Make the hover bridge generous so moving from the trigger into the menu is forgiving. */
+    html body .navbar .nav-links .nav-dropdown::after {
+        top: calc(100% - 10px) !important;
+        left: -24px !important;
+        width: calc(100% + 48px) !important;
+        height: 34px !important;
+    }
+
+    /* Keep the element mounted: opacity/transform can animate smoothly, unlike display:none/block. */
+    html body .navbar .nav-links .nav-dropdown > .modern-dropdown-menu {
+        display: block !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        transform: translate3d(0,-7px,0) scale(.985) !important;
+        transform-origin: top left !important;
+        will-change: transform, opacity !important;
+        backface-visibility: hidden !important;
+        transition:
+            opacity .18s ease .25s,
+            transform .22s cubic-bezier(.2,.8,.2,1) .25s,
+            visibility 0s linear .47s !important;
+    }
+
+    html body .navbar .nav-links .nav-dropdown:hover > .modern-dropdown-menu,
+    html body .navbar .nav-links .nav-dropdown.deposit-hover-open > .modern-dropdown-menu,
+    html body .navbar .nav-links .nav-dropdown.deposit-click-open > .modern-dropdown-menu,
+    html body .navbar .nav-links .nav-dropdown > .modern-dropdown-menu:hover {
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        transform: translate3d(0,0,0) scale(1) !important;
+        transition:
+            opacity .15s ease 0s,
+            transform .2s cubic-bezier(.16,1,.3,1) 0s,
+            visibility 0s linear 0s !important;
+    }
+
+    html body .navbar .nav-links .nav-dropdown > .nav-link-item .nav-arrow {
+        transition: transform .24s cubic-bezier(.2,.8,.2,1), color .18s ease !important;
+    }
+
+    html body .navbar .nav-links .nav-dropdown .dropdown-link-card {
+        transform: translateZ(0) !important;
+        transition: background-color .16s ease, box-shadow .16s ease, transform .18s cubic-bezier(.2,.8,.2,1) !important;
+    }
+
+    html body .navbar .nav-links .nav-dropdown .dropdown-link-card:hover {
+        transform: translate3d(2px,0,0) !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root),
+    html body .navbar .modern-dropdown-menu,
+    html body .navbar .nav-arrow,
+    html body .navbar .dropdown-link-card {
+        animation: none !important;
+        transition-duration: .01ms !important;
+        transition-delay: 0s !important;
+    }
+}
