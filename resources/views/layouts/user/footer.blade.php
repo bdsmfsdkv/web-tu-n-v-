@@ -79,3 +79,87 @@
         </div>
     </div>
 </footer>
+
+@once
+<style id="final-header-account-tweaks">
+    /* Language selector now lives only inside THÔNG TIN TÀI KHOẢN. */
+    html body nav.navbar .nav-user > .ant-header-lang-dropdown,
+    html body #avatarDropdown .profile-language-section {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    /* Restore Nạp Tiền to the behavior from immediately before commit a65403e:
+       classic hover/display behavior, the smaller hover bridge, and the existing
+       700ms JS safety window. This intentionally overrides later motion experiments. */
+    @media (min-width: 1200px) {
+        html body nav.navbar.navbar .nav-links .nav-dropdown {
+            position: relative !important;
+            padding-bottom: 6px !important;
+            margin-bottom: -6px !important;
+        }
+
+        html body nav.navbar.navbar .nav-links .nav-dropdown::after {
+            content: "" !important;
+            position: absolute !important;
+            top: calc(100% - 8px) !important;
+            left: -18px !important;
+            width: calc(100% + 36px) !important;
+            height: 24px !important;
+            z-index: 1095 !important;
+            pointer-events: auto !important;
+        }
+
+        html body nav.navbar.navbar .nav-links .nav-dropdown > .modern-dropdown-menu {
+            display: none !important;
+            top: calc(100% - 1px) !important;
+            left: -10px !important;
+            width: 330px !important;
+            min-width: 330px !important;
+            margin: 0 !important;
+            padding: 10px !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            transform: none !important;
+            transition: none !important;
+            border-radius: 14px !important;
+            box-shadow: 0 16px 40px rgba(15,23,42,.16) !important;
+        }
+
+        html body nav.navbar.navbar .nav-links .nav-dropdown:hover > .modern-dropdown-menu,
+        html body nav.navbar.navbar .nav-links .nav-dropdown.deposit-hover-open > .modern-dropdown-menu,
+        html body nav.navbar.navbar .nav-links .nav-dropdown.deposit-click-open > .modern-dropdown-menu,
+        html body nav.navbar.navbar .nav-links .nav-dropdown > .modern-dropdown-menu:hover {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            transform: none !important;
+        }
+
+        html body nav.navbar.navbar .nav-links .nav-dropdown .dropdown-link-card {
+            min-height: 66px !important;
+            padding: 12px 14px !important;
+            gap: 13px !important;
+            border-radius: 11px !important;
+            transform: none !important;
+            transition: background-color .16s ease, box-shadow .16s ease !important;
+        }
+
+        html body nav.navbar.navbar .modern-dropdown-menu:has(> li:hover) > li:not(:hover),
+        html body nav.navbar.navbar .modern-dropdown-menu > li {
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            transform: none !important;
+            filter: none !important;
+        }
+
+        html body nav.navbar.navbar .modern-dropdown-menu > li:hover .dropdown-link-card {
+            transform: none !important;
+        }
+    }
+</style>
+@endonce
