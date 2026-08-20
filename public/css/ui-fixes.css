@@ -3,7 +3,6 @@
 /* =========================================================
    DESKTOP NAP TIEN
    Chỉ vùng thật của nút Nạp Tiền mới kích hoạt dropdown.
-   Không còn cầu hover/padding vô hình quanh nút.
    ========================================================= */
 @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown {
@@ -20,7 +19,6 @@
         pointer-events: none !important;
     }
 
-    /* Menu áp sát ngay dưới nút để rê từ vùng đỏ xuống menu không bị hở. */
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown > .modern-dropdown-menu {
         top: 100% !important;
         margin-top: 0 !important;
@@ -29,7 +27,6 @@
         pointer-events: none !important;
     }
 
-    /* Vô hiệu các class JS cũ từng làm vùng hover bị rộng/dính. */
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown:hover > .modern-dropdown-menu,
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown.deposit-hover-open > .modern-dropdown-menu,
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown.deposit-click-open > .modern-dropdown-menu {
@@ -38,7 +35,6 @@
         pointer-events: none !important;
     }
 
-    /* Chỉ khi chính .nav-link-item (vùng đỏ) đang hover thì mới mở. */
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown:has(> .nav-link-item:hover) > .modern-dropdown-menu,
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown:has(> .modern-dropdown-menu:hover) > .modern-dropdown-menu {
         display: block !important;
@@ -120,7 +116,8 @@ html body #avatarDropdown form {
 }
 
 /* =========================================================
-   AVATAR ACCOUNT
+   AVATAR ACCOUNT — trả hiệu ứng hover về kiểu cũ
+   Nút tròn đỏ + vòng sáng đỏ khi rê chuột.
    ========================================================= */
 html body nav.navbar #avatarWrapper {
     position: relative !important;
@@ -141,9 +138,9 @@ html body nav.navbar #avatarWrapper .nav-user-profile {
 html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar {
     position: relative !important;
     display: inline-flex !important;
-    width: 36px !important;
-    height: 36px !important;
-    min-width: 36px !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
     margin: 0 !important;
     padding: 0 !important;
     align-items: center !important;
@@ -151,37 +148,44 @@ html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar {
     overflow: hidden !important;
     color: transparent !important;
     font-size: 0 !important;
-    background: #fff !important;
-    border: 1px solid #dbe2ea !important;
+    background: var(--primary, #dc2626) !important;
+    border: 0 !important;
     border-radius: 50% !important;
-    box-shadow: 0 2px 8px rgba(15,23,42,.08) !important;
+    box-shadow: none !important;
     cursor: pointer !important;
+    opacity: 1 !important;
+    transition: all .3s cubic-bezier(.4, 0, .2, 1) !important;
     z-index: 12043 !important;
 }
 
 html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar::before {
     content: "\f007" !important;
     display: block !important;
-    color: #64748b !important;
+    color: #fff !important;
     font-family: "Font Awesome 6 Free" !important;
-    font-size: 16px !important;
+    font-size: 15px !important;
     font-style: normal !important;
     font-weight: 900 !important;
     line-height: 1 !important;
+    transition: inherit !important;
 }
 
+/* Hiệu ứng cũ: nhẹ opacity + vòng sáng đỏ. */
 html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar:hover,
-html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar:focus-visible {
-    background: #fff7f7 !important;
-    border-color: rgba(220,38,38,.42) !important;
-    box-shadow: 0 0 0 3px rgba(220,38,38,.08) !important;
+html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar:focus-visible,
+html body nav.navbar #avatarWrapper:hover #avatarBtn.nav-avatar {
+    opacity: .9 !important;
+    background: var(--primary, #dc2626) !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, .15) !important;
 }
 
 html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar:hover::before,
-html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar:focus-visible::before {
-    color: #dc2626 !important;
+html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar:focus-visible::before,
+html body nav.navbar #avatarWrapper:hover #avatarBtn.nav-avatar::before {
+    color: #fff !important;
 }
 
+/* Menu mặc định ẩn. */
 html body nav.navbar #avatarWrapper #avatarDropdown {
     display: none !important;
     visibility: hidden !important;
@@ -189,19 +193,28 @@ html body nav.navbar #avatarWrapper #avatarDropdown {
     pointer-events: none !important;
 }
 
+/* Bấm avatar: JS thêm .show. */
 html body nav.navbar #avatarWrapper #avatarDropdown.show {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
     pointer-events: auto !important;
+    animation: avatarDropdownClassicIn .18s cubic-bezier(.16, 1, .3, 1) both !important;
 }
 
+@keyframes avatarDropdownClassicIn {
+    from { opacity: 0; transform: translateY(-6px) scale(.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Desktop: rê vào avatar hoặc menu thì mở, có animation như bản cũ. */
 @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
     html body nav.navbar #avatarWrapper:hover #avatarDropdown {
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
         pointer-events: auto !important;
+        animation: avatarDropdownClassicIn .18s cubic-bezier(.16, 1, .3, 1) both !important;
     }
 }
 
@@ -232,11 +245,12 @@ html body nav.navbar #avatarWrapper #avatarDropdown.show {
     background: #2a1c1c !important;
 }
 
-[data-theme="dark"] body nav.navbar #avatarWrapper #avatarBtn.nav-avatar {
-    background: #222 !important;
-    border-color: #383838 !important;
+[data-theme="dark"] body nav.navbar #avatarWrapper #avatarBtn.nav-avatar,
+[data-theme="dark"] body nav.navbar #avatarWrapper #avatarBtn.nav-avatar:hover,
+[data-theme="dark"] body nav.navbar #avatarWrapper:hover #avatarBtn.nav-avatar {
+    background: var(--primary, #f87171) !important;
 }
 
 [data-theme="dark"] body nav.navbar #avatarWrapper #avatarBtn.nav-avatar::before {
-    color: #d1d5db !important;
+    color: #fff !important;
 }
