@@ -35,12 +35,19 @@ class PasswordResetLinkController extends Controller
                 return back()->with('status', 'Đã gửi liên kết đặt lại mật khẩu. Vui lòng kiểm tra hộp thư và cả mục Spam/Thư rác.');
             }
 
+            if ($status === Password::RESET_THROTTLED) {
+                return back()
+                    ->withInput($request->only('email'))
+                    ->withErrors(['email' => 'Bạn vừa yêu cầu email đặt lại mật khẩu. Vui lòng đợi khoảng 60 giây rồi thử lại.']);
+            }
+
             return back()
                 ->withInput($request->only('email'))
-                ->withErrors(['email' => __($status)]);
+                ->withErrors(['email' => 'Không thể gửi liên kết đặt lại mật khẩu. Vui lòng thử lại sau.']);
         } catch (\Throwable $e) {
             Log::error('Lỗi gửi link đặt lại mật khẩu', [
                 'email' => $validated['email'],
+                'exception' => get_class($e),
                 'error' => $e->getMessage(),
             ]);
 
