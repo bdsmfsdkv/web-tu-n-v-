@@ -76,7 +76,7 @@
     @endif
 
     @stack('css')
-    <link href="/css/mobile-header-final.css?v=20260820-4" rel="stylesheet">
+    <link href="/css/mobile-header-final.css?v=20260820-5" rel="stylesheet">
 
     <style>
         .ant-header-lang-dropdown {
@@ -156,6 +156,96 @@
 
         .skiptranslate {
             display: none !important;
+        }
+
+        /* Guest mobile header: keep Login/Register beside theme, never inside hamburger. */
+        @media (max-width: 1199px) {
+            html body nav.navbar > .nav-container > .nav-user > .nav-guest-actions {
+                display: flex !important;
+                visibility: visible !important;
+                pointer-events: auto !important;
+                align-items: center !important;
+                gap: 5px !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                flex: 0 0 auto !important;
+            }
+
+            html body nav.navbar > .nav-container > .nav-user > .nav-guest-actions .btn-nav-login,
+            html body nav.navbar > .nav-container > .nav-user > .nav-guest-actions .btn-nav-register {
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 4px !important;
+                height: 32px !important;
+                min-height: 32px !important;
+                padding: 0 8px !important;
+                border-radius: 8px !important;
+                font-size: .72rem !important;
+                font-weight: 750 !important;
+                line-height: 1 !important;
+                white-space: nowrap !important;
+            }
+
+            html body nav.navbar > .nav-container > #navLinks > li.mobile-auth-banner,
+            html body nav.navbar #navLinks > li.mobile-auth-banner {
+                display: none !important;
+                visibility: hidden !important;
+                pointer-events: none !important;
+                height: 0 !important;
+                min-height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+            }
+        }
+
+        @media (max-width: 430px) {
+            html body nav.navbar > .nav-container {
+                padding-left: 7px !important;
+                padding-right: 7px !important;
+                gap: 4px !important;
+            }
+
+            html body nav.navbar > .nav-container > .nav-brand img {
+                max-width: 72px !important;
+                height: 28px !important;
+            }
+
+            html body nav.navbar > .nav-container > .nav-user {
+                gap: 4px !important;
+            }
+
+            html body nav.navbar > .nav-container > .nav-user > .nav-guest-actions {
+                gap: 3px !important;
+            }
+
+            html body nav.navbar > .nav-container > .nav-user > .nav-guest-actions .btn-nav-login,
+            html body nav.navbar > .nav-container > .nav-user > .nav-guest-actions .btn-nav-register {
+                height: 30px !important;
+                min-height: 30px !important;
+                padding: 0 6px !important;
+                font-size: .66rem !important;
+                gap: 3px !important;
+            }
+
+            html body nav.navbar > .nav-container > .nav-user > .nav-guest-actions .iconify {
+                font-size: .78rem !important;
+            }
+
+            html body nav.navbar .theme-toggle {
+                width: 31px !important;
+                height: 31px !important;
+                min-width: 31px !important;
+                flex-basis: 31px !important;
+            }
+
+            html body nav.navbar #navToggle {
+                width: 34px !important;
+                height: 34px !important;
+                min-width: 34px !important;
+                flex-basis: 34px !important;
+            }
         }
     </style>
 
