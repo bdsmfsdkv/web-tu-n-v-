@@ -677,3 +677,119 @@ html body nav.navbar #avatarWrapper #avatarDropdown.show {
         box-shadow: 0 12px 28px rgba(15, 23, 42, .12) !important;
     }
 }
+
+/* =========================================================
+   DESKTOP TOP NAV — POLISHED / COMPACT
+   Visual-only override for the main navigation row.
+   ========================================================= */
+@media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
+    html body nav.navbar > .nav-container > ul#navLinks {
+        gap: 4px !important;
+    }
+
+    html body nav.navbar > .nav-container > ul#navLinks > li {
+        display: flex !important;
+        height: 64px !important;
+        min-height: 64px !important;
+        align-items: center !important;
+    }
+
+    html body nav.navbar > .nav-container > ul#navLinks > li > a.nav-link-item {
+        height: 38px !important;
+        min-height: 38px !important;
+        padding: 0 10px !important;
+        gap: 6px !important;
+        color: #30343b !important;
+        border: 1px solid transparent !important;
+        border-radius: 10px !important;
+        font-size: .82rem !important;
+        font-weight: 650 !important;
+        line-height: 1 !important;
+        letter-spacing: -.005em !important;
+        box-shadow: none !important;
+        transition: color .16s ease, background .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s ease !important;
+    }
+
+    html body nav.navbar > .nav-container > ul#navLinks > li > a.nav-link-item .nav-item-icon {
+        display: inline-flex !important;
+        width: 16px !important;
+        min-width: 16px !important;
+        height: 16px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #626973 !important;
+        font-size: .92rem !important;
+        line-height: 1 !important;
+    }
+
+    html body nav.navbar > .nav-container > ul#navLinks > li > a.nav-link-item .nav-arrow {
+        margin-left: 0 !important;
+        color: #8b9199 !important;
+        font-size: .56rem !important;
+        opacity: .9 !important;
+    }
+
+    html body nav.navbar > .nav-container > ul#navLinks > li > a.nav-link-item:hover,
+    html body nav.navbar > .nav-container > ul#navLinks > li > a.nav-link-item.active,
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown:hover > a.nav-link-item,
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-mega-dropdown:hover > a.nav-link-item {
+        color: var(--primary, #dc2626) !important;
+        background: rgba(220, 38, 38, .055) !important;
+        border-color: rgba(220, 38, 38, .11) !important;
+        box-shadow: 0 3px 10px rgba(15, 23, 42, .035) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    html body nav.navbar > .nav-container > ul#navLinks > li > a.nav-link-item:hover .nav-item-icon,
+    html body nav.navbar > .nav-container > ul#navLinks > li > a.nav-link-item.active .nav-item-icon,
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown:hover > a.nav-link-item .nav-item-icon,
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-mega-dropdown:hover > a.nav-link-item .nav-item-icon {
+        color: var(--primary, #dc2626) !important;
+    }
+
+    html body nav.navbar > .nav-container > ul#navLinks .nav-badge-hot {
+        height: 18px !important;
+        min-height: 18px !important;
+        margin-left: 1px !important;
+        padding: 0 6px !important;
+        color: #047857 !important;
+        background: #ecfdf5 !important;
+        border: 1px solid #d1fae5 !important;
+        border-radius: 999px !important;
+        font-size: .57rem !important;
+        font-weight: 800 !important;
+        line-height: 16px !important;
+        letter-spacing: 0 !important;
+        box-shadow: 0 1px 3px rgba(5, 150, 105, .06) !important;
+    }
+
+    [data-theme="dark"] body nav.navbar > .nav-container > ul#navLinks > li > a.nav-link-item {
+        color: #e5e7eb !important;
+    }
+
+    [data-theme="dark"] body nav.navbar > .nav-container > ul#navLinks > li > a.nav-link-item .nav-item-icon {
+        color: #a7adb6 !important;
+    }
+
+    [data-theme="dark"] body nav.navbar > .nav-container > ul#navLinks > li > a.nav-link-item:hover,
+    [data-theme="dark"] body nav.navbar > .nav-container > ul#navLinks > li > a.nav-link-item.active,
+    [data-theme="dark"] body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown:hover > a.nav-link-item,
+    [data-theme="dark"] body nav.navbar > .nav-container > ul#navLinks > li.nav-mega-dropdown:hover > a.nav-link-item {
+        background: rgba(248, 113, 113, .08) !important;
+        border-color: rgba(248, 113, 113, .14) !important;
+        box-shadow: none !important;
+    }
+}
+
+@media (min-width: 1200px) and (max-width: 1320px) {
+    html body nav.navbar > .nav-container > ul#navLinks {
+        gap: 2px !important;
+    }
+
+    html body nav.navbar > .nav-container > ul#navLinks > li > a.nav-link-item {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+        gap: 5px !important;
+        font-size: .79rem !important;
+    }
+}
