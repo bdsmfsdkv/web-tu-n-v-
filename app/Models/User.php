@@ -14,11 +14,6 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'username',
         'password',
@@ -36,46 +31,38 @@ class User extends Authenticatable
         'total_commission'
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
 
     /**
-     * Gửi thông báo đặt lại mật khẩu với token
-     *
-     * @param string $token
-     * @return void
+     * Gửi email đặt lại mật khẩu.
+     * Nếu SMTP lỗi thì ném lại exception để controller báo đúng cho người dùng,
+     * tránh trường hợp giao diện báo "đã gửi" trong khi thư thực tế chưa đi.
      */
-    public function sendPasswordResetNotification($token)
+    public function sendPasswordResetNotification($token): void
     {
         try {
             $this->notify(new ResetPasswordNotification($token));
-            Log::info('Đã gửi email đặt lại mật khẩu thành công', ['user_id' => $this->id, 'email' => $this->email]);
-        } catch (\Exception $e) {
+
+            Log::info('Đã gửi email đặt lại mật khẩu thành công', [
+                'user_id' => $this->id,
+                'email' => $this->email,
+            ]);
+        } catch (\Throwable $e) {
             Log::error('Lỗi khi gửi email đặt lại mật khẩu', [
                 'user_id' => $this->id,
                 'email' => $this->email,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
-            // Không ném ngoại lệ để không làm gián đoạn luồng người dùng
-            // Người dùng vẫn có thể nhận được token thông qua URL trong trường hợp email không gửi được
+            throw $e;
         }
     }
 }
