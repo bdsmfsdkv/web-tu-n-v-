@@ -303,10 +303,10 @@ html body .mobile-bottom-nav-container {
         animation: none !important;
     }
 
+    /* Nap Tien now follows the same hover timing as Danh Muc. The old 700ms JS helper class is intentionally ignored visually. */
     html body .navbar .nav-mega-dropdown:hover > .mega-menu,
     html body .navbar .nav-mega-dropdown:focus-within > .mega-menu,
     html body .navbar .nav-dropdown:hover > .modern-dropdown-menu,
-    html body .navbar .nav-dropdown.deposit-hover-open > .modern-dropdown-menu,
     html body .navbar .nav-dropdown.deposit-click-open > .modern-dropdown-menu,
     html body .navbar .nav-dropdown > .modern-dropdown-menu:hover {
         opacity: 1 !important;
@@ -314,15 +314,6 @@ html body .mobile-bottom-nav-container {
         pointer-events: auto !important;
         transform: translate3d(0,0,0) scale(1) !important;
         transition: opacity .14s ease, transform .21s cubic-bezier(.22,1,.36,1), visibility 0s linear 0s !important;
-    }
-
-    /* The JS keeps deposit-hover-open for a while; visually close sooner after the pointer truly leaves. */
-    html body .navbar .nav-dropdown.deposit-hover-open:not(:hover):not(.deposit-click-open) > .modern-dropdown-menu {
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-        transform: translate3d(0,-5px,0) scale(.997) !important;
-        transition: opacity .16s ease .12s, transform .2s cubic-bezier(.22,1,.36,1) .12s, visibility 0s linear .32s !important;
     }
 
     html body .navbar .nav-mega-dropdown > .nav-link-item .nav-arrow,
