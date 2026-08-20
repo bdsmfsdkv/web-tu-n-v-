@@ -316,3 +316,55 @@ html body nav.navbar #avatarWrapper #avatarDropdown.show {
 [data-theme="dark"] body nav.navbar #avatarWrapper #avatarBtn.nav-avatar::before {
     color: #fff !important;
 }
+
+/* =========================================================
+   HOME GAME CATEGORIES — tang kich thuoc vua phai
+   Chi ap dung cac nhom game co id categories-*, khong anh huong
+   Vong Quay/Dich Vu va giu nguyen mobile nho.
+   ========================================================= */
+@media (min-width: 768px) {
+    html body section[id^="categories-"] > .container {
+        max-width: 1360px !important;
+    }
+
+    html body section[id^="categories-"] .category-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+        gap: 22px !important;
+    }
+
+    html body section[id^="categories-"] .category-card {
+        padding: 12px !important;
+        border-radius: 14px !important;
+    }
+
+    html body section[id^="categories-"] .category-img {
+        border-radius: 10px !important;
+    }
+
+    html body section[id^="categories-"] .category-body {
+        padding: 15px 6px 5px !important;
+    }
+
+    html body section[id^="categories-"] .category-name {
+        font-size: 1.02rem !important;
+        line-height: 1.35 !important;
+    }
+
+    html body section[id^="categories-"] .category-count {
+        font-size: .84rem !important;
+        margin-bottom: 16px !important;
+    }
+
+    html body section[id^="categories-"] .category-btn-cta {
+        max-width: 142px !important;
+        height: 34px !important;
+        font-size: .82rem !important;
+    }
+}
+
+@media (min-width: 1200px) {
+    html body section[id^="categories-"] .category-card:hover {
+        transform: translateY(-5px) !important;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, .12) !important;
+    }
+}
