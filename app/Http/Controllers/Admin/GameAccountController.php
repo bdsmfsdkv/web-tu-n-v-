@@ -118,37 +118,48 @@ class GameAccountController extends Controller
                 'note' => 'nullable|string',
                 'details' => 'nullable|array',
                 'thumb' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120'
+                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+                'removed_images' => 'nullable|array',
+                'removed_images.*' => 'nullable|string'
             ]);
 
             DB::beginTransaction();
 
-            $data = $request->except(['thumb', 'images']);
+            $data = $request->except(['thumb', 'images', 'removed_images']);
 
             if ($request->hasFile('thumb')) {
-                // Delete old thumbnail
+                // Delete old thumbnail only when a replacement thumbnail is uploaded.
                 if ($account->thumb) {
                     UploadHelper::deleteByUrl($account->thumb);
                 }
                 $data['thumb'] = UploadHelper::upload($request->file('thumb'), self::UPLOAD_DIR . '/thumbnails');
             }
 
-            if ($request->hasFile('images')) {
-                // Delete old images
-                if ($account->images) {
-                    $oldImages = json_decode($account->images, true);
-                    foreach ($oldImages as $image) {
-                        UploadHelper::deleteByUrl($image);
-                    }
-                }
+            // Keep current detail images by default. Only images explicitly marked with X are removed.
+            $existingImages = $account->images ? (json_decode($account->images, true) ?: []) : [];
+            $removedImages = array_values(array_unique($request->input('removed_images', [])));
 
-                // Store new images
-                $imagePaths = [];
+            $remainingImages = array_values(array_filter($existingImages, function ($image) use ($removedImages) {
+                return !in_array($image, $removedImages, true);
+            }));
+
+            // Physically delete only paths that actually belong to this account.
+            foreach ($removedImages as $image) {
+                if (in_array($image, $existingImages, true)) {
+                    UploadHelper::deleteByUrl($image);
+                }
+            }
+
+            // New uploads are appended to the images that were kept instead of replacing all old images.
+            if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
                     $path = UploadHelper::upload($image, self::UPLOAD_DIR . '/images');
-                    $imagePaths[] = $path;
+                    $remainingImages[] = $path;
                 }
-                $data['images'] = json_encode($imagePaths);
+            }
+
+            if (!empty($removedImages) || $request->hasFile('images')) {
+                $data['images'] = json_encode(array_values($remainingImages));
             }
 
             $account->update($data);
