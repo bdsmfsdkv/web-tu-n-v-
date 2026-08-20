@@ -24,3 +24,88 @@
         top: calc(100% - 1px) !important;
     }
 }
+
+/* Account dropdown: force menu links back into clean vertical rows. */
+html body #avatarDropdown .dropdown-divider {
+    width: 100% !important;
+    height: 1px !important;
+    margin: 6px 0 !important;
+    background: #eef2f7 !important;
+    border: 0 !important;
+}
+
+html body #avatarDropdown .dropdown-menu-links {
+    display: flex !important;
+    width: 100% !important;
+    padding: 4px 8px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 2px !important;
+    box-sizing: border-box !important;
+}
+
+html body #avatarDropdown .dropdown-menu-links > .dropdown-item,
+html body #avatarDropdown .dropdown-logout {
+    display: flex !important;
+    width: 100% !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 9px 11px !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    color: #374151 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 9px !important;
+    font-family: inherit !important;
+    font-size: .82rem !important;
+    font-weight: 650 !important;
+    line-height: 1.25 !important;
+    text-align: left !important;
+    text-decoration: none !important;
+    white-space: normal !important;
+    box-sizing: border-box !important;
+}
+
+html body #avatarDropdown .dropdown-item .dropdown-item-icon {
+    display: inline-flex !important;
+    width: 22px !important;
+    min-width: 22px !important;
+    height: 22px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #64748b !important;
+    font-size: 1rem !important;
+}
+
+html body #avatarDropdown .dropdown-menu-links > .dropdown-item:hover,
+html body #avatarDropdown .dropdown-logout:hover {
+    color: #dc2626 !important;
+    background: #fff1f2 !important;
+}
+
+html body #avatarDropdown .dropdown-menu-links > .dropdown-item:hover .dropdown-item-icon,
+html body #avatarDropdown .dropdown-logout:hover .dropdown-item-icon {
+    color: #dc2626 !important;
+}
+
+html body #avatarDropdown form {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+[data-theme="dark"] body #avatarDropdown .dropdown-divider {
+    background: #303030 !important;
+}
+
+[data-theme="dark"] body #avatarDropdown .dropdown-menu-links > .dropdown-item,
+[data-theme="dark"] body #avatarDropdown .dropdown-logout {
+    color: #e5e7eb !important;
+}
+
+[data-theme="dark"] body #avatarDropdown .dropdown-menu-links > .dropdown-item:hover,
+[data-theme="dark"] body #avatarDropdown .dropdown-logout:hover {
+    color: #f87171 !important;
+    background: #2a1c1c !important;
+}
