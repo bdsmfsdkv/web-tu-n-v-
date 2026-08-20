@@ -66,6 +66,15 @@ class PasswordResetLinkController extends Controller
                     'email' => $user->getEmailForPasswordReset(),
                 ]);
 
+                // Chỉ dành cho localhost: lưu link reset để có thể test toàn bộ flow
+                // ngay cả khi Gmail chặn mail của shared hosting.
+                if (app()->environment('local')) {
+                    Log::info('LOCAL PASSWORD RESET URL', [
+                        'email' => $user->getEmailForPasswordReset(),
+                        'url' => $resetUrl,
+                    ]);
+                }
+
                 $body = "KUNCHEAP - Đặt lại mật khẩu\n\n"
                     . "Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản KUNCHEAP.\n\n"
                     . "Mở liên kết sau để tạo mật khẩu mới:\n"
@@ -84,7 +93,14 @@ class PasswordResetLinkController extends Controller
                     'email' => $validated['email'],
                 ]);
 
-                return back()->with('status', 'Đã gửi liên kết đặt lại mật khẩu. Vui lòng kiểm tra hộp thư và cả mục Spam/Thư rác.');
+                $response = back()->with('status', 'Đã gửi liên kết đặt lại mật khẩu. Vui lòng kiểm tra hộp thư và cả mục Spam/Thư rác.');
+
+                // Trên local hiện luôn link reset ngay trên form để test không cần Gmail.
+                if (app()->environment('local')) {
+                    $response->with('local_reset_url', $resetUrl);
+                }
+
+                return $response;
             } catch (\Throwable $e) {
                 // createToken cũng nằm trong try để lỗi DB không còn làm bung trang Ignition.
                 // Chỉ xóa token khi repository đã sẵn sàng; lần thử sau sẽ tạo token mới.
