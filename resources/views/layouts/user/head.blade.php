@@ -247,6 +247,21 @@
                 flex-basis: 34px !important;
             }
         }
+
+        /* Keep the desktop Nạp Tiền hover bridge compact. */
+        @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
+            html body nav.navbar .nav-dropdown {
+                padding-bottom: 5px !important;
+                margin-bottom: -5px !important;
+            }
+
+            html body nav.navbar .nav-dropdown::after {
+                top: calc(100% - 5px) !important;
+                left: -8px !important;
+                width: calc(100% + 16px) !important;
+                height: 14px !important;
+            }
+        }
     </style>
 
     <script>
