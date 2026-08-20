@@ -188,7 +188,22 @@ function setupPreciseDesktopNavHover() {
         style.id = 'precise-desktop-nav-hover-style';
         style.textContent = `
             @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
-                html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown:hover:not(.pointer-open):not(.deposit-click-open):not(:focus-within) > .modern-dropdown-menu,
+                /*
+                 * NẠP TIỀN: only the visible trigger and the real dropdown panel may
+                 * keep the menu open. Older CSS/app.js created wide invisible hover
+                 * bridges and opened from the whole 64px <li>; neutralize those here.
+                 */
+                html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown::after,
+                html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown > .modern-dropdown-menu::before {
+                    content: none !important;
+                    display: none !important;
+                    width: 0 !important;
+                    height: 0 !important;
+                    pointer-events: none !important;
+                }
+
+                html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown:hover:not(.pointer-open):not(.deposit-click-open) > .modern-dropdown-menu,
+                html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown.deposit-hover-open:not(.pointer-open):not(.deposit-click-open) > .modern-dropdown-menu,
                 html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown:hover:not(.pointer-open):not(:focus-within) > .mega-menu {
                     display: none !important;
                     visibility: hidden !important;
@@ -212,6 +227,7 @@ function setupPreciseDesktopNavHover() {
                     pointer-events: auto !important;
                 }
 
+                /* Do not paint Nạp Tiền red when the cursor is only in empty li space. */
                 html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown:hover:not(.pointer-open):not(.deposit-click-open) > .nav-link-item:not(:hover),
                 html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown:hover:not(.pointer-open) > .nav-link-item:not(:hover) {
                     color: #242424 !important;
@@ -271,6 +287,7 @@ function setupPreciseDesktopNavHover() {
 
         owner.dataset.preciseHoverReady = '1';
         let closeTimer = null;
+        const isDepositMenu = owner.classList.contains('nav-dropdown');
 
         const openMenu = () => {
             if (closeTimer) {
@@ -283,12 +300,16 @@ function setupPreciseDesktopNavHover() {
         const scheduleClose = () => {
             if (closeTimer) window.clearTimeout(closeTimer);
             closeTimer = window.setTimeout(() => {
-                if (!trigger.matches(':hover') && !panel.matches(':hover') && !owner.matches(':focus-within')) {
+                const pointerStillInsideRealArea = trigger.matches(':hover') || panel.matches(':hover');
+                const keepMegaForKeyboard = !isDepositMenu && owner.matches(':focus-within');
+
+                if (!pointerStillInsideRealArea && !keepMegaForKeyboard) {
                     owner.classList.remove('pointer-open');
                 }
-            }, 220);
+            }, 180);
         };
 
+        /* Important: never bind mouseenter to the whole <li>. */
         trigger.addEventListener('mouseenter', openMenu);
         trigger.addEventListener('mouseleave', scheduleClose);
         panel.addEventListener('mouseenter', openMenu);
