@@ -135,9 +135,6 @@
                 <a href="javascript:void(0)" class="nav-link-item">
                     <span class="nav-item-icon"><span class="iconify" data-icon="ant-design:appstore-outlined"></span></span>
                     <span>Danh Mục</span>
-                    @if($totalNavCategories > 0)
-                        <span class="nav-badge">{{ $totalNavCategories }}</span>
-                    @endif
                     <span class="iconify nav-arrow" data-icon="ant-design:down-outlined"></span>
                 </a>
                 <div class="mega-menu">
@@ -227,7 +224,6 @@
                 <a href="javascript:void(0)" class="nav-link-item">
                     <span class="nav-item-icon"><span class="iconify" data-icon="ant-design:wallet-outlined"></span></span>
                     <span>Nạp Tiền</span>
-                    <span class="nav-badge nav-badge-pulse">Bonus</span>
                     <span class="iconify nav-arrow" data-icon="ant-design:down-outlined"></span>
                 </a>
                 <ul class="nav-dropdown-menu modern-dropdown-menu">
@@ -288,19 +284,6 @@
                     <span class="nav-badge nav-badge-hot">Kiếm tiền</span>
                 </a>
             </li>
-
-            <!-- Mobile Drawer Footer Contact -->
-            <li class="mobile-drawer-footer">
-                <div class="mobile-drawer-footer-title">Hỗ trợ khách hàng</div>
-                <div class="mobile-drawer-contacts">
-                    @if(config_get('phone'))
-                    <a href="tel:{{ config_get('phone') }}" class="mobile-contact-item"><i class="fa-solid fa-phone"></i> {{ config_get('phone') }}</a>
-                    @endif
-                    @if(config_get('zalo'))
-                    <a href="https://zalo.me/{{ config_get('zalo') }}" target="_blank" rel="noopener noreferrer" class="mobile-contact-item"><i class="fa-solid fa-comment-dots"></i> Zalo Hỗ Trợ</a>
-                    @endif
-                </div>
-            </li>
         </ul>
 
         <div class="nav-user">
@@ -348,12 +331,11 @@
                     <div class="nav-user-info">
                         <div class="nav-username">{{ Auth::user()->username }}</div>
                         <div class="nav-user-balance" title="{{ number_format(Auth::user()->balance) }}đ">
-                            <i class="fa-solid fa-wallet" style="font-size:0.75rem;margin-right:2px;color:var(--primary);"></i>{{ number_format(Auth::user()->balance) }}đ
+                            {{ number_format(Auth::user()->balance) }}đ
                         </div>
                     </div>
                     <button class="nav-avatar" id="avatarBtn" aria-label="User menu">
                         {{ strtoupper(substr(Auth::user()->username, 0, 1)) }}
-                        <span class="avatar-status-badge"></span>
                     </button>
                 </div>
                 <div class="avatar-dropdown" id="avatarDropdown">

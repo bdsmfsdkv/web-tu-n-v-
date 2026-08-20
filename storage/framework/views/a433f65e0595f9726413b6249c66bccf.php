@@ -73,6 +73,11 @@
                     <?php if(count($banners) > 1): ?>
                     <button class="slider-arrow slider-prev" id="sliderPrev" aria-label="Previous slide"><span class="iconify" data-icon="ant-design:left-outlined"></span></button>
                     <button class="slider-arrow slider-next" id="sliderNext" aria-label="Next slide"><span class="iconify" data-icon="ant-design:right-outlined"></span></button>
+                    <div class="slider-dots">
+                        <?php $__currentLoopData = $banners; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $banner): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <button class="dot <?php echo e($index == 0 ? 'active' : ''); ?>" data-index="<?php echo e($index); ?>" aria-label="Slide <?php echo e($index + 1); ?>"></button>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </div>
                     <?php endif; ?>
                 </div>
             </div>

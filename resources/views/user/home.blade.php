@@ -73,6 +73,11 @@
                     @if(count($banners) > 1)
                     <button class="slider-arrow slider-prev" id="sliderPrev" aria-label="Previous slide"><span class="iconify" data-icon="ant-design:left-outlined"></span></button>
                     <button class="slider-arrow slider-next" id="sliderNext" aria-label="Next slide"><span class="iconify" data-icon="ant-design:right-outlined"></span></button>
+                    <div class="slider-dots">
+                        @foreach($banners as $index => $banner)
+                            <button class="dot {{ $index == 0 ? 'active' : '' }}" data-index="{{ $index }}" aria-label="Slide {{ $index + 1 }}"></button>
+                        @endforeach
+                    </div>
                     @endif
                 </div>
             </div>

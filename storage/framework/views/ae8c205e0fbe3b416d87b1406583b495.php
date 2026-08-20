@@ -136,9 +136,6 @@
                 <a href="javascript:void(0)" class="nav-link-item">
                     <span class="nav-item-icon"><span class="iconify" data-icon="ant-design:appstore-outlined"></span></span>
                     <span>Danh Mục</span>
-                    <?php if($totalNavCategories > 0): ?>
-                        <span class="nav-badge"><?php echo e($totalNavCategories); ?></span>
-                    <?php endif; ?>
                     <span class="iconify nav-arrow" data-icon="ant-design:down-outlined"></span>
                 </a>
                 <div class="mega-menu">
@@ -228,7 +225,6 @@
                 <a href="javascript:void(0)" class="nav-link-item">
                     <span class="nav-item-icon"><span class="iconify" data-icon="ant-design:wallet-outlined"></span></span>
                     <span>Nạp Tiền</span>
-                    <span class="nav-badge nav-badge-pulse">Bonus</span>
                     <span class="iconify nav-arrow" data-icon="ant-design:down-outlined"></span>
                 </a>
                 <ul class="nav-dropdown-menu modern-dropdown-menu">
@@ -289,19 +285,6 @@
                     <span class="nav-badge nav-badge-hot">Kiếm tiền</span>
                 </a>
             </li>
-
-            <!-- Mobile Drawer Footer Contact -->
-            <li class="mobile-drawer-footer">
-                <div class="mobile-drawer-footer-title">Hỗ trợ khách hàng</div>
-                <div class="mobile-drawer-contacts">
-                    <?php if(config_get('phone')): ?>
-                    <a href="tel:<?php echo e(config_get('phone')); ?>" class="mobile-contact-item"><i class="fa-solid fa-phone"></i> <?php echo e(config_get('phone')); ?></a>
-                    <?php endif; ?>
-                    <?php if(config_get('zalo')): ?>
-                    <a href="https://zalo.me/<?php echo e(config_get('zalo')); ?>" target="_blank" rel="noopener noreferrer" class="mobile-contact-item"><i class="fa-solid fa-comment-dots"></i> Zalo Hỗ Trợ</a>
-                    <?php endif; ?>
-                </div>
-            </li>
         </ul>
 
         <div class="nav-user">
@@ -349,13 +332,12 @@
                     <div class="nav-user-info">
                         <div class="nav-username"><?php echo e(Auth::user()->username); ?></div>
                         <div class="nav-user-balance" title="<?php echo e(number_format(Auth::user()->balance)); ?>đ">
-                            <i class="fa-solid fa-wallet" style="font-size:0.75rem;margin-right:2px;color:var(--primary);"></i><?php echo e(number_format(Auth::user()->balance)); ?>đ
+                            <?php echo e(number_format(Auth::user()->balance)); ?>đ
                         </div>
                     </div>
                     <button class="nav-avatar" id="avatarBtn" aria-label="User menu">
                         <?php echo e(strtoupper(substr(Auth::user()->username, 0, 1))); ?>
 
-                        <span class="avatar-status-badge"></span>
                     </button>
                 </div>
                 <div class="avatar-dropdown" id="avatarDropdown">
