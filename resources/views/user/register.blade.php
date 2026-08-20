@@ -12,12 +12,22 @@
 
         <x-alert-error />
 
-        <form method="POST" action="{{ route('register') }}">
+        <form method="POST" action="{{ route('register') }}" autocomplete="on">
             @csrf
 
             <div class="form-group">
                 <label for="username" class="form-label">Tên tài khoản</label>
-                <input id="username" type="text" class="form-input" name="username" value="{{ old('username') }}" required autofocus placeholder="Tên tài khoản">
+                <input id="username"
+                       type="text"
+                       class="form-input"
+                       name="username"
+                       value="{{ old('username') }}"
+                       required
+                       autofocus
+                       autocomplete="username"
+                       autocapitalize="none"
+                       spellcheck="false"
+                       placeholder="Tên tài khoản">
                 @error('username')
                     <span class="form-error">{{ $message }}</span>
                 @enderror
@@ -25,7 +35,17 @@
 
             <div class="form-group">
                 <label for="email" class="form-label">Email</label>
-                <input id="email" type="email" class="form-input" name="email" value="{{ old('email') }}" required placeholder="VD: example@gmail.com">
+                <input id="email"
+                       type="email"
+                       class="form-input"
+                       name="email"
+                       value="{{ old('email') }}"
+                       required
+                       autocomplete="email"
+                       inputmode="email"
+                       autocapitalize="none"
+                       spellcheck="false"
+                       placeholder="VD: example@gmail.com">
                 @error('email')
                     <span class="form-error">{{ $message }}</span>
                 @enderror
@@ -33,7 +53,13 @@
 
             <div class="form-group">
                 <label for="password" class="form-label">Mật khẩu</label>
-                <input id="password" type="password" class="form-input" name="password" required placeholder="Tối thiểu 8 ký tự">
+                <input id="password"
+                       type="password"
+                       class="form-input"
+                       name="password"
+                       required
+                       autocomplete="new-password"
+                       placeholder="Tối thiểu 8 ký tự">
                 @error('password')
                     <span class="form-error">{{ $message }}</span>
                 @enderror
@@ -41,7 +67,13 @@
 
             <div class="form-group">
                 <label for="password-confirm" class="form-label">Xác nhận mật khẩu</label>
-                <input id="password-confirm" type="password" class="form-input" name="password_confirmation" required placeholder="Nhập lại mật khẩu">
+                <input id="password-confirm"
+                       type="password"
+                       class="form-input"
+                       name="password_confirmation"
+                       required
+                       autocomplete="new-password"
+                       placeholder="Nhập lại mật khẩu">
             </div>
 
             <button type="submit" class="auth-btn">
