@@ -16,7 +16,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('login') }}" autocomplete="on" novalidate>
+        <form method="POST" action="{{ route('login') }}" autocomplete="off" novalidate>
             @csrf
 
             <div class="form-group">
@@ -28,7 +28,9 @@
                        value="{{ old('username') }}"
                        required
                        autofocus
-                       autocomplete="username"
+                       autocomplete="off"
+                       data-lpignore="true"
+                       data-form-type="other"
                        inputmode="text"
                        autocapitalize="none"
                        autocorrect="off"
@@ -46,7 +48,9 @@
                        class="form-input"
                        name="password"
                        required
-                       autocomplete="current-password"
+                       autocomplete="off"
+                       data-lpignore="true"
+                       data-form-type="other"
                        placeholder="••••••••">
                 @error('password')
                     <span class="form-error">{{ $message }}</span>
