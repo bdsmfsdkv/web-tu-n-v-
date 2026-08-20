@@ -16,22 +16,27 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('login') }}" autocomplete="on">
+        <form method="POST" action="{{ route('login') }}" autocomplete="on" novalidate>
             @csrf
             <div class="form-group">
                 <label for="username" class="form-label">Tên tài khoản hoặc Email</label>
                 <input id="username"
-                       type="text"
+                       type="email"
                        class="form-input"
                        name="username"
                        value="{{ old('username') }}"
                        required
                        autofocus
-                       autocomplete="username"
+                       autocomplete="email"
+                       inputmode="email"
                        autocapitalize="none"
+                       autocorrect="off"
                        spellcheck="false"
-                       placeholder="Nhập tài khoản hoặc email">
+                       placeholder="Chọn email đã lưu hoặc nhập tài khoản">
                 @error('username')
+                    <span class="form-error">{{ $message }}</span>
+                @enderror
+                @error('email')
                     <span class="form-error">{{ $message }}</span>
                 @enderror
             </div>
