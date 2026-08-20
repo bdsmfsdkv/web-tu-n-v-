@@ -54,6 +54,39 @@
         border-radius: 50%;
         cursor: pointer;
     }
+    .password-local-test {
+        margin: -2px 0 16px;
+        padding: 12px;
+        color: #1e3a8a;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 10px;
+        font-size: .8rem;
+        line-height: 1.5;
+    }
+    .password-local-test strong { display: block; margin-bottom: 6px; }
+    .password-local-test a {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 11px;
+        color: #fff;
+        background: #2563eb;
+        border-radius: 8px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+    .password-local-test code {
+        display: block;
+        margin-top: 8px;
+        padding: 7px 8px;
+        color: #334155;
+        background: rgba(255,255,255,.7);
+        border-radius: 7px;
+        overflow-wrap: anywhere;
+        word-break: break-all;
+        user-select: all;
+    }
     .password-back-link {
         display: inline-flex;
         align-items: center;
@@ -70,6 +103,8 @@
     [data-theme="dark"] .password-recovery-icon { background: #2a1718; border-color: #4b2427; }
     [data-theme="dark"] .password-help-text,
     [data-theme="dark"] .password-back-link { color: #a3a3a3; }
+    [data-theme="dark"] .password-local-test { color: #bfdbfe; background: #172554; border-color: #1e40af; }
+    [data-theme="dark"] .password-local-test code { color: #cbd5e1; background: rgba(15,23,42,.65); }
 </style>
 @endpush
 
@@ -89,6 +124,17 @@
                 <i class="fa-solid fa-circle-check" style="margin-top:2px;"></i>
                 <span>{{ session('status') }}</span>
                 <button type="button" class="password-alert-close" onclick="this.parentElement.remove()" aria-label="Đóng">×</button>
+            </div>
+        @endif
+
+        @if (app()->environment('local') && session('local_reset_url'))
+            <div class="password-local-test">
+                <strong>Test local — không cần chờ Gmail</strong>
+                <a href="{{ session('local_reset_url') }}">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    Mở Trang Đặt Mật Khẩu Mới
+                </a>
+                <code>{{ session('local_reset_url') }}</code>
             </div>
         @endif
 
