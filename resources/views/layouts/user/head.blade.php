@@ -43,7 +43,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lelinh014756/fui-toast-js@master/assets/css/toast@1.0.1/fuiToast.min.css">
     <link href="/css/style.css" rel="stylesheet">
     <link href="/css/legacy-compat.css" rel="stylesheet">
-    <link href="/css/ui-fixes.css?v=20260820-2" rel="stylesheet">
+    <link href="/css/ui-fixes.css?v=20260820-6" rel="stylesheet">
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
@@ -248,18 +248,49 @@
             }
         }
 
-        /* Keep the desktop Nạp Tiền hover bridge compact. */
+        /* Desktop dropdowns: only the visible button/menu can receive the mouse.
+           The old li::after bridge made empty space around Nạp Tiền trigger hover. */
         @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
-            html body nav.navbar .nav-dropdown {
-                padding-bottom: 5px !important;
-                margin-bottom: -5px !important;
+            html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown,
+            html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown {
+                pointer-events: none !important;
+                padding-bottom: 0 !important;
+                margin-bottom: 0 !important;
             }
 
-            html body nav.navbar .nav-dropdown::after {
-                top: calc(100% - 5px) !important;
-                left: -8px !important;
-                width: calc(100% + 16px) !important;
+            html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown::after,
+            html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown::after {
+                content: none !important;
+                display: none !important;
+                width: 0 !important;
+                height: 0 !important;
+                pointer-events: none !important;
+            }
+
+            html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown > .nav-link-item,
+            html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown > .nav-link-item,
+            html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown > .modern-dropdown-menu,
+            html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown > .mega-menu {
+                pointer-events: auto !important;
+            }
+
+            /* Narrow vertical bridge: same width as the real button only.
+               It lets the cursor travel down to the menu without making side gaps hoverable. */
+            html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown > .nav-link-item,
+            html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown > .nav-link-item {
+                position: relative !important;
+            }
+
+            html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown > .nav-link-item::after,
+            html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown > .nav-link-item::after {
+                content: "" !important;
+                position: absolute !important;
+                top: 100% !important;
+                left: 0 !important;
+                right: 0 !important;
                 height: 14px !important;
+                background: transparent !important;
+                pointer-events: auto !important;
             }
         }
     </style>
