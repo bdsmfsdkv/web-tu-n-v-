@@ -82,11 +82,11 @@
                             @endphp
                             
                             @if(count($details) > 0)
-                                <div class="account-row" style="flex-wrap: wrap; gap: 8px; margin-bottom: 8px; border: none;">
+                                <div class="account-row" style="flex-wrap: wrap; gap: 10px; margin-bottom: 10px; border: none;">
                                     @foreach(array_slice($details, 0, 6) as $detail)
-                                    <div class="info-item" style="width: 48%; padding: 4px 6px; background: rgba(0,0,0,0.03); border-radius: 4px; display: flex; align-items: center; justify-content: space-between;">
-                                        <span class="info-item__title text-muted small" style="font-weight: 500;">{{ $detail['key'] ?? '' }}:</span>
-                                        <span class="info-value fw-semibold small text-truncate" style="max-width: 60%; text-align: right;" title="{{ $detail['value'] ?? '' }}">{{ $detail['value'] ?? '' }}</span>
+                                    <div class="info-item" style="width: calc(50% - 5px); min-height: 72px; padding: 9px 10px; background: linear-gradient(135deg, #ffffff 0%, #f5f7ff 100%); border: 1px solid rgba(79, 70, 229, 0.14); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);">
+                                        <span class="info-item__title small" style="width: 100%; color: #64748b; font-size: 0.72rem; line-height: 1.2; font-weight: 700; text-align: center;">{{ $detail['key'] ?? '' }}:</span>
+                                        <span class="info-value small" style="width: 100%; max-width: 100%; color: #111827; font-size: 0.95rem; line-height: 1.35; font-weight: 800; text-align: center; white-space: normal; overflow-wrap: anywhere;" title="{{ $detail['value'] ?? '' }}">{{ $detail['value'] ?? '' }}</span>
                                     </div>
                                     @endforeach
                                 </div>
