@@ -19,17 +19,17 @@ return [
     'mailers' => [
         'smtp' => [
             'transport' => 'smtp',
-            // Laravel 11 / Symfony Mailer supports an explicit scheme.
-            // Use MAIL_SCHEME=smtps for providers such as Cloudflare Email Service
-            // that require implicit TLS on port 465.
-            'scheme' => env('MAIL_SCHEME'),
+            // Port 465 on cPanel normally uses implicit TLS (SMTPS).
+            // Keep MAIL_SCHEME override support, but auto-detect SMTPS when
+            // the local .env only contains MAIL_PORT=465.
+            'scheme' => env('MAIL_SCHEME', (string) env('MAIL_PORT') === '465' ? 'smtps' : null),
             'url' => env('MAIL_URL'),
             'host' => env('MAIL_HOST', '127.0.0.1'),
             'port' => env('MAIL_PORT', 2525),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
-            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+            'local_domain' => env('MAIL_EHLO_DOMAIN'),
         ],
 
         'ses' => [
