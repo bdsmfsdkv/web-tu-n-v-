@@ -206,6 +206,18 @@
             transition-delay: 0s !important;
         }
 
+        /* Old JS may keep deposit-hover-open for 700ms. Do not let that class keep the menu visible after the mouse leaves. */
+        html body nav.navbar.navbar .nav-links .nav-dropdown.deposit-hover-open:not(:hover):not(:focus-within):not(.deposit-click-open) > .modern-dropdown-menu {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            transform: translate3d(0,-6px,0) !important;
+        }
+
+        html body nav.navbar.navbar .nav-links .nav-dropdown.deposit-hover-open:not(:hover):not(:focus-within):not(.deposit-click-open) > .nav-link-item .nav-arrow {
+            transform: rotate(0deg) !important;
+        }
+
         html body nav.navbar .nav-mega-dropdown > .mega-menu {
             display: block !important;
             opacity: 0 !important;
