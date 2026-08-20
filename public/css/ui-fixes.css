@@ -793,3 +793,63 @@ html body nav.navbar #avatarWrapper #avatarDropdown.show {
         font-size: .79rem !important;
     }
 }
+
+/* =========================================================
+   DESKTOP NAP TIEN — EXACT TRIGGER + MENU HOLD
+   - Only the visible Nạp Tiền button can open the dropdown.
+   - The hidden bridge exists only after the menu is already open.
+   - Hovering the dropdown keeps it open for clicking.
+   ========================================================= */
+@media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
+    /* Remove the always-active bridge attached to the button. */
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown > a.nav-link-item::after {
+        content: none !important;
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        pointer-events: none !important;
+    }
+
+    /* Closed state: JS hover classes and parent :hover are not allowed to open it by themselves. */
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown > ul.modern-dropdown-menu {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    /* Exact trigger: actual button hover opens it. Once open, menu hover keeps it open. */
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown:has(> a.nav-link-item:hover) > ul.modern-dropdown-menu,
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown:has(> ul.modern-dropdown-menu:hover) > ul.modern-dropdown-menu,
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown.deposit-click-open > ul.modern-dropdown-menu {
+        display: grid !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        animation: depositDropdownCategoryIn .18s cubic-bezier(.16, 1, .3, 1) both !important;
+    }
+
+    /* Bridge belongs to the menu, so it cannot trigger a closed menu from empty space. */
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown:has(> a.nav-link-item:hover) > ul.modern-dropdown-menu::before,
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown:has(> ul.modern-dropdown-menu:hover) > ul.modern-dropdown-menu::before,
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown.deposit-click-open > ul.modern-dropdown-menu::before {
+        content: "" !important;
+        display: block !important;
+        position: absolute !important;
+        top: -14px !important;
+        right: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 14px !important;
+        background: transparent !important;
+        pointer-events: auto !important;
+    }
+
+    /* Keep the button visually active while the cursor is inside the dropdown. */
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown:has(> ul.modern-dropdown-menu:hover) > a.nav-link-item,
+    html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown.deposit-click-open > a.nav-link-item {
+        color: var(--primary, #dc2626) !important;
+        background: rgba(220, 38, 38, .055) !important;
+        border-color: rgba(220, 38, 38, .11) !important;
+    }
+}
