@@ -1,48 +1,55 @@
 @import url("/css/ui-fixes-base.css?v=20260820-4");
 
-/* Desktop Nạp Tiền: hover giống Danh Mục — chỉ mở khi con trỏ còn ở nút/menu. */
+/* =========================================================
+   DESKTOP NAP TIEN
+   Chỉ vùng thật của nút Nạp Tiền mới kích hoạt dropdown.
+   Không còn cầu hover/padding vô hình quanh nút.
+   ========================================================= */
 @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown {
         position: relative !important;
-        padding-bottom: 3px !important;
-        margin-bottom: -3px !important;
+        padding: 0 !important;
+        margin: 0 !important;
     }
 
-    /* Cầu hover chỉ đúng bề rộng nút, đủ để rê thẳng xuống menu. */
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown::after {
-        content: "" !important;
-        position: absolute !important;
-        top: calc(100% - 3px) !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: 8px !important;
-        z-index: 1095 !important;
-        background: transparent !important;
-        pointer-events: auto !important;
+        content: none !important;
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        pointer-events: none !important;
     }
 
+    /* Menu áp sát ngay dưới nút để rê từ vùng đỏ xuống menu không bị hở. */
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown > .modern-dropdown-menu {
-        top: calc(100% - 1px) !important;
-    }
-
-    /* Bỏ trạng thái JS giữ menu 700ms/click-open trên desktop.
-       Nạp Tiền giờ hoạt động y như Danh Mục: hover vào mở, rời vùng đóng. */
-    html body nav.navbar > .nav-container .nav-links > li.nav-dropdown:not(:hover) > .modern-dropdown-menu,
-    html body nav.navbar > .nav-container .nav-links > li.nav-dropdown.deposit-hover-open:not(:hover) > .modern-dropdown-menu,
-    html body nav.navbar > .nav-container .nav-links > li.nav-dropdown.deposit-click-open:not(:hover) > .modern-dropdown-menu {
+        top: 100% !important;
+        margin-top: 0 !important;
         display: none !important;
         visibility: hidden !important;
         pointer-events: none !important;
     }
 
-    html body nav.navbar > .nav-container .nav-links > li.nav-dropdown:hover > .modern-dropdown-menu {
+    /* Vô hiệu các class JS cũ từng làm vùng hover bị rộng/dính. */
+    html body nav.navbar > .nav-container .nav-links > li.nav-dropdown:hover > .modern-dropdown-menu,
+    html body nav.navbar > .nav-container .nav-links > li.nav-dropdown.deposit-hover-open > .modern-dropdown-menu,
+    html body nav.navbar > .nav-container .nav-links > li.nav-dropdown.deposit-click-open > .modern-dropdown-menu {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    /* Chỉ khi chính .nav-link-item (vùng đỏ) đang hover thì mới mở. */
+    html body nav.navbar > .nav-container .nav-links > li.nav-dropdown:has(> .nav-link-item:hover) > .modern-dropdown-menu,
+    html body nav.navbar > .nav-container .nav-links > li.nav-dropdown:has(> .modern-dropdown-menu:hover) > .modern-dropdown-menu {
         display: block !important;
         visibility: visible !important;
         pointer-events: auto !important;
     }
 }
 
-/* Account dropdown: force menu links back into clean vertical rows. */
+/* =========================================================
+   ACCOUNT DROPDOWN
+   ========================================================= */
 html body #avatarDropdown .dropdown-divider {
     width: 100% !important;
     height: 1px !important;
@@ -112,7 +119,9 @@ html body #avatarDropdown form {
     box-sizing: border-box !important;
 }
 
-/* Avatar tài khoản: chỉ hiện nút hình người, menu mặc định ẩn. */
+/* =========================================================
+   AVATAR ACCOUNT
+   ========================================================= */
 html body nav.navbar #avatarWrapper {
     position: relative !important;
     display: flex !important;
@@ -173,7 +182,6 @@ html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar:focus-visible::before 
     color: #dc2626 !important;
 }
 
-/* Khóa dropdown ở trạng thái ẩn cho tới khi hover hoặc click. */
 html body nav.navbar #avatarWrapper #avatarDropdown {
     display: none !important;
     visibility: hidden !important;
@@ -181,7 +189,6 @@ html body nav.navbar #avatarWrapper #avatarDropdown {
     pointer-events: none !important;
 }
 
-/* Click avatar: JS thêm class show. */
 html body nav.navbar #avatarWrapper #avatarDropdown.show {
     display: block !important;
     visibility: visible !important;
@@ -189,7 +196,6 @@ html body nav.navbar #avatarWrapper #avatarDropdown.show {
     pointer-events: auto !important;
 }
 
-/* Desktop: rê chuột vào avatar/menu thì mở, rê ra ngoài thì đóng. */
 @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
     html body nav.navbar #avatarWrapper:hover #avatarDropdown {
         display: block !important;
