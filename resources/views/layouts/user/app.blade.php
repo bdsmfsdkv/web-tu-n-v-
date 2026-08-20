@@ -376,14 +376,15 @@
         
         @media (max-width: 768px) {
             .live-purchase-toast {
-                left: 50%;
+                left: 16px;
+                right: auto;
                 bottom: 12px;
-                transform: translate(-50%, 80px);
+                transform: translateX(-120%);
                 width: calc(100% - 32px);
                 max-width: 280px;
             }
             .live-purchase-toast.show {
-                transform: translate(-50%, 0);
+                transform: translateX(0);
             }
         }
     </style>
