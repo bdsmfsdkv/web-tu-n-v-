@@ -2,6 +2,10 @@
 
 @section('title', $category->name)
 
+@push('css')
+    <link href="/css/category-attribute-fix.css?v=20260820-1" rel="stylesheet">
+@endpush
+
 @section('content')
     <!-- Hero Section -->
     <x-hero-header title="{{ $category->name }}" description="{{ $category->description }}" />
