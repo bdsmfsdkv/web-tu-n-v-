@@ -640,3 +640,58 @@ html body nav.navbar #avatarWrapper #avatarDropdown.show {
         color: #9ca3af !important;
     }
 }
+
+/* =========================================================
+   HOME LUCKY WHEEL — larger thumbnails/cards only
+   The lucky section has links generated as /lucky/wheel/{slug}; :has keeps
+   this isolated from normal categories, random accounts and services.
+   ========================================================= */
+@media (min-width: 768px) {
+    html body section.section:has(a.category-card[href*="/lucky/wheel/"]) > .container {
+        max-width: 1360px !important;
+    }
+
+    html body section.section:has(a.category-card[href*="/lucky/wheel/"]) .category-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 22px !important;
+    }
+
+    html body section.section:has(a.category-card[href*="/lucky/wheel/"]) .category-card {
+        padding: 12px !important;
+        border-radius: 14px !important;
+    }
+
+    html body section.section:has(a.category-card[href*="/lucky/wheel/"]) .category-img {
+        width: 100% !important;
+        aspect-ratio: 16 / 9 !important;
+        border-radius: 10px !important;
+        overflow: hidden !important;
+    }
+
+    html body section.section:has(a.category-card[href*="/lucky/wheel/"]) .category-img img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        object-position: center !important;
+    }
+
+    html body section.section:has(a.category-card[href*="/lucky/wheel/"]) .category-body {
+        padding: 15px 6px 5px !important;
+    }
+
+    html body section.section:has(a.category-card[href*="/lucky/wheel/"]) .category-name {
+        font-size: 1.02rem !important;
+        line-height: 1.35 !important;
+    }
+}
+
+@media (min-width: 1200px) {
+    html body section.section:has(a.category-card[href*="/lucky/wheel/"]) .category-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+
+    html body section.section:has(a.category-card[href*="/lucky/wheel/"]) .category-card:hover {
+        transform: translateY(-5px) !important;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, .12) !important;
+    }
+}
