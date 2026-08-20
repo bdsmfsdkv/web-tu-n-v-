@@ -179,7 +179,7 @@
                                         <div class="image-uploads mt-2">
                                             <i class="ti ti-photos text-success" style="font-size: 40px;"></i>
                                             <h5 class="mt-2 mb-0 fw-semibold text-success">Kéo thả hoặc click để tải lên nhiều ảnh</h5>
-                                            <p class="text-muted small">Hỗ trợ tải lên nhiều file cùng lúc. Sẽ thay thế các ảnh cũ (nếu có).</p>
+                                            <p class="text-muted small">Ảnh mới sẽ được thêm vào các ảnh hiện tại. Muốn xoá ảnh cũ, bấm dấu × trên ảnh đó.</p>
                                         </div>
                                     </div>
                                     <div id="preview-acc-edit-images" class="d-flex flex-wrap gap-2 mt-2"></div>
@@ -192,11 +192,19 @@
                                             <label class="form-label fw-semibold text-muted d-block mb-2">Các ảnh chi tiết hiện tại:</label>
                                             <div class="d-flex flex-wrap gap-2">
                                                 @foreach (json_decode($account->images) as $image)
-                                                    <div class="border rounded p-1 bg-white">
-                                                        <img src="{{ asset($image) }}" alt="preview" style="height: 80px; width: auto; object-fit: contain;">
+                                                    <div class="existing-detail-image border rounded p-1 bg-white" style="position: relative;">
+                                                        <img src="{{ asset($image) }}" alt="preview" style="height: 80px; width: auto; object-fit: contain; display: block;">
+                                                        <button type="button"
+                                                            class="btn btn-danger remove-existing-detail-image"
+                                                            data-image="{{ $image }}"
+                                                            title="Xoá ảnh này"
+                                                            aria-label="Xoá ảnh này"
+                                                            onclick="removeExistingDetailImage(this)"
+                                                            style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; min-width: 24px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 18px; font-weight: 800; line-height: 1; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,.25);">×</button>
                                                     </div>
                                                 @endforeach
                                             </div>
+                                            <div class="small text-muted mt-2">Chỉ những ảnh bạn bấm × mới bị xoá khi nhấn Cập nhật.</div>
                                         </div>
                                     @endif
                                 </div>
@@ -324,6 +332,24 @@
                     document.getElementById(previewId).src = e.target.result;
                 }
                 reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function removeExistingDetailImage(button) {
+            const imagePath = button.dataset.image;
+            const item = button.closest('.existing-detail-image');
+            const form = button.closest('form');
+
+            if (!imagePath || !form) return;
+
+            const removedInput = document.createElement('input');
+            removedInput.type = 'hidden';
+            removedInput.name = 'removed_images[]';
+            removedInput.value = imagePath;
+            form.appendChild(removedInput);
+
+            if (item) {
+                item.remove();
             }
         }
 
