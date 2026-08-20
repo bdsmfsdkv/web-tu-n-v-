@@ -43,7 +43,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lelinh014756/fui-toast-js@master/assets/css/toast@1.0.1/fuiToast.min.css">
     <link href="/css/style.css" rel="stylesheet">
     <link href="/css/legacy-compat.css" rel="stylesheet">
-    <link href="/css/ui-fixes.css?v=20260820-1" rel="stylesheet">
+    <link href="/css/ui-fixes.css?v=20260820-2" rel="stylesheet">
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
@@ -76,6 +76,7 @@
     @endif
 
     @stack('css')
+    <link href="/css/mobile-header-final.css?v=20260820-1" rel="stylesheet">
 
     <style>
         .ant-header-lang-dropdown {
