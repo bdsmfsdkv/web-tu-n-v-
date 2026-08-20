@@ -1,0 +1,328 @@
+/* =========================================================
+   FINAL MOBILE/TABLET HEADER
+   - Desktop-like horizontal navigation on top
+   - No bottom/vertical legacy navigation
+   - Scroll horizontally on narrow screens
+   ========================================================= */
+
+/* Legacy footer navigation must never render. */
+html body .mobile-bottom-nav,
+html body nav.mobile-bottom-nav,
+html body .mobile-bottom-nav-container {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+@media (max-width: 1199px) {
+    /* Two-row fixed header: controls on row 1, desktop-like menu on row 2. */
+    html body .navbar {
+        position: fixed !important;
+        top: 0 !important;
+        right: 0 !important;
+        bottom: auto !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 106px !important;
+        min-height: 106px !important;
+        overflow: visible !important;
+        z-index: 12000 !important;
+        background: rgba(255,255,255,.985) !important;
+        border-bottom: 1px solid #e5e7eb !important;
+        box-shadow: 0 3px 14px rgba(15,23,42,.06) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+    }
+
+    html body .navbar > .nav-container {
+        position: relative !important;
+        display: grid !important;
+        grid-template-columns: minmax(0,1fr) auto !important;
+        grid-template-rows: 56px 50px !important;
+        width: 100% !important;
+        max-width: none !important;
+        height: 106px !important;
+        min-height: 106px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        gap: 0 !important;
+        overflow: visible !important;
+    }
+
+    html body .navbar .nav-brand {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+        width: max-content !important;
+        max-width: 150px !important;
+        margin: 0 0 0 14px !important;
+        padding: 0 !important;
+    }
+
+    html body .navbar .nav-brand img {
+        display: block !important;
+        width: auto !important;
+        height: 31px !important;
+        max-width: 120px !important;
+        object-fit: contain !important;
+    }
+
+    html body .navbar .nav-user {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        position: static !important;
+        display: flex !important;
+        height: 56px !important;
+        margin: 0 12px 0 auto !important;
+        padding: 0 !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 7px !important;
+    }
+
+    html body .navbar .nav-user-profile .nav-user-info {
+        display: none !important;
+    }
+
+    html body .navbar .theme-toggle,
+    html body .navbar .nav-avatar {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        flex: 0 0 34px !important;
+    }
+
+    /* Desktop language selector stays inside profile after app.js moves it. */
+    html body .nav-user > .ant-header-lang-dropdown {
+        width: 0 !important;
+        max-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    html body #avatarDropdown .profile-language-section .ant-header-lang-dropdown {
+        width: 100% !important;
+        max-width: none !important;
+        overflow: visible !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+    }
+
+    /* No hamburger: menu is always visible like desktop. */
+    html body .navbar .nav-toggle,
+    html body .navbar .nav-offcanvas-header,
+    html body .navbar .mobile-auth-banner {
+        display: none !important;
+    }
+
+    /* Horizontal desktop-like menu. Swipe/scroll horizontally on small screens. */
+    html body .navbar .nav-links,
+    html body .navbar .nav-links.show {
+        grid-column: 1 / -1 !important;
+        grid-row: 2 !important;
+        position: static !important;
+        display: flex !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 50px !important;
+        min-height: 50px !important;
+        max-height: 50px !important;
+        margin: 0 !important;
+        padding: 5px 10px 6px !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 4px !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        overscroll-behavior-x: contain !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        transform: none !important;
+        background: rgba(255,255,255,.98) !important;
+        border-top: 1px solid #f1f5f9 !important;
+        border-bottom: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+
+    html body .navbar .nav-links::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+
+    html body .navbar .nav-links > li {
+        display: block !important;
+        width: auto !important;
+        min-width: max-content !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        flex: 0 0 auto !important;
+        border: 0 !important;
+    }
+
+    html body .navbar .nav-links .nav-link-item {
+        display: inline-flex !important;
+        width: auto !important;
+        min-width: max-content !important;
+        min-height: 38px !important;
+        height: 38px !important;
+        margin: 0 !important;
+        padding: 0 10px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 5px !important;
+        white-space: nowrap !important;
+        border-radius: 9px !important;
+        font-size: .8rem !important;
+        line-height: 1 !important;
+    }
+
+    html body .navbar .nav-links .nav-link-item.active,
+    html body .navbar .nav-links .nav-link-item:hover {
+        background: #fff1f2 !important;
+        color: #dc2626 !important;
+    }
+
+    /* Submenus open below the horizontal nav, full usable width. */
+    html body .navbar .modern-dropdown-menu,
+    html body .navbar .mega-menu {
+        display: none !important;
+        position: fixed !important;
+        top: 106px !important;
+        right: 8px !important;
+        left: 8px !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        max-height: calc(100vh - 118px) !important;
+        margin: 0 !important;
+        padding: 10px !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        background: rgba(255,255,255,.995) !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 0 0 14px 14px !important;
+        box-shadow: 0 18px 42px rgba(15,23,42,.17) !important;
+        transform: none !important;
+        z-index: 12020 !important;
+        animation: mobileSubmenuIn .2s cubic-bezier(.2,.8,.2,1) both !important;
+    }
+
+    html body .navbar .nav-dropdown.open > .modern-dropdown-menu,
+    html body .navbar .nav-mega-dropdown.open > .mega-menu {
+        display: block !important;
+    }
+
+    html body .navbar .modern-dropdown-menu .dropdown-link-card {
+        min-height: 58px !important;
+        padding: 10px 12px !important;
+        border-radius: 10px !important;
+    }
+
+    html body .navbar .mega-menu-container {
+        width: 100% !important;
+        max-width: none !important;
+        padding: 0 !important;
+    }
+
+    html body .navbar .mega-menu-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3,minmax(0,1fr)) !important;
+        gap: 8px !important;
+    }
+
+    html body .navbar .mega-menu-column {
+        padding: 9px !important;
+        border-radius: 10px !important;
+    }
+
+    html body .navbar .mega-menu-list {
+        display: flex !important;
+        flex-direction: column !important;
+        max-height: 230px !important;
+    }
+
+    html body .nav-overlay,
+    html body .nav-overlay.show {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    html body main {
+        padding-top: 106px !important;
+    }
+
+    html body:has(.navbar .nav-links.show) {
+        overflow-y: auto !important;
+    }
+}
+
+@media (max-width: 700px) {
+    html body .navbar .mega-menu-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .navbar .mega-menu-column {
+        padding: 8px !important;
+    }
+
+    html body .navbar .mega-menu-list {
+        max-height: 180px !important;
+    }
+}
+
+@media (max-width: 430px) {
+    html body .navbar .nav-brand {
+        margin-left: 9px !important;
+    }
+
+    html body .navbar .nav-user {
+        margin-right: 8px !important;
+        gap: 5px !important;
+    }
+
+    html body .navbar .nav-links {
+        padding-left: 7px !important;
+        padding-right: 7px !important;
+    }
+
+    html body .navbar .nav-links .nav-link-item {
+        padding: 0 9px !important;
+        font-size: .76rem !important;
+    }
+}
+
+@keyframes mobileSubmenuIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+[data-theme="dark"] body .navbar .nav-links {
+    background: rgba(23,23,23,.99) !important;
+    border-color: #2d2d2d !important;
+}
+
+[data-theme="dark"] body .navbar .nav-links .nav-link-item.active,
+[data-theme="dark"] body .navbar .nav-links .nav-link-item:hover {
+    background: rgba(248,113,113,.11) !important;
+}
+
+[data-theme="dark"] body .navbar .modern-dropdown-menu,
+[data-theme="dark"] body .navbar .mega-menu {
+    background: #171717 !important;
+    border-color: #303030 !important;
+}
