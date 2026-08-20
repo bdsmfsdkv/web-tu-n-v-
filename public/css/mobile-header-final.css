@@ -15,7 +15,6 @@ html body .mobile-bottom-nav-container {
 }
 
 @media (max-width: 1199px) {
-    /* Two-row fixed header: controls on row 1, desktop-like menu on row 2. */
     html body .navbar {
         position: fixed !important;
         top: 0 !important;
@@ -81,9 +80,7 @@ html body .mobile-bottom-nav-container {
         gap: 7px !important;
     }
 
-    html body .navbar .nav-user-profile .nav-user-info {
-        display: none !important;
-    }
+    html body .navbar .nav-user-profile .nav-user-info { display: none !important; }
 
     html body .navbar .theme-toggle,
     html body .navbar .nav-avatar {
@@ -93,7 +90,6 @@ html body .mobile-bottom-nav-container {
         flex: 0 0 34px !important;
     }
 
-    /* Desktop language selector stays inside profile after app.js moves it. */
     html body .nav-user > .ant-header-lang-dropdown {
         width: 0 !important;
         max-width: 0 !important;
@@ -114,14 +110,10 @@ html body .mobile-bottom-nav-container {
         pointer-events: auto !important;
     }
 
-    /* No hamburger: menu is always visible like desktop. */
     html body .navbar .nav-toggle,
     html body .navbar .nav-offcanvas-header,
-    html body .navbar .mobile-auth-banner {
-        display: none !important;
-    }
+    html body .navbar .mobile-auth-banner { display: none !important; }
 
-    /* Horizontal desktop-like menu. Swipe/scroll horizontally on small screens. */
     html body .navbar .nav-links,
     html body .navbar .nav-links.show {
         grid-column: 1 / -1 !important;
@@ -156,11 +148,7 @@ html body .mobile-bottom-nav-container {
         box-shadow: none !important;
     }
 
-    html body .navbar .nav-links::-webkit-scrollbar {
-        display: none !important;
-        width: 0 !important;
-        height: 0 !important;
-    }
+    html body .navbar .nav-links::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
 
     html body .navbar .nav-links > li {
         display: block !important;
@@ -187,7 +175,7 @@ html body .mobile-bottom-nav-container {
         border-radius: 9px !important;
         font-size: .8rem !important;
         line-height: 1 !important;
-        transition: background-color .16s ease, color .16s ease, transform .16s ease !important;
+        transition: background-color .15s ease, color .15s ease, transform .15s ease !important;
     }
 
     html body .navbar .nav-links .nav-link-item.active,
@@ -197,7 +185,7 @@ html body .mobile-bottom-nav-container {
     }
 
     html body .navbar .nav-links .nav-arrow {
-        transition: transform .22s cubic-bezier(.2,.8,.2,1), color .16s ease !important;
+        transition: transform .2s cubic-bezier(.22,1,.36,1), color .15s ease !important;
         transform-origin: center !important;
     }
 
@@ -207,7 +195,7 @@ html body .mobile-bottom-nav-container {
         color: #dc2626 !important;
     }
 
-    /* Submenus stay mounted so both category/deposit animate identically and smoothly. */
+    /* Danh Muc + Nap Tien share one animation system. */
     html body .navbar .nav-dropdown > .modern-dropdown-menu,
     html body .navbar .nav-mega-dropdown > .mega-menu {
         display: block !important;
@@ -231,15 +219,11 @@ html body .mobile-bottom-nav-container {
         opacity: 0 !important;
         visibility: hidden !important;
         pointer-events: none !important;
-        transform: translate3d(0,-8px,0) scale(.992) !important;
+        transform: translate3d(0,-6px,0) scale(.996) !important;
         transform-origin: top center !important;
         will-change: opacity, transform !important;
         backface-visibility: hidden !important;
-        -webkit-font-smoothing: antialiased !important;
-        transition:
-            opacity .16s ease,
-            transform .2s cubic-bezier(.16,1,.3,1),
-            visibility 0s linear .2s !important;
+        transition: opacity .16s ease, transform .21s cubic-bezier(.22,1,.36,1), visibility 0s linear .21s !important;
         animation: none !important;
     }
 
@@ -249,28 +233,19 @@ html body .mobile-bottom-nav-container {
         visibility: visible !important;
         pointer-events: auto !important;
         transform: translate3d(0,0,0) scale(1) !important;
-        transition:
-            opacity .14s ease,
-            transform .2s cubic-bezier(.16,1,.3,1),
-            visibility 0s linear 0s !important;
+        transition: opacity .14s ease, transform .21s cubic-bezier(.22,1,.36,1), visibility 0s linear 0s !important;
     }
 
     html body .navbar .modern-dropdown-menu .dropdown-link-card {
         min-height: 58px !important;
         padding: 10px 12px !important;
         border-radius: 10px !important;
-        transition: background-color .16s ease, transform .16s ease !important;
+        transition: background-color .15s ease, transform .15s ease, opacity .15s ease !important;
     }
 
-    html body .navbar .modern-dropdown-menu .dropdown-link-card:active {
-        transform: scale(.992) !important;
-    }
+    html body .navbar .modern-dropdown-menu .dropdown-link-card:active { transform: scale(.992) !important; }
 
-    html body .navbar .mega-menu-container {
-        width: 100% !important;
-        max-width: none !important;
-        padding: 0 !important;
-    }
+    html body .navbar .mega-menu-container { width: 100% !important; max-width: none !important; padding: 0 !important; }
 
     html body .navbar .mega-menu-grid {
         display: grid !important;
@@ -278,24 +253,14 @@ html body .mobile-bottom-nav-container {
         gap: 8px !important;
     }
 
-    html body .navbar .mega-menu-column {
-        padding: 9px !important;
-        border-radius: 10px !important;
-    }
-
-    html body .navbar .mega-menu-list {
-        display: flex !important;
-        flex-direction: column !important;
-        max-height: 230px !important;
-    }
+    html body .navbar .mega-menu-column { padding: 9px !important; border-radius: 10px !important; }
+    html body .navbar .mega-menu-list { display: flex !important; flex-direction: column !important; max-height: 230px !important; }
 
     html body .navbar .mega-menu-item {
-        transition: background-color .16s ease, border-color .16s ease, color .16s ease, transform .16s ease !important;
+        transition: background-color .15s ease, border-color .15s ease, color .15s ease, transform .15s ease !important;
     }
 
-    html body .navbar .mega-menu-item:active {
-        transform: scale(.994) !important;
-    }
+    html body .navbar .mega-menu-item:active { transform: scale(.994) !important; }
 
     html body .nav-overlay,
     html body .nav-overlay.show {
@@ -305,98 +270,41 @@ html body .mobile-bottom-nav-container {
         pointer-events: none !important;
     }
 
-    html body main {
-        padding-top: 106px !important;
-    }
-
-    html body:has(.navbar .nav-links.show) {
-        overflow-y: auto !important;
-    }
+    html body main { padding-top: 106px !important; }
+    html body:has(.navbar .nav-links.show) { overflow-y: auto !important; }
 }
 
 @media (max-width: 700px) {
-    html body .navbar .mega-menu-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    html body .navbar .mega-menu-column {
-        padding: 8px !important;
-    }
-
-    html body .navbar .mega-menu-list {
-        max-height: 180px !important;
-    }
+    html body .navbar .mega-menu-grid { grid-template-columns: 1fr !important; }
+    html body .navbar .mega-menu-column { padding: 8px !important; }
+    html body .navbar .mega-menu-list { max-height: 180px !important; }
 }
 
 @media (max-width: 430px) {
-    html body .navbar .nav-brand {
-        margin-left: 9px !important;
-    }
-
-    html body .navbar .nav-user {
-        margin-right: 8px !important;
-        gap: 5px !important;
-    }
-
-    html body .navbar .nav-links {
-        padding-left: 7px !important;
-        padding-right: 7px !important;
-    }
-
-    html body .navbar .nav-links .nav-link-item {
-        padding: 0 9px !important;
-        font-size: .76rem !important;
-    }
+    html body .navbar .nav-brand { margin-left: 9px !important; }
+    html body .navbar .nav-user { margin-right: 8px !important; gap: 5px !important; }
+    html body .navbar .nav-links { padding-left: 7px !important; padding-right: 7px !important; }
+    html body .navbar .nav-links .nav-link-item { padding: 0 9px !important; font-size: .76rem !important; }
 }
 
-/* ================= DESKTOP: SAME MOTION LANGUAGE ================= */
+/* ================= DESKTOP: UNIFIED CATEGORY + DEPOSIT MOTION ================= */
 @media (min-width: 1200px) {
-    /* Danh Muc: keep mega menu mounted instead of display none/block. */
-    html body .navbar .nav-mega-dropdown > .mega-menu {
-        display: block !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-        transform: translate3d(0,-7px,0) scale(.995) !important;
-        transform-origin: top center !important;
-        will-change: opacity, transform !important;
-        backface-visibility: hidden !important;
-        transition:
-            opacity .16s ease,
-            transform .2s cubic-bezier(.16,1,.3,1),
-            visibility 0s linear .2s !important;
-        animation: none !important;
-    }
-
-    html body .navbar .nav-mega-dropdown:hover > .mega-menu,
-    html body .navbar .nav-mega-dropdown:focus-within > .mega-menu {
-        opacity: 1 !important;
-        visibility: visible !important;
-        pointer-events: auto !important;
-        transform: translate3d(0,0,0) scale(1) !important;
-        transition:
-            opacity .14s ease,
-            transform .2s cubic-bezier(.16,1,.3,1),
-            visibility 0s linear 0s !important;
-    }
-
-    /* Nap Tien: same timing/easing as Danh Muc, while preserving the forgiving hover bridge. */
+    html body .navbar .nav-mega-dropdown > .mega-menu,
     html body .navbar .nav-dropdown > .modern-dropdown-menu {
         display: block !important;
         opacity: 0 !important;
         visibility: hidden !important;
         pointer-events: none !important;
-        transform: translate3d(0,-7px,0) scale(.985) !important;
-        transform-origin: top left !important;
+        transform: translate3d(0,-6px,0) scale(.996) !important;
+        transform-origin: top center !important;
         will-change: opacity, transform !important;
         backface-visibility: hidden !important;
-        transition:
-            opacity .16s ease .18s,
-            transform .2s cubic-bezier(.16,1,.3,1) .18s,
-            visibility 0s linear .38s !important;
+        transition: opacity .16s ease, transform .21s cubic-bezier(.22,1,.36,1), visibility 0s linear .21s !important;
         animation: none !important;
     }
 
+    html body .navbar .nav-mega-dropdown:hover > .mega-menu,
+    html body .navbar .nav-mega-dropdown:focus-within > .mega-menu,
     html body .navbar .nav-dropdown:hover > .modern-dropdown-menu,
     html body .navbar .nav-dropdown.deposit-hover-open > .modern-dropdown-menu,
     html body .navbar .nav-dropdown.deposit-click-open > .modern-dropdown-menu,
@@ -405,15 +313,57 @@ html body .mobile-bottom-nav-container {
         visibility: visible !important;
         pointer-events: auto !important;
         transform: translate3d(0,0,0) scale(1) !important;
-        transition:
-            opacity .14s ease,
-            transform .2s cubic-bezier(.16,1,.3,1),
-            visibility 0s linear 0s !important;
+        transition: opacity .14s ease, transform .21s cubic-bezier(.22,1,.36,1), visibility 0s linear 0s !important;
+    }
+
+    /* The JS keeps deposit-hover-open for a while; visually close sooner after the pointer truly leaves. */
+    html body .navbar .nav-dropdown.deposit-hover-open:not(:hover):not(.deposit-click-open) > .modern-dropdown-menu {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        transform: translate3d(0,-5px,0) scale(.997) !important;
+        transition: opacity .16s ease .12s, transform .2s cubic-bezier(.22,1,.36,1) .12s, visibility 0s linear .32s !important;
     }
 
     html body .navbar .nav-mega-dropdown > .nav-link-item .nav-arrow,
     html body .navbar .nav-dropdown > .nav-link-item .nav-arrow {
-        transition: transform .22s cubic-bezier(.2,.8,.2,1), color .16s ease !important;
+        transition: transform .2s cubic-bezier(.22,1,.36,1), color .15s ease !important;
+    }
+
+    /* Deposit choices: hover one option, smoothly hide the others without changing layout. */
+    html body .navbar .modern-dropdown-menu > li {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translate3d(0,0,0) scale(1) !important;
+        filter: none !important;
+        transition: opacity .16s ease, transform .18s cubic-bezier(.22,1,.36,1), filter .16s ease, visibility 0s linear 0s !important;
+        will-change: opacity, transform !important;
+    }
+
+    html body .navbar .modern-dropdown-menu:has(> li:hover) > li:not(:hover) {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        transform: translate3d(6px,0,0) scale(.985) !important;
+        filter: blur(1px) !important;
+        transition: opacity .14s ease, transform .17s cubic-bezier(.22,1,.36,1), filter .14s ease, visibility 0s linear .14s !important;
+    }
+
+    html body .navbar .modern-dropdown-menu > li:hover {
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        transform: translate3d(0,0,0) scale(1.006) !important;
+        filter: none !important;
+    }
+
+    html body .navbar .modern-dropdown-menu .dropdown-link-card {
+        transition: background-color .15s ease, color .15s ease, box-shadow .18s ease, transform .18s cubic-bezier(.22,1,.36,1) !important;
+    }
+
+    html body .navbar .modern-dropdown-menu > li:hover .dropdown-link-card {
+        transform: translate3d(2px,0,0) !important;
+        box-shadow: 0 8px 22px rgba(15,23,42,.08) !important;
     }
 }
 
@@ -423,9 +373,7 @@ html body .mobile-bottom-nav-container {
 }
 
 [data-theme="dark"] body .navbar .nav-links .nav-link-item.active,
-[data-theme="dark"] body .navbar .nav-links .nav-link-item:hover {
-    background: rgba(248,113,113,.11) !important;
-}
+[data-theme="dark"] body .navbar .nav-links .nav-link-item:hover { background: rgba(248,113,113,.11) !important; }
 
 [data-theme="dark"] body .navbar .modern-dropdown-menu,
 [data-theme="dark"] body .navbar .mega-menu {
@@ -433,14 +381,14 @@ html body .mobile-bottom-nav-container {
     border-color: #303030 !important;
 }
 
-/* Respect accessibility/performance preference. */
 @media (prefers-reduced-motion: reduce) {
     html body .navbar .modern-dropdown-menu,
     html body .navbar .mega-menu,
     html body .navbar .nav-arrow,
     html body .navbar .nav-link-item,
     html body .navbar .dropdown-link-card,
-    html body .navbar .mega-menu-item {
+    html body .navbar .mega-menu-item,
+    html body .navbar .modern-dropdown-menu > li {
         transition-duration: .01ms !important;
         animation-duration: .01ms !important;
     }
