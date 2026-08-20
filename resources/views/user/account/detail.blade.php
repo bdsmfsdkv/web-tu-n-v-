@@ -122,10 +122,10 @@
                             <button class="ecom-btn ecom-btn-solid" onclick="buyAccount({{ $account->id }})">Mua Ngay</button>
                         </div>
                         <div class="ecom-or-divider">--- hoặc ---</div>
-                        <button class="ecom-btn ecom-btn-atm" style="margin-top: 10px; width: 100%; background: #0bcfa5ffff; border-color: #0bcfa5ffff; color: white;" onclick="showRechargeModal('wallet')">
+                        <a href="{{ route('profile.deposit-atm') }}" class="ecom-btn ecom-btn-atm" style="margin-top: 10px; width: 100%; background: #0bcfa5ffff; border-color: #0bcfa5ffff; color: white; text-decoration: none;">
                             Mua Bằng ATM, Momo<br>
                             <small>{{ number_format($account->price) }} Đ</small>
-                        </button>
+                        </a>
                         {{-- <button class="ecom-btn" style="margin-top: 10px; width: 100%; background: #3b82f6; border-color: #3b82f6; color: white;" onclick="showInstallmentModal()">
                             <i class="fas fa-hand-holding-usd"></i> Mua Trả Góp<br>
                             <small>Trả trước từ {{ number_format($account->price * 0.2) }} Đ</small>
@@ -217,7 +217,7 @@
                 @auth
                     @if (Auth::user()->balance < $account->price)
                         <a class="modal__btn modal__btn--card" href="{{ route('profile.deposit-card') }}"><i class="fas fa-credit-card"></i> NẠP THẺ CÀO</a>
-                        <button class="modal__btn modal__btn--wallet" onclick="showRechargeModal('wallet')"><i class="fas fa-university"></i> NẠP ATM</button>
+                        <a class="modal__btn modal__btn--wallet" href="{{ route('profile.deposit-atm') }}"><i class="fas fa-university"></i> NẠP ATM</a>
                     @else
                         <button class="modal__btn modal__btn--submit" onclick="submitPurchase()"><i class="fas fa-check-circle"></i> XÁC NHẬN MUA</button>
                     @endif
@@ -276,7 +276,7 @@
             <div class="modal__footer">
                 @auth
                     @if (Auth::user()->balance < ($account->price * 0.2))
-                        <button class="modal__btn modal__btn--wallet" onclick="showRechargeModal('wallet')"><i class="fas fa-university"></i> NẠP THÊM TIỀN</button>
+                        <a class="modal__btn modal__btn--wallet" href="{{ route('profile.deposit-atm') }}"><i class="fas fa-university"></i> NẠP THÊM TIỀN</a>
                     @else
                         <button class="modal__btn modal__btn--submit" onclick="submitInstallment()"><i class="fas fa-check-circle"></i> XÁC NHẬN TRẢ GÓP</button>
                     @endif
@@ -372,11 +372,7 @@
             }
 
             function showRechargeModal(type) {
-                // Open the depositMethodModal defined in app.blade.php
-                const depositModal = document.getElementById('depositMethodModal');
-                if (depositModal) {
-                    depositModal.style.display = 'flex';
-                }
+                window.location.href = '{{ route('profile.deposit-atm') }}';
             }
 
             function closePurchaseModal() {
