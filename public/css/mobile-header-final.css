@@ -1,8 +1,7 @@
 /* =========================================================
    AUTHORITATIVE RESPONSIVE HEADER
    One source of truth for tablet/mobile hamburger navigation.
-   Avoids GPU transforms/backdrop blur on the menu itself so text
-   remains sharp on real phones and DevTools device emulation.
+   No backdrop blur / GPU transform on the menu panel.
    ========================================================= */
 
 html body .mobile-bottom-nav,
@@ -13,22 +12,11 @@ html body .mobile-bottom-nav-container {
     pointer-events: none !important;
 }
 
-/* ---------- Desktop / large tablet ---------- */
-@media (min-width: 901px) {
-    html body nav.navbar #navToggle {
-        display: none !important;
-    }
-
-    html body nav.navbar #navLinks {
-        filter: none !important;
-        -webkit-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        backdrop-filter: none !important;
-    }
+@media (min-width: 1200px) {
+    html body nav.navbar #navToggle { display: none !important; }
 }
 
-/* ---------- Mobile / narrow tablet ---------- */
-@media (max-width: 900px) {
+@media (max-width: 1199px) {
     html body nav.navbar {
         position: fixed !important;
         top: 0 !important;
@@ -126,7 +114,7 @@ html body .mobile-bottom-nav-container {
         transition: transform .18s ease, opacity .18s ease !important;
     }
 
-    /* Keep the whole panel untransformed so glyphs stay sharp. */
+    /* Keep the whole panel untransformed so text/icons stay crisp. */
     html body nav.navbar #navLinks {
         position: fixed !important;
         top: 56px !important;
@@ -156,7 +144,6 @@ html body .mobile-bottom-nav-container {
         visibility: hidden !important;
         pointer-events: none !important;
         transform: none !important;
-        scale: none !important;
         filter: none !important;
         -webkit-filter: none !important;
         -webkit-backdrop-filter: none !important;
@@ -165,11 +152,7 @@ html body .mobile-bottom-nav-container {
         backface-visibility: visible !important;
         text-rendering: optimizeLegibility !important;
         -webkit-font-smoothing: antialiased !important;
-        transition:
-            max-height .24s cubic-bezier(.22,1,.36,1),
-            opacity .14s ease,
-            padding .2s ease,
-            visibility 0s linear .24s !important;
+        transition: max-height .24s cubic-bezier(.22,1,.36,1), opacity .14s ease, padding .2s ease, visibility 0s linear .24s !important;
     }
 
     html body nav.navbar #navLinks.show {
@@ -202,9 +185,7 @@ html body .mobile-bottom-nav-container {
         transform: none !important;
     }
 
-    html body nav.navbar #navLinks > li.nav-offcanvas-header {
-        display: none !important;
-    }
+    html body nav.navbar #navLinks > li.nav-offcanvas-header { display: none !important; }
 
     html body nav.navbar #navLinks > li.mobile-auth-banner {
         display: block !important;
@@ -256,7 +237,7 @@ html body .mobile-bottom-nav-container {
         transform: rotate(180deg) !important;
     }
 
-    /* Submenus: height/opacity only; text layer never moves. */
+    /* Submenus animate only height + opacity, never the text layer. */
     html body nav.navbar #navLinks .modern-dropdown-menu,
     html body nav.navbar #navLinks .mega-menu {
         display: block !important;
@@ -285,12 +266,7 @@ html body .mobile-bottom-nav-container {
         -webkit-backdrop-filter: none !important;
         backdrop-filter: none !important;
         will-change: auto !important;
-        transition:
-            max-height .22s cubic-bezier(.22,1,.36,1),
-            opacity .14s ease,
-            margin .18s ease,
-            padding .18s ease,
-            visibility 0s linear .22s !important;
+        transition: max-height .22s cubic-bezier(.22,1,.36,1), opacity .14s ease, margin .18s ease, padding .18s ease, visibility 0s linear .22s !important;
     }
 
     html body nav.navbar #navLinks .nav-dropdown.open > .modern-dropdown-menu {
@@ -353,7 +329,7 @@ html body .mobile-bottom-nav-container {
         background: #fff1f2 !important;
     }
 
-    /* Overlay is always behind navbar/menu and never blurs it. */
+    /* Overlay is always below navbar/menu, and never blurs anything. */
     html body #navOverlay {
         position: fixed !important;
         top: 56px !important;
@@ -381,25 +357,15 @@ html body .mobile-bottom-nav-container {
         transition-delay: 0s !important;
     }
 
-    html body main {
-        padding-top: 56px !important;
-    }
+    html body main { padding-top: 56px !important; }
 }
 
-/* Desktop hover normalization */
-@media (min-width: 901px) and (hover: hover) and (pointer: fine) {
+@media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
     html body nav.navbar .nav-link-item,
     html body nav.navbar .dropdown-link-card,
     html body nav.navbar .mega-menu-item,
-    html body #avatarDropdown .dropdown-item,
-    html body nav.navbar .theme-toggle,
-    html body nav.navbar .nav-avatar {
-        transition:
-            color .15s ease,
-            background-color .15s ease,
-            border-color .15s ease,
-            box-shadow .15s ease,
-            transform .16s cubic-bezier(.22,1,.36,1) !important;
+    html body #avatarDropdown .dropdown-item {
+        transition: color .15s ease, background-color .15s ease, border-color .15s ease, transform .16s cubic-bezier(.22,1,.36,1) !important;
     }
 
     html body nav.navbar .nav-link-item:hover {
@@ -417,8 +383,7 @@ html body .mobile-bottom-nav-container {
     }
 }
 
-/* Dark mode */
-@media (max-width: 900px) {
+@media (max-width: 1199px) {
     [data-theme="dark"] body nav.navbar,
     [data-theme="dark"] body nav.navbar #navLinks,
     [data-theme="dark"] body nav.navbar #navLinks > li.mobile-auth-banner {
@@ -431,14 +396,8 @@ html body .mobile-bottom-nav-container {
         border-color: #363636 !important;
     }
 
-    [data-theme="dark"] body nav.navbar #navToggle span {
-        background: #e5e7eb !important;
-    }
-
-    [data-theme="dark"] body nav.navbar #navLinks .nav-link-item {
-        color: #e5e7eb !important;
-    }
-
+    [data-theme="dark"] body nav.navbar #navToggle span { background: #e5e7eb !important; }
+    [data-theme="dark"] body nav.navbar #navLinks .nav-link-item { color: #e5e7eb !important; }
     [data-theme="dark"] body nav.navbar #navLinks .modern-dropdown-menu,
     [data-theme="dark"] body nav.navbar #navLinks .mega-menu {
         background: #111 !important;
