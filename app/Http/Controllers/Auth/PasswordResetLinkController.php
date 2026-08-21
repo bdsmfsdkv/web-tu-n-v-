@@ -79,21 +79,21 @@ class PasswordResetLinkController extends Controller
                     ]);
                 }
 
-                $body = "KUNCHEAP - Đặt lại mật khẩu\n\n"
-                    . "Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản KUNCHEAP.\n\n"
-                    . "Mở liên kết sau để tạo mật khẩu mới:\n"
-                    . $resetUrl . "\n\n"
-                    . "Liên kết đặt lại mật khẩu có thời hạn. Nếu bạn không yêu cầu thao tác này, hãy bỏ qua email này.\n\n"
-                    . "KUNCHEAP\n"
-                    . "admin@kuncheap.site";
+                $mailData = [
+                    'siteName' => config('app.name', 'KUNCHEAP'),
+                    'userName' => $user->username ?: ($user->name ?: 'bạn'),
+                    'resetUrl' => $resetUrl,
+                    'expireMinutes' => (int) config('auth.passwords.users.expire', 60),
+                    'supportEmail' => config('mail.from.address', 'admin@kuncheap.site'),
+                ];
 
-                Mail::raw($body, function ($message) use ($validated) {
+                Mail::send('emails.password-reset', $mailData, function ($message) use ($validated) {
                     $message
                         ->to($validated['email'])
                         ->subject('KUNCHEAP - Đặt lại mật khẩu');
                 });
 
-                Log::info('Đã gửi email đặt lại mật khẩu trực tiếp qua SMTP', [
+                Log::info('Đã gửi email đặt lại mật khẩu HTML qua SMTP', [
                     'email' => $validated['email'],
                 ]);
 
