@@ -136,13 +136,27 @@ class ConfigController extends Controller
             'email' => 'nullable|email|max:255',
             'min_withdraw_gold' => 'nullable|integer|min:0',
             'max_withdraw_gold' => 'nullable|integer|gte:min_withdraw_gold',
-            'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120',
-            'site_logo_footer' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120',
-            'site_view_all_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120',
-            'site_share_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            // Branding assets may be animated GIFs. Keep the original bytes so animation is preserved.
+            'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
+            'site_logo_footer' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
+            'site_view_all_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
+            'site_share_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
             'site_banner' => 'nullable|array',
-            'site_banner.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            'site_favicon' => 'nullable|mimes:ico,png,jpg,jpeg,webp,svg|max:2048',
+            'site_banner.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:20480',
+            'site_favicon' => 'nullable|mimes:ico,png,jpg,jpeg,gif,webp|max:5120',
+        ], [
+            'site_logo.mimes' => 'Logo chính hỗ trợ JPG, PNG, GIF hoặc WEBP.',
+            'site_logo.max' => 'Logo chính tối đa 20MB.',
+            'site_logo_footer.mimes' => 'Logo chân trang hỗ trợ JPG, PNG, GIF hoặc WEBP.',
+            'site_logo_footer.max' => 'Logo chân trang tối đa 20MB.',
+            'site_view_all_image.mimes' => "Ảnh nút 'Xem ngay' hỗ trợ JPG, PNG, GIF hoặc WEBP.",
+            'site_view_all_image.max' => "Ảnh/GIF nút 'Xem ngay' tối đa 20MB.",
+            'site_share_image.mimes' => 'Ảnh chia sẻ hỗ trợ JPG, PNG, GIF hoặc WEBP.',
+            'site_share_image.max' => 'Ảnh chia sẻ tối đa 20MB.',
+            'site_banner.*.mimes' => 'Banner hỗ trợ JPG, PNG, GIF hoặc WEBP.',
+            'site_banner.*.max' => 'Mỗi banner tối đa 20MB.',
+            'site_favicon.mimes' => 'Favicon hỗ trợ ICO, JPG, PNG, GIF hoặc WEBP.',
+            'site_favicon.max' => 'Favicon tối đa 5MB.',
         ]);
 
         try {
@@ -188,13 +202,11 @@ class ConfigController extends Controller
                         $oldBanners = [];
                     }
                 }
-                
-                // Determine if we append or replace. The UI might just upload new ones to append, or replace all.
-                // Let's replace all if they upload new ones, but maybe we should let them keep old ones.
-                // For simplicity, let's append new ones to the existing array.
+
+                // Append new banners to the existing array.
                 $newUrls = UploadHelper::uploadMultiple($request->file('site_banner'), self::UPLOAD_DIR);
                 $allBanners = array_merge($oldBanners, $newUrls);
-                
+
                 config_set('site_banner', json_encode($allBanners));
             }
 
@@ -208,14 +220,14 @@ class ConfigController extends Controller
                         $currentBanners = [];
                     }
                 }
-                
+
                 foreach ($request->remove_banners as $urlToRemove) {
                     if (($key = array_search($urlToRemove, $currentBanners)) !== false) {
                         UploadHelper::deleteByUrl($urlToRemove);
                         unset($currentBanners[$key]);
                     }
                 }
-                
+
                 config_set('site_banner', json_encode(array_values($currentBanners)));
             }
 
@@ -257,7 +269,6 @@ class ConfigController extends Controller
     {
         $title = 'Cài đặt mạng xã hội';
 
-        // Lấy tất cả cấu hình mạng xã hội
         $configs = [
             'facebook' => config_get('facebook', ''),
             'zalo' => config_get('zalo', ''),
@@ -293,7 +304,6 @@ class ConfigController extends Controller
         try {
             DB::beginTransaction();
 
-            // Cập nhật các cài đặt mạng xã hội
             config_set('facebook', $request->facebook);
             config_set('zalo', $request->zalo);
             config_set('youtube', $request->youtube);
@@ -301,10 +311,9 @@ class ConfigController extends Controller
             config_set('telegram', $request->telegram);
             config_set('tiktok', $request->tiktok);
             config_set('working_hours', $request->working_hours);
-            config_set('home_notification', $request->home_notification);
+            config_set('home_notification', $request->has('home_notification') ? $request->home_notification : '');
             config_set('welcome_modal', $request->has('welcome_modal') ? true : false);
 
-            // Xóa cache để cập nhật cài đặt
             config_clear_cache();
 
             DB::commit();
@@ -326,7 +335,6 @@ class ConfigController extends Controller
     {
         $title = 'Cài đặt email';
 
-        // Lấy tất cả cấu hình email
         $configs = [
             'mail_mailer' => config_get('mail_mailer', 'smtp'),
             'mail_host' => config_get('mail_host', 'smtp.gmail.com'),
@@ -360,7 +368,6 @@ class ConfigController extends Controller
         try {
             DB::beginTransaction();
 
-            // Cập nhật cài đặt email
             config_set('mail_mailer', $request->mail_mailer);
             config_set('mail_host', $request->mail_host);
             config_set('mail_port', $request->mail_port);
@@ -370,7 +377,6 @@ class ConfigController extends Controller
             config_set('mail_from_address', $request->mail_from_address);
             config_set('mail_from_name', $request->mail_from_name);
 
-            // Xóa cache để cập nhật cài đặt
             config_clear_cache();
 
             DB::commit();
@@ -391,22 +397,16 @@ class ConfigController extends Controller
     public function payment()
     {
         $title = 'Cài đặt thanh toán';
-        // Lấy tất cả cấu hình thanh toán
         $configs = [
-            // Cài đặt nạp thẻ cào
             'card_active' => config_get('payment.card.active', true),
             'partner_id_card' => config_get('payment.card.partner_id', ''),
             'partner_key_card' => config_get('payment.card.partner_key', ''),
             'discount_percent_card' => config_get('payment.card.discount_percent', '0'),
             'partner_website_card' => config_get('payment.card.partner_website', 'thesieure.com'),
-
-            // Cấu hình USDT (Binance, TRC20)
             'usdt_active' => config_get('payment.usdt.active', true),
             'spay5s_token' => config_get('spay5s_token', ''),
             'usdt_wallet_address' => config_get('usdt_wallet_address', ''),
             'usdt_rate' => config_get('usdt_rate', '25000'),
-
-            // Thêm cấu hình ngân hàng/ví điện tử nếu cần
             'bank_active' => config_get('payment.bank.active', true),
             'momo_active' => config_get('payment.momo.active', true),
         ];
@@ -438,26 +438,18 @@ class ConfigController extends Controller
         try {
             DB::beginTransaction();
 
-            // Nạp thẻ cào
             config_set('payment.card.active', $request->has('card_active') ? 1 : 0);
             config_set('payment.card.partner_id', $request->partner_id_card);
             config_set('payment.card.partner_key', $request->partner_key_card);
             config_set('payment.card.discount_percent', $request->discount_percent_card);
             config_set('payment.card.partner_website', $request->partner_website_card);
-
-            // Nạp USDT
             config_set('payment.usdt.active', $request->has('usdt_active') ? 1 : 0);
             config_set('spay5s_token', $request->spay5s_token);
             config_set('usdt_wallet_address', $request->usdt_wallet_address);
             config_set('usdt_rate', $request->usdt_rate);
-
-            // Chuyển khoản ngân hàng
             config_set('payment.bank.active', $request->has('bank_active') ? 1 : 0);
-
-            // Ví MoMo
             config_set('payment.momo.active', $request->has('momo_active') ? 1 : 0);
 
-            // Xóa cache để cập nhật cài đặt
             config_clear_cache();
 
             DB::commit();
@@ -479,14 +471,13 @@ class ConfigController extends Controller
     {
         $title = 'Cấu hình đăng nhập';
 
-        // Lấy các cấu hình đăng nhập
         $configs = [
             'google_client_id' => config_get('login_social.google.client_id', ''),
             'google_client_secret' => config_get('login_social.google.client_secret', ''),
             'google_redirect' => config_get('login_social.google.redirect', ''),
             'google_active' => config_get('login_social.google.active', '0'),
             'facebook_client_id' => config_get('login_social.facebook.client_id', ''),
-            'facebook_client_secret' => config_get('login_social.facebook.client_secret', ''),
+            'facebook_client_secret' => config_get('login_social.facebook_secret', ''),
             'facebook_redirect' => config_get('login_social.facebook.redirect', ''),
             'facebook_active' => config_get('login_social.facebook.active', '0'),
         ];
@@ -499,7 +490,6 @@ class ConfigController extends Controller
      */
     public function updateLogin(Request $request)
     {
-        // Base validation rules
         $rules = [
             'google_client_id' => 'nullable|string|max:255',
             'google_client_secret' => 'nullable|string|max:255',
@@ -509,7 +499,6 @@ class ConfigController extends Controller
             'facebook_redirect' => 'nullable|string|max:255',
         ];
 
-        // Additional validation when services are active
         if ($request->has('google_active')) {
             $rules['google_client_id'] = 'required|string|max:255';
             $rules['google_client_secret'] = 'required|string|max:255';
@@ -543,19 +532,15 @@ class ConfigController extends Controller
         try {
             DB::beginTransaction();
 
-            // Google Login
             config_set('login_social.google.client_id', $request->google_client_id ?: '');
             config_set('login_social.google.client_secret', $request->google_client_secret ?: '');
             config_set('login_social.google.redirect', $request->google_redirect ?: '');
             config_set('login_social.google.active', $request->has('google_active') ? '1' : '0');
-
-            // Facebook Login
             config_set('login_social.facebook.client_id', $request->facebook_client_id ?: '');
-            config_set('login_social.facebook.client_secret', $request->facebook_client_secret ?: '');
+            config_set('login_social.facebook_client_secret', $request->facebook_client_secret ?: '');
             config_set('login_social.facebook.redirect', $request->facebook_redirect ?: '');
             config_set('login_social.facebook.active', $request->has('facebook_active') ? '1' : '0');
 
-            // Xóa cache để cập nhật cài đặt
             config_clear_cache();
 
             DB::commit();
@@ -581,7 +566,6 @@ class ConfigController extends Controller
         ]);
 
         try {
-            // Lấy cấu hình email từ database
             $mailDriver = config_get('mail_mailer');
             $mailHost = config_get('mail_host');
             $mailPort = config_get('mail_port');
@@ -591,13 +575,12 @@ class ConfigController extends Controller
             $mailFromAddress = config_get('mail_from_address');
             $mailFromName = config_get('mail_from_name');
 
-            // Kiểm tra và sử dụng giá trị mặc định nếu không có cấu hình
             if (empty($mailHost) || $mailHost === 'mailpit') {
-                $mailHost = 'smtp.gmail.com'; // Hoặc SMTP server khác
+                $mailHost = 'smtp.gmail.com';
             }
 
             if (empty($mailPort)) {
-                $mailPort = 587; // Port tiêu chuẩn cho SMTP với TLS
+                $mailPort = 587;
             }
 
             if (empty($mailEncryption) || $mailEncryption === 'null') {
@@ -612,7 +595,6 @@ class ConfigController extends Controller
                 $mailFromName = config_get('site_name', 'Shop Game Ngọc Rồng');
             }
 
-            // Thiết lập cấu hình mail động
             config([
                 'mail.default' => $mailDriver,
                 'mail.mailers.smtp.host' => $mailHost,
@@ -624,7 +606,6 @@ class ConfigController extends Controller
                 'mail.from.name' => $mailFromName,
             ]);
 
-            // Log cấu hình để debug
             Log::info('Test email config:', [
                 'host' => config('mail.mailers.smtp.host'),
                 'port' => config('mail.mailers.smtp.port'),
@@ -640,7 +621,6 @@ class ConfigController extends Controller
         } catch (\Exception $e) {
             Log::error('Lỗi gửi email test: ' . $e->getMessage());
 
-            // Kiểm tra lỗi kết nối host
             if (
                 strpos($e->getMessage(), 'getaddrinfo') !== false ||
                 strpos($e->getMessage(), 'Connection could not be established') !== false
@@ -650,7 +630,6 @@ class ConfigController extends Controller
                     ->withInput();
             }
 
-            // Kiểm tra lỗi xác thực
             if (
                 strpos($e->getMessage(), 'Authentication failed') !== false ||
                 strpos($e->getMessage(), '5.7.0 Authentication') !== false
@@ -672,8 +651,6 @@ class ConfigController extends Controller
     public function notifications(Request $request)
     {
         $title = 'Quản lý thông báo';
-
-        // Chuyển hướng đến controller NotificationController
         return app(NotificationController::class)->index($request);
     }
 
