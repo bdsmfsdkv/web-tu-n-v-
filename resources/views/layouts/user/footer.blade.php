@@ -562,5 +562,28 @@
             transition-delay: 0s !important;
         }
     }
+
+    /* Desktop panels open from visible trigger or panel only, never empty LI area. */
+    @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
+        html body nav.navbar .nav-dropdown:not(:has(> .nav-link-item:hover)):not(:has(> .modern-dropdown-menu:hover)):not(:focus-within):not(.deposit-click-open) > .modern-dropdown-menu,
+        html body nav.navbar .nav-mega-dropdown:not(:has(> .nav-link-item:hover)):not(:has(> .mega-menu:hover)):not(:focus-within) > .mega-menu {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            transform: translate3d(0, -6px, 0) !important;
+            transition-delay: 0s, 0s, var(--nav-normal) !important;
+        }
+
+        html body nav.navbar .nav-dropdown:has(> .nav-link-item:hover) > .modern-dropdown-menu,
+        html body nav.navbar .nav-dropdown:has(> .modern-dropdown-menu:hover) > .modern-dropdown-menu,
+        html body nav.navbar .nav-mega-dropdown:has(> .nav-link-item:hover) > .mega-menu,
+        html body nav.navbar .nav-mega-dropdown:has(> .mega-menu:hover) > .mega-menu {
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            transform: translate3d(0, 0, 0) !important;
+            transition-delay: 0s !important;
+        }
+    }
 </style>
 @endonce

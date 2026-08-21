@@ -3,8 +3,8 @@ namespace App\Providers;
 
 use App\Models\Config;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
-use App\Models\ServiceSetting;
 
 class ServiceConfigProvider extends ServiceProvider
 {
@@ -15,37 +15,29 @@ class ServiceConfigProvider extends ServiceProvider
 
     protected function loadServiceSettings()
     {
-        // Load service settings from the configuration
-        if (!empty(config('service.settings'))) {
-            // Sử dụng cache để tránh truy vấn DB nhiều lần
-            $settings = Cache::remember('service_settings', 3600, function () {
-                return Config::all()->groupBy('provider')->map(function ($items) {
-                    return $items->pluck('value', 'key')->all();
-                })->all();
-            });
-
-            // Cập nhật cấu hình cho Google
-            if (isset($settings['login_social.google.active'])) {
-                config([
-                    'services.google' => [
-                        'client_id' => $settings['login_social.google.client_id'] ?? '',
-                        'client_secret' => $settings['login_social.google.client_secret'] ?? '',
-                        'redirect' => $settings['login_social.google.redirect'] ?? '',
-                    ]
-                ]);
-            }
-
-            // Cập nhật cấu hình cho Facebook
-            if (isset($settings['login_social.facebook.active'])) {
-                config([
-                    'services.facebook' => [
-                        'client_id' => $settings['login_social.facebook.client_id'] ?? '',
-                        'client_secret' => $settings['login_social.facebook.client_secret'] ?? '',
-                        'redirect' => $settings['login_social.facebook.redirect'] ?? '',
-                    ]
-                ]);
-            }
+        if (!Schema::hasTable('configs')) {
+            return;
         }
 
+        $settings = Cache::remember('runtime_service_settings', 3600, fn () => Config::pluck('value', 'key')->all());
+
+        config([
+            'services.google.client_id' => $settings['login_social.google.client_id'] ?? config('services.google.client_id'),
+            'services.google.client_secret' => $settings['login_social.google.client_secret'] ?? config('services.google.client_secret'),
+            'services.google.redirect' => $settings['login_social.google.redirect'] ?? config('services.google.redirect'),
+            'services.facebook.client_id' => $settings['login_social.facebook.client_id'] ?? config('services.facebook.client_id'),
+            'services.facebook.client_secret' => $settings['login_social.facebook.client_secret'] ?? config('services.facebook.client_secret'),
+            'services.facebook.redirect' => $settings['login_social.facebook.redirect'] ?? config('services.facebook.redirect'),
+            'mail.default' => $settings['mail_mailer'] ?? config('mail.default'),
+            'mail.mailers.smtp.host' => $settings['mail_host'] ?? config('mail.mailers.smtp.host'),
+            'mail.mailers.smtp.port' => $settings['mail_port'] ?? config('mail.mailers.smtp.port'),
+            'mail.mailers.smtp.username' => $settings['mail_username'] ?? config('mail.mailers.smtp.username'),
+            'mail.mailers.smtp.password' => $settings['mail_password'] ?? config('mail.mailers.smtp.password'),
+            'mail.mailers.smtp.encryption' => ($settings['mail_encryption'] ?? null) === 'null'
+                ? null
+                : ($settings['mail_encryption'] ?? config('mail.mailers.smtp.encryption')),
+            'mail.from.address' => $settings['mail_from_address'] ?? config('mail.from.address'),
+            'mail.from.name' => $settings['mail_from_name'] ?? config('mail.from.name'),
+        ]);
     }
 }

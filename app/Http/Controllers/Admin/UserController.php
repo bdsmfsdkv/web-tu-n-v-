@@ -57,7 +57,7 @@ class UserController extends Controller
 
             $validated = $request->validate([
                 'email' => 'required|email|unique:users,email,' . $id,
-                'password' => 'nullable|min:6',
+                'password' => 'nullable|min:8|confirmed',
                 'role' => 'required|in:member,admin',
                 'balance' => 'required|numeric|min:0',
                 'banned' => 'required|in:0,1'
@@ -65,7 +65,8 @@ class UserController extends Controller
                 'email.required' => 'Email không được để trống',
                 'email.email' => 'Email không đúng định dạng',
                 'email.unique' => 'Email đã được sử dụng',
-                'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
+                'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự',
+                'password.confirmed' => 'Xác nhận mật khẩu không khớp',
                 'role.required' => 'Vai trò không được để trống',
                 'role.in' => 'Vai trò không hợp lệ',
                 'balance.required' => 'Số dư không được để trống',

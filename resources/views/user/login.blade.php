@@ -16,7 +16,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('login') }}" autocomplete="off" novalidate>
+        <form method="POST" action="{{ route('login') }}" autocomplete="on" novalidate>
             @csrf
 
             <div class="form-group">
@@ -28,10 +28,8 @@
                        value="{{ old('username') }}"
                        required
                        autofocus
-                       autocomplete="off"
-                       data-lpignore="true"
-                       data-form-type="other"
-                       inputmode="text"
+                       autocomplete="email"
+                       inputmode="email"
                        autocapitalize="none"
                        autocorrect="off"
                        spellcheck="false"
