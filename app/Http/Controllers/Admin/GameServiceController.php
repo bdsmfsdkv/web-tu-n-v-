@@ -85,11 +85,12 @@ class GameServiceController extends Controller
                 'type' => 'required|in:gold,gem,leveling',
                 'active' => 'required|boolean',
                 'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+                'remove_thumbnail' => 'nullable|boolean',
             ]);
 
             DB::beginTransaction();
 
-            $data = $request->except(['thumbnail']);
+            $data = $request->except(['thumbnail', 'remove_thumbnail']);
             $data['slug'] = Str::slug($request->name);
 
             if ($request->hasFile('thumbnail')) {
@@ -100,6 +101,11 @@ class GameServiceController extends Controller
 
                 // Store new thumbnail
                 $data['thumbnail'] = UploadHelper::upload($request->file('thumbnail'), self::UPLOAD_DIR . '/thumbnails');
+            } elseif ($request->boolean('remove_thumbnail')) {
+                if ($service->thumbnail) {
+                    UploadHelper::deleteByUrl($service->thumbnail);
+                }
+                $data['thumbnail'] = null;
             }
 
             $service->update($data);

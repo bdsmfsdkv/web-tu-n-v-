@@ -32,7 +32,7 @@
         @foreach ($groupedCategories as $platform => $group)
             @if($group->count() > 0)
                 <section class="section" id="categories-{{ Str::slug($platform) }}" style="padding-top: {{ $loop->first ? '0' : '40px' }};">
-                    <x-hero-header title="{{ mb_strtoupper($platform) }}" description="Danh sách các danh mục tài khoản game" :hideBreadcrumb="true" />
+                    <x-hero-header :title="mb_strtoupper($platform)" description="Danh sách các danh mục tài khoản game" :hideBreadcrumb="true" />
                     <div class="container">
                         <div class="category-grid">
                             @foreach ($group as $category)

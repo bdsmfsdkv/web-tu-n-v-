@@ -3,7 +3,7 @@
 @section('title', $title)
 
 @section('content')
-    <x-hero-header title="{{ strtoupper($category->name) }}" description="" />
+    <x-hero-header :title="strtoupper($category->name)" description="" />
 
     <section class="section" style="padding: 40px 0;">
         <div class="container">

@@ -156,7 +156,15 @@
                                         <input type="file" name="thumb" class="form-control @error('thumb') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="previewImage(this, 'preview-acc-edit-thumb')">
                                         <div class="image-uploads mt-2">
                                             @if ($account->thumb)
-                                                <img id="preview-acc-edit-thumb" src="{{ asset($account->thumb) }}" alt="img" style="max-height: 80px; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
+                                                <div class="existing-thumb-wrapper d-inline-block" style="position: relative; display: inline-block;">
+                                                    <img id="preview-acc-edit-thumb" src="{{ asset($account->thumb) }}" alt="img" style="max-height: 80px; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
+                                                    <button type="button"
+                                                        class="btn btn-danger remove-existing-thumb"
+                                                        title="Xoá ảnh này"
+                                                        aria-label="Xoá ảnh này"
+                                                        onclick="removeExistingThumb(this)"
+                                                        style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; min-width: 24px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 18px; font-weight: 800; line-height: 1; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,.25);">×</button>
+                                                </div>
                                                 <h5 class="mb-0 fw-semibold">Đổi ảnh đại diện (Kéo thả hoặc click)</h5>
                                             @else
                                                 <img id="preview-acc-edit-thumb" src="" alt="Preview" style="max-height: 80px; display:none; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
@@ -332,6 +340,22 @@
                     document.getElementById(previewId).src = e.target.result;
                 }
                 reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function removeExistingThumb(button) {
+            const item = button.closest('.existing-thumb-wrapper');
+            const form = button.closest('form');
+            if (!form) return;
+
+            const removedInput = document.createElement('input');
+            removedInput.type = 'hidden';
+            removedInput.name = 'remove_thumb';
+            removedInput.value = '1';
+            form.appendChild(removedInput);
+
+            if (item) {
+                item.remove();
             }
         }
 

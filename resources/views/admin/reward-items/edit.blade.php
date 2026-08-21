@@ -76,7 +76,15 @@
                                 <label class="form-label fw-bold">Icon (Hình ảnh)</label>
                                 @if($rewardItem->icon)
                                     <div class="mb-2">
-                                        <img src="{{ asset($rewardItem->icon) }}" alt="Icon" class="rounded border shadow-sm" style="width: 80px; height: 80px; object-fit: contain;">
+                                        <div class="existing-reward-icon-wrapper d-inline-block" style="position: relative; display: inline-block;">
+                                            <img src="{{ asset($rewardItem->icon) }}" alt="Icon" class="rounded border shadow-sm" style="width: 80px; height: 80px; object-fit: contain;">
+                                            <button type="button"
+                                                class="btn btn-danger remove-existing-thumb"
+                                                title="Xoá ảnh này"
+                                                aria-label="Xoá ảnh này"
+                                                onclick="removeExistingRewardIcon(this)"
+                                                style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; min-width: 24px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 18px; font-weight: 800; line-height: 1; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,.25);">×</button>
+                                        </div>
                                     </div>
                                 @endif
                                 <input type="file" class="form-control" name="icon" accept="image/*">
@@ -94,3 +102,23 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        function removeExistingRewardIcon(button) {
+            const item = button.closest('.existing-reward-icon-wrapper');
+            const form = button.closest('form');
+            if (!form) return;
+
+            const removedInput = document.createElement('input');
+            removedInput.type = 'hidden';
+            removedInput.name = 'remove_icon';
+            removedInput.value = '1';
+            form.appendChild(removedInput);
+
+            if (item) {
+                item.remove();
+            }
+        }
+    </script>
+@endpush

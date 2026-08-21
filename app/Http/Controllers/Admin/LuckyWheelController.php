@@ -153,7 +153,9 @@ class LuckyWheelController extends Controller
             'name' => 'required|string|max:255',
             'price_per_spin' => 'required|numeric|min:1000',
             'thumbnail' => 'nullable|image',
+            'remove_thumbnail' => 'nullable|boolean',
             'wheel_image' => 'nullable|image',
+            'remove_wheel_image' => 'nullable|boolean',
             'description' => 'nullable|string',
             'rules' => 'required|string',
             'active' => 'required|boolean',
@@ -191,6 +193,11 @@ class LuckyWheelController extends Controller
                     UploadHelper::deleteByUrl($luckyWheel->thumbnail);
                 }
                 $luckyWheel->thumbnail = UploadHelper::upload($request->file('thumbnail'), self::UPLOAD_DIR . '/thumbnails');
+            } elseif ($request->boolean('remove_thumbnail')) {
+                if ($luckyWheel->thumbnail) {
+                    UploadHelper::deleteByUrl($luckyWheel->thumbnail);
+                }
+                $luckyWheel->thumbnail = null;
             }
 
             // Xử lý upload ảnh vòng quay nếu có
@@ -200,6 +207,11 @@ class LuckyWheelController extends Controller
                     UploadHelper::deleteByUrl($luckyWheel->wheel_image);
                 }
                 $luckyWheel->wheel_image = UploadHelper::upload($request->file('wheel_image'), self::UPLOAD_DIR . '/wheel-images');
+            } elseif ($request->boolean('remove_wheel_image')) {
+                if ($luckyWheel->wheel_image) {
+                    UploadHelper::deleteByUrl($luckyWheel->wheel_image);
+                }
+                $luckyWheel->wheel_image = null;
             }
 
             $luckyWheel->description = $request->description;

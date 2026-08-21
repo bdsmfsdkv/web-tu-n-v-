@@ -118,6 +118,7 @@ class GameAccountController extends Controller
                 'note' => 'nullable|string',
                 'details' => 'nullable|array',
                 'thumb' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+                'remove_thumb' => 'nullable|boolean',
                 'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
                 'removed_images' => 'nullable|array',
                 'removed_images.*' => 'nullable|string'
@@ -125,7 +126,7 @@ class GameAccountController extends Controller
 
             DB::beginTransaction();
 
-            $data = $request->except(['thumb', 'images', 'removed_images']);
+            $data = $request->except(['thumb', 'remove_thumb', 'images', 'removed_images']);
 
             if ($request->hasFile('thumb')) {
                 // Delete old thumbnail only when a replacement thumbnail is uploaded.
@@ -133,10 +134,15 @@ class GameAccountController extends Controller
                     UploadHelper::deleteByUrl($account->thumb);
                 }
                 $data['thumb'] = UploadHelper::upload($request->file('thumb'), self::UPLOAD_DIR . '/thumbnails');
+            } elseif ($request->boolean('remove_thumb')) {
+                if ($account->thumb) {
+                    UploadHelper::deleteByUrl($account->thumb);
+                }
+                $data['thumb'] = null;
             }
 
             // Keep current detail images by default. Only images explicitly marked with X are removed.
-            $existingImages = $account->images ? (json_decode($account->images, true) ?: []) : [];
+            $existingImages = is_array($account->images) ? $account->images : (json_decode($account->images, true) ?: []);
             $removedImages = array_values(array_unique($request->input('removed_images', [])));
 
             $remainingImages = array_values(array_filter($existingImages, function ($image) use ($removedImages) {
@@ -189,7 +195,7 @@ class GameAccountController extends Controller
 
             // Delete additional images if exists
             if ($account->images) {
-                $images = json_decode($account->images, true);
+                $images = is_array($account->images) ? $account->images : (json_decode($account->images, true) ?: []);
                 foreach ($images as $image) {
                     UploadHelper::deleteByUrl($image);
                 }

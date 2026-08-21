@@ -157,11 +157,12 @@ class RandomCategoryAccountController extends Controller
                 'price' => 'required|numeric|min:0',
                 'note' => 'nullable|string',
                 'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+                'remove_thumbnail' => 'nullable|boolean',
             ]);
 
             DB::beginTransaction();
 
-            $data = $request->all();
+            $data = $request->except(['thumbnail', 'remove_thumbnail']);
 
             if ($request->hasFile('thumbnail')) {
                 // Delete old thumbnail if exists
@@ -171,6 +172,11 @@ class RandomCategoryAccountController extends Controller
 
                 // Upload new thumbnail
                 $data['thumbnail'] = UploadHelper::upload($request->file('thumbnail'), self::UPLOAD_DIR);
+            } elseif ($request->boolean('remove_thumbnail')) {
+                if ($account->thumbnail) {
+                    UploadHelper::deleteByUrl($account->thumbnail);
+                }
+                $data['thumbnail'] = null;
             }
 
             $account->update($data);

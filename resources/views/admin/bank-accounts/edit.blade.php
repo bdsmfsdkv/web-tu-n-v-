@@ -201,8 +201,16 @@
                                     @enderror
                                     @if($bankAccount->image)
                                         <div class="mt-3">
-                                            <p>Ảnh hiện tại:</p>
-                                            <img src="{{ asset($bankAccount->image) }}" alt="Current Image" style="max-height: 100px; border-radius: 8px; border: 1px solid #ddd;">
+                                            <p class="mb-2">Ảnh hiện tại:</p>
+                                            <div class="existing-bank-image-wrapper d-inline-block" style="position: relative; display: inline-block;">
+                                                <img src="{{ asset($bankAccount->image) }}" alt="Current Image" style="max-height: 100px; border-radius: 8px; border: 1px solid #ddd;">
+                                                <button type="button"
+                                                    class="btn btn-danger remove-existing-thumb"
+                                                    title="Xoá ảnh này"
+                                                    aria-label="Xoá ảnh này"
+                                                    onclick="removeExistingBankImage(this)"
+                                                    style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; min-width: 24px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 18px; font-weight: 800; line-height: 1; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,.25);">×</button>
+                                            </div>
                                         </div>
                                     @endif
                                 </div>
@@ -238,3 +246,23 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        function removeExistingBankImage(button) {
+            const item = button.closest('.existing-bank-image-wrapper');
+            const form = button.closest('form');
+            if (!form) return;
+
+            const removedInput = document.createElement('input');
+            removedInput.type = 'hidden';
+            removedInput.name = 'remove_image';
+            removedInput.value = '1';
+            form.appendChild(removedInput);
+
+            if (item) {
+                item.remove();
+            }
+        }
+    </script>
+@endpush

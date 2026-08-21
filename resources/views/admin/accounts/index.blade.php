@@ -75,10 +75,15 @@
                                         <td>
                                             <div class="form-check"><input class="form-check-input" type="checkbox"></div>
                                         </td>
-                                        <td>{{ $key + 1 }}</td>
+                                        <td>{{ $account->id }}</td>
                                         <td>
-                                            <a
-                                                href="{{ route('admin.categories.edit', ['category' => $account->category->id]) }}">{{ $account->category->name }}</a>
+                                            @if($account->category)
+                                                <a href="{{ route('admin.categories.edit', ['category' => $account->category->id]) }}">
+                                                    {{ $account->category->name }}
+                                                </a>
+                                            @else
+                                                <span class="text-muted">Không xác định</span>
+                                            @endif
                                         </td>
                                         <td class="text-bolds">{{ $account->account_name }}</td>
                                         <td>{{ number_format($account->price) }} VNĐ</td>

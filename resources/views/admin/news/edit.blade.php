@@ -67,8 +67,20 @@
                             @error('thumbnail')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
-                            <div class="mt-3 text-center bg-light p-2 rounded border" style="min-height: 150px; display: flex; align-items: center; justify-content: center;">
-                                <img id="preview-thumb" src="{{ asset($news->thumbnail) }}" alt="Preview Thumbnail" style="max-width: 100%; border-radius: 8px; object-fit: contain; max-height: 200px; display: {{ $news->thumbnail ? 'block' : 'none' }};">
+                            <div class="mt-3 text-center bg-light p-2 rounded border" style="min-height: 150px; display: flex; align-items: center; justify-content: center; position: relative;">
+                                @if($news->thumbnail)
+                                    <div class="existing-news-thumb-wrapper d-inline-block" style="position: relative; display: inline-block;">
+                                        <img id="preview-thumb" src="{{ asset($news->thumbnail) }}" alt="Preview Thumbnail" style="max-width: 100%; border-radius: 8px; object-fit: contain; max-height: 200px; display: block;">
+                                        <button type="button"
+                                            class="btn btn-danger remove-existing-thumb"
+                                            title="Xoá ảnh này"
+                                            aria-label="Xoá ảnh này"
+                                            onclick="removeExistingNewsThumb(this)"
+                                            style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; min-width: 24px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 18px; font-weight: 800; line-height: 1; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,.25);">×</button>
+                                    </div>
+                                @else
+                                    <img id="preview-thumb" src="" alt="Preview Thumbnail" style="max-width: 100%; border-radius: 8px; object-fit: contain; max-height: 200px; display: none;">
+                                @endif
                                 <span id="preview-placeholder" class="text-muted" style="display: {{ $news->thumbnail ? 'none' : 'block' }};">Chưa có ảnh được chọn</span>
                             </div>
                         </div>
@@ -118,6 +130,23 @@
             ]
         });
     });
+
+    function removeExistingNewsThumb(button) {
+        const item = button.closest('.existing-news-thumb-wrapper');
+        const form = button.closest('form');
+        if (!form) return;
+
+        const removedInput = document.createElement('input');
+        removedInput.type = 'hidden';
+        removedInput.name = 'remove_thumbnail';
+        removedInput.value = '1';
+        form.appendChild(removedInput);
+
+        if (item) {
+            item.remove();
+        }
+        $('#preview-placeholder').show();
+    }
 
     function previewImage(input, previewId) {
         if (input.files && input.files[0]) {

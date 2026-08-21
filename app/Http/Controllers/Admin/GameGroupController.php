@@ -32,9 +32,11 @@ class GameGroupController extends Controller
         try {
             $request->validate([
                 'name' => 'required|string|unique:game_groups,name',
-                'order' => 'nullable|integer',
+                'order' => 'nullable|integer|min:0|unique:game_groups,order',
                 'active' => 'boolean',
                 'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            ], [
+                'order.unique' => 'Thứ tự hiển thị này đã tồn tại, vui lòng chọn số khác.',
             ]);
 
             DB::beginTransaction();
@@ -42,7 +44,11 @@ class GameGroupController extends Controller
             $data = $request->all();
             $data['slug'] = Str::slug($request->name);
             $data['active'] = $request->boolean('active');
-            if (!isset($data['order'])) $data['order'] = 0;
+            
+            if (!isset($data['order']) || $data['order'] === '' || $data['order'] === null) {
+                $maxOrder = GameGroup::max('order') ?? 0;
+                $data['order'] = $maxOrder + 1;
+            }
 
             // Không để UploadedFile/null từ $request->all() lọt vào mass assignment
             unset($data['thumbnail']);
@@ -81,20 +87,23 @@ class GameGroupController extends Controller
         try {
             $request->validate([
                 'name' => 'required|string|unique:game_groups,name,' . $gameGroup->id,
-                'order' => 'nullable|integer',
+                'order' => 'nullable|integer|min:0|unique:game_groups,order,' . $gameGroup->id,
                 'active' => 'boolean',
                 'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+                'remove_thumbnail' => 'nullable|boolean',
+            ], [
+                'order.unique' => 'Thứ tự hiển thị này đã tồn tại, vui lòng chọn số khác.',
             ]);
 
             DB::beginTransaction();
 
-            $data = $request->all();
+            $data = $request->except(['thumbnail', 'remove_thumbnail']);
             $data['slug'] = Str::slug($request->name);
             $data['active'] = $request->boolean('active');
-            if (!isset($data['order'])) $data['order'] = 0;
-
-            // Không có file mới => giữ nguyên ảnh cũ (tránh $request->all() ghi đè thành null)
-            unset($data['thumbnail']);
+            
+            if (!isset($data['order']) || $data['order'] === '' || $data['order'] === null) {
+                $data['order'] = $gameGroup->order;
+            }
 
             if ($request->hasFile('thumbnail')) {
                 if ($gameGroup->thumbnail) {
@@ -102,6 +111,11 @@ class GameGroupController extends Controller
                 }
 
                 $data['thumbnail'] = UploadHelper::upload($request->file('thumbnail'), self::UPLOAD_DIR);
+            } elseif ($request->boolean('remove_thumbnail')) {
+                if ($gameGroup->thumbnail) {
+                    UploadHelper::deleteByUrl($gameGroup->thumbnail);
+                }
+                $data['thumbnail'] = null;
             }
 
             $gameGroup->update($data);

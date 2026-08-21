@@ -127,7 +127,15 @@
                                         <input type="file" name="thumbnail" class="form-control @error('thumbnail') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="previewImage(this, 'preview-rc-edit-thumb')">
                                         <div class="image-uploads mt-2">
                                             @if($category->thumbnail)
-                                                <img id="preview-rc-edit-thumb" src="{{ asset($category->thumbnail) }}" alt="img" style="max-height: 80px; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
+                                                <div class="existing-thumb-wrapper d-inline-block" style="position: relative; display: inline-block;">
+                                                    <img id="preview-rc-edit-thumb" src="{{ asset($category->thumbnail) }}" alt="img" style="max-height: 80px; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
+                                                    <button type="button"
+                                                        class="btn btn-danger remove-existing-thumb"
+                                                        title="Xoá ảnh này"
+                                                        aria-label="Xoá ảnh này"
+                                                        onclick="removeExistingCategoryThumb(this)"
+                                                        style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; min-width: 24px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 18px; font-weight: 800; line-height: 1; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,.25);">×</button>
+                                                </div>
                                                 <h5 class="mb-0 fw-semibold">Đổi ảnh đại diện (Kéo thả hoặc click)</h5>
                                             @else
                                                 <img id="preview-rc-edit-thumb" src="" alt="Preview" style="max-height: 80px; display:none; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
@@ -149,7 +157,15 @@
                                         <input type="file" name="tag_image" class="form-control @error('tag_image') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="previewImage(this, 'preview-rc-edit-tag')">
                                         <div class="image-uploads mt-2">
                                             @if($category->tag_image)
-                                                <img id="preview-rc-edit-tag" src="{{ asset($category->tag_image) }}" alt="img" style="max-height: 50px; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
+                                                <div class="existing-tag-wrapper d-inline-block" style="position: relative; display: inline-block;">
+                                                    <img id="preview-rc-edit-tag" src="{{ asset($category->tag_image) }}" alt="img" style="max-height: 50px; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
+                                                    <button type="button"
+                                                        class="btn btn-danger remove-existing-tag"
+                                                        title="Xoá ảnh này"
+                                                        aria-label="Xoá ảnh này"
+                                                        onclick="removeExistingCategoryTag(this)"
+                                                        style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; min-width: 24px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 18px; font-weight: 800; line-height: 1; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,.25);">×</button>
+                                                </div>
                                                 <h5 class="mb-0 fw-semibold text-warning">Đổi ảnh Tag (Kéo thả hoặc click)</h5>
                                             @else
                                                 <img id="preview-rc-edit-tag" src="" alt="Preview" style="max-height: 50px; display:none; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
@@ -186,3 +202,39 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        function removeExistingCategoryThumb(button) {
+            const item = button.closest('.existing-thumb-wrapper');
+            const form = button.closest('form');
+            if (!form) return;
+
+            const removedInput = document.createElement('input');
+            removedInput.type = 'hidden';
+            removedInput.name = 'remove_thumbnail';
+            removedInput.value = '1';
+            form.appendChild(removedInput);
+
+            if (item) {
+                item.remove();
+            }
+        }
+
+        function removeExistingCategoryTag(button) {
+            const item = button.closest('.existing-tag-wrapper');
+            const form = button.closest('form');
+            if (!form) return;
+
+            const removedInput = document.createElement('input');
+            removedInput.type = 'hidden';
+            removedInput.name = 'remove_tag_image';
+            removedInput.value = '1';
+            form.appendChild(removedInput);
+
+            if (item) {
+                item.remove();
+            }
+        }
+    </script>
+@endpush

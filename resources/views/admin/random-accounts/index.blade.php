@@ -80,19 +80,21 @@
                                         </td>
                                         <td>{{ $account->id }}</td>
                                         <td>
-                                            <a href="{{ route('admin.random-categories.edit', ['category' => $account->category->id]) }}"
-                                                target="_blank">
-                                                {{ $account->category->name }}
-                                            </a>
-                                        </td>
-
+                                            @if($account->category)
+                                                <a href="{{ route('admin.random-categories.edit', ['category' => $account->category->id]) }}"
+                                                    target="_blank">
+                                                    {{ $account->category->name }}
+                                                </a>
+                                            @else
+                                                <span class="text-muted">Không xác định</span>
+                                            @endif
                                         </td>
                                         <td>{{ $account->server }}</td>
-                                        <td>{{ number_format($account->price) }}</td>
+                                        <td>{{ number_format($account->price) }} đ</td>
                                         <td><span
                                                 class="badge {{ $account->status === 'available' ? 'bg-lightgreen' : 'bg-lightred' }}">{{ $account->status === 'available' ? 'Chưa bán' : 'Đã bán' }}</span>
                                         </td>
-                                        <td>{{ $account->buyer ? $account->buyer->name : 'Chưa có' }}</td>
+                                        <td>{{ $account->buyer ? ($account->buyer->username ?? $account->buyer->name) : 'Chưa có' }}</td>
                                         <td>{{ $account->created_at->format('d/m/Y') }}</td>
                                         <td class="text-center">
                                             <a class="me-3"

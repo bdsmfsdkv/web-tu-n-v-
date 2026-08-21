@@ -54,17 +54,6 @@
                             </div>
                             <div class="col-lg-6 col-sm-6 col-12">
                                 <div class="mb-3">
-                                    <label class="form-label">Số lượng <span class="text-danger">*</span></label>
-                                    <input type="number" name="amount" value="{{ old('amount', $package->amount ?? 0) }}"
-                                        class="form-control @error('amount') is-invalid @enderror"
-                                        placeholder="Ví dụ: 1000">
-                                    @error('amount')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="col-lg-6 col-sm-6 col-12">
-                                <div class="mb-3">
                                     <label class="form-label">Giá (VND) <span class="text-danger">*</span></label>
                                     <input type="number" name="price" value="{{ old('price', $package->price) }}"
                                         class="form-control @error('price') is-invalid @enderror"

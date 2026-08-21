@@ -114,7 +114,9 @@ class RandomCategoryController extends Controller
         $request->validate([
             'name' => 'required|string|unique:random_categories,name,' . $category->id,
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'remove_thumbnail' => 'nullable|boolean',
             'tag_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'remove_tag_image' => 'nullable|boolean',
             'description' => 'nullable|string',
             'active' => 'boolean',
             'platform' => 'nullable|string|max:255',
@@ -128,7 +130,7 @@ class RandomCategoryController extends Controller
         try {
             DB::beginTransaction();
 
-            $data = $request->all();
+            $data = $request->except(['thumbnail', 'remove_thumbnail', 'tag_image', 'remove_tag_image']);
             if (!isset($data['active'])) {
                 $data['active'] = false;
             }
@@ -142,6 +144,11 @@ class RandomCategoryController extends Controller
                 }
 
                 $data['thumbnail'] = UploadHelper::upload($request->file('thumbnail'), self::UPLOAD_DIR);
+            } elseif ($request->boolean('remove_thumbnail')) {
+                if ($category->thumbnail) {
+                    UploadHelper::deleteByUrl($category->thumbnail);
+                }
+                $data['thumbnail'] = null;
             }
 
             if ($request->hasFile('tag_image')) {
@@ -150,6 +157,11 @@ class RandomCategoryController extends Controller
                 }
 
                 $data['tag_image'] = UploadHelper::upload($request->file('tag_image'), self::UPLOAD_DIR);
+            } elseif ($request->boolean('remove_tag_image')) {
+                if ($category->tag_image) {
+                    UploadHelper::deleteByUrl($category->tag_image);
+                }
+                $data['tag_image'] = null;
             }
 
             $category->update($data);

@@ -3,7 +3,7 @@
 @section('content')
     <section class="section" style="padding-top: 40px;">
         <div class="container">
-            <x-hero-header title="{{ mb_strtoupper($platform) }}" description="Danh sách các danh mục tài khoản game" :hideBreadcrumb="false" />
+            <x-hero-header :title="mb_strtoupper($platform)" description="Danh sách các danh mục tài khoản game" :hideBreadcrumb="false" />
             <div class="category-grid">
                 @if ($categories->count() > 0)
                     @foreach ($categories as $category)

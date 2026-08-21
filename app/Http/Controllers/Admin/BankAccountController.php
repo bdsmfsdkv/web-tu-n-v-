@@ -90,6 +90,7 @@ class BankAccountController extends Controller
             'prefix' => 'required|string|max:50',
             'access_token' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'remove_image' => 'nullable|boolean',
         ]);
 
         if ($request->hasFile('image')) {
@@ -102,6 +103,11 @@ class BankAccountController extends Controller
             $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('uploads/banks'), $imageName);
             $validated['image'] = 'uploads/banks/' . $imageName;
+        } elseif ($request->boolean('remove_image')) {
+            if ($bankAccount->image && file_exists(public_path($bankAccount->image))) {
+                unlink(public_path($bankAccount->image));
+            }
+            $validated['image'] = null;
         }
 
         // Xử lý các trường boolean

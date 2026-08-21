@@ -75,7 +75,7 @@
                                         <td>
                                             <div class="form-check"><input class="form-check-input" type="checkbox"></div>
                                         </td>
-                                        <td>{{ $key + 1 }}</td>
+                                        <td>{{ $category->id }}</td>
                                         <td class="text-bolds">{{ $category->name }}</td>
                                         <td>
                                             <img src="{{ asset($category->thumbnail) }}" alt="{{ $category->name }}"

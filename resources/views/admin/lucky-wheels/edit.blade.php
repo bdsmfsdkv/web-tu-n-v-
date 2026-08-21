@@ -129,8 +129,16 @@
                                         <input type="file" name="thumbnail" class="form-control @error('thumbnail') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" id="thumbnail" onchange="previewImage(this, 'preview-thumbnail')">
                                         <div class="image-uploads mt-2">
                                             @if($luckyWheel->thumbnail)
-                                                <i class="ti ti-photo-plus text-primary" style="font-size: 40px; display:none;"></i>
-                                                <h5 class="mt-2 mb-0 fw-semibold text-primary">Đổi ảnh đại diện (Kéo thả hoặc click)</h5>
+                                                <div class="existing-thumb-wrapper d-inline-block" style="position: relative; display: inline-block;">
+                                                    <img src="{{ asset($luckyWheel->thumbnail) }}" alt="img" style="max-height: 80px; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
+                                                    <button type="button"
+                                                        class="btn btn-danger remove-existing-thumb"
+                                                        title="Xoá ảnh này"
+                                                        aria-label="Xoá ảnh này"
+                                                        onclick="removeExistingWheelThumb(this)"
+                                                        style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; min-width: 24px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 18px; font-weight: 800; line-height: 1; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,.25);">×</button>
+                                                </div>
+                                                <h5 class="mb-0 fw-semibold text-primary">Đổi ảnh đại diện (Kéo thả hoặc click)</h5>
                                             @else
                                                 <i class="ti ti-photo-plus text-primary" style="font-size: 40px;"></i>
                                                 <h5 class="mt-2 mb-0 fw-semibold">Kéo thả hoặc click để tải ảnh lên</h5>
@@ -151,8 +159,16 @@
                                         <input type="file" name="wheel_image" class="form-control @error('wheel_image') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" id="wheel_image" onchange="previewImage(this, 'preview-wheel')">
                                         <div class="image-uploads mt-2">
                                             @if($luckyWheel->wheel_image)
-                                                <i class="ti ti-loader text-success" style="font-size: 40px; display:none;"></i>
-                                                <h5 class="mt-2 mb-0 fw-semibold text-success">Đổi ảnh vòng quay (Kéo thả hoặc click)</h5>
+                                                <div class="existing-wheel-wrapper d-inline-block" style="position: relative; display: inline-block;">
+                                                    <img src="{{ asset($luckyWheel->wheel_image) }}" alt="img" style="max-height: 80px; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
+                                                    <button type="button"
+                                                        class="btn btn-danger remove-existing-wheel"
+                                                        title="Xoá ảnh này"
+                                                        aria-label="Xoá ảnh này"
+                                                        onclick="removeExistingWheelImage(this)"
+                                                        style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; min-width: 24px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 18px; font-weight: 800; line-height: 1; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,.25);">×</button>
+                                                </div>
+                                                <h5 class="mb-0 fw-semibold text-success">Đổi ảnh vòng quay (Kéo thả hoặc click)</h5>
                                             @else
                                                 <i class="ti ti-loader text-success" style="font-size: 40px;"></i>
                                                 <h5 class="mt-2 mb-0 fw-semibold text-success">Kéo thả hoặc click để tải ảnh vòng quay lên</h5>
@@ -293,6 +309,42 @@
 @push('scripts')
     <script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
     <script>
+        function removeExistingWheelThumb(button) {
+            const item = button.closest('.existing-thumb-wrapper');
+            const form = button.closest('form');
+            if (!form) return;
+
+            const removedInput = document.createElement('input');
+            removedInput.type = 'hidden';
+            removedInput.name = 'remove_thumbnail';
+            removedInput.value = '1';
+            form.appendChild(removedInput);
+
+            if (item) {
+                item.remove();
+            }
+            const previewThumb = document.getElementById('preview-thumbnail');
+            if (previewThumb) previewThumb.src = 'https://i.imgur.com/NpL6V6y.png';
+        }
+
+        function removeExistingWheelImage(button) {
+            const item = button.closest('.existing-wheel-wrapper');
+            const form = button.closest('form');
+            if (!form) return;
+
+            const removedInput = document.createElement('input');
+            removedInput.type = 'hidden';
+            removedInput.name = 'remove_wheel_image';
+            removedInput.value = '1';
+            form.appendChild(removedInput);
+
+            if (item) {
+                item.remove();
+            }
+            const previewWheel = document.getElementById('preview-wheel');
+            if (previewWheel) previewWheel.src = 'https://i.imgur.com/NpL6V6y.png';
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             // Khởi tạo CKEditor cho mô tả
             let descriptionEditor;

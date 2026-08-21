@@ -75,9 +75,10 @@ class RewardItemController extends Controller
             'max_withdraw' => 'required|integer|min:0|gte:min_withdraw',
             'priority' => 'required|integer|min:0',
             'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'remove_icon' => 'nullable|boolean',
         ]);
 
-        $data = $request->except('icon');
+        $data = $request->except(['icon', 'remove_icon']);
         $data['active'] = $request->has('active');
 
         if ($request->hasFile('icon')) {
@@ -86,6 +87,11 @@ class RewardItemController extends Controller
             }
             $path = $request->file('icon')->store('reward-items', 'public');
             $data['icon'] = '/storage/' . $path;
+        } elseif ($request->boolean('remove_icon')) {
+            if ($rewardItem->icon && file_exists(public_path($rewardItem->icon))) {
+                @unlink(public_path($rewardItem->icon));
+            }
+            $data['icon'] = null;
         }
 
         $rewardItem->update($data);

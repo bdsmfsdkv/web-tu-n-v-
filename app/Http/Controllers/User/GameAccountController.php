@@ -16,7 +16,7 @@ class GameAccountController extends Controller
     {
         $account = GameAccount::findOrFail($id);
 
-        $images = json_decode($account->images) ?? [];
+        $images = is_array($account->images) ? $account->images : (json_decode($account->images, true) ?? []);
 
         $flashSalePrice = \App\Models\FlashSale::getActivePrice('game', $account->game_category_id);
         if ($flashSalePrice !== null) {

@@ -71,6 +71,7 @@ class NewsController extends Controller
         $request->validate([
             'title' => 'required|string|max:255|unique:news,title,' . $news->id,
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'remove_thumbnail' => 'nullable|boolean',
             'description' => 'required|string',
             'content' => 'required|string',
             'active' => 'boolean'
@@ -79,7 +80,7 @@ class NewsController extends Controller
         try {
             DB::beginTransaction();
 
-            $data = $request->all();
+            $data = $request->except(['thumbnail', 'remove_thumbnail']);
             $data['slug'] = Str::slug($request->title);
             $data['active'] = $request->boolean('active');
 
@@ -88,6 +89,11 @@ class NewsController extends Controller
                     UploadHelper::deleteByUrl($news->thumbnail);
                 }
                 $data['thumbnail'] = UploadHelper::upload($request->file('thumbnail'), self::UPLOAD_DIR);
+            } elseif ($request->boolean('remove_thumbnail')) {
+                if ($news->thumbnail) {
+                    UploadHelper::deleteByUrl($news->thumbnail);
+                }
+                $data['thumbnail'] = null;
             }
 
             $news->update($data);

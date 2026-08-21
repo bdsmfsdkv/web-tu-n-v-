@@ -8,7 +8,7 @@
 
 @section('content')
     <!-- Hero Section -->
-    <x-hero-header title="{{ $category->name }}" description="{{ $category->description }}" />
+    <x-hero-header :title="$category->name" :description="$category->description" />
 
     <!-- Account List Section -->
     <section class="account-section">

@@ -3,7 +3,7 @@
 @section('title', $title)
 
 @section('content')
-    <x-hero-header title="{{ $service->name }}" description="{{ $service->description }}" />
+    <x-hero-header :title="$service->name" :description="$service->description" />
 
     <style>
         .service__discount-feedback {
