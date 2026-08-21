@@ -54,8 +54,7 @@ class PasswordResetLinkController extends Controller
             $repository = $broker->getRepository();
 
             if ($repository->recentlyCreatedToken($user)) {
-                // Local là môi trường test: xóa token cũ để có thể bấm thử lại ngay,
-                // không bắt người test phải chờ throttle 60 giây.
+                // Local cho phép test lại ngay; production vẫn giữ throttle an toàn.
                 if ($isLocal) {
                     $repository->delete($user);
                 } else {
@@ -72,19 +71,12 @@ class PasswordResetLinkController extends Controller
                     'email' => $user->getEmailForPasswordReset(),
                 ]);
 
-                // LOCAL: không chờ SMTP. Hiện link reset ngay để test toàn bộ flow.
-                // Khi đưa lên host với APP_ENV=production, nhánh này không chạy và
-                // email thật vẫn được gửi qua SMTP bên dưới.
+                // Local vẫn ghi URL vào log để debug, nhưng giao diện không hiển thị link test.
                 if ($isLocal) {
                     Log::info('LOCAL PASSWORD RESET URL', [
                         'email' => $user->getEmailForPasswordReset(),
                         'url' => $resetUrl,
                     ]);
-
-                    return back()
-                        ->withInput($request->only('email'))
-                        ->with('status', 'Đã tạo liên kết đặt lại mật khẩu để test local. Bấm nút bên dưới để tiếp tục.')
-                        ->with('local_reset_url', $resetUrl);
                 }
 
                 $body = "KUNCHEAP - Đặt lại mật khẩu\n\n"
@@ -124,7 +116,7 @@ class PasswordResetLinkController extends Controller
 
                 return back()
                     ->withInput($request->only('email'))
-                    ->with('error', 'Không thể tạo liên kết đặt lại mật khẩu lúc này. Vui lòng thử lại sau.');
+                    ->with('error', 'Không thể gửi email lúc này. Vui lòng thử lại sau.');
             }
         } finally {
             $lock->release();
