@@ -26,10 +26,11 @@ html body nav.navbar #navLinks > li > .nav-menu-trigger {
     text-decoration: none !important;
     background: transparent !important;
     background-image: none !important;
-    border: 0 !important;
+    border: 1px solid transparent !important;
     border-radius: 8px !important;
     box-shadow: none !important;
     outline: 0 !important;
+    transition: color .15s ease, background-color .15s ease, border-color .15s ease !important;
 }
 
 html body nav.navbar #navLinks > li > .nav-menu-trigger {
@@ -39,10 +40,19 @@ html body nav.navbar #navLinks > li > .nav-menu-trigger {
 html body nav.navbar #navLinks > li > .nav-menu-trigger:focus,
 html body nav.navbar #navLinks > li > .nav-menu-trigger:focus-visible,
 html body nav.navbar #navLinks > li > .nav-menu-trigger:active {
-    background: transparent !important;
     background-image: none !important;
     box-shadow: none !important;
     outline: 0 !important;
+}
+
+html body nav.navbar #navLinks > li > .nav-link-item.active {
+    color: #dc2626 !important;
+    background: rgba(220,38,38,.07) !important;
+    border-color: rgba(220,38,38,.22) !important;
+}
+
+html body nav.navbar #navLinks > li > .nav-link-item.active .nav-item-icon {
+    color: #dc2626 !important;
 }
 
 html body nav.navbar #navLinks .mega-menu a,
@@ -58,6 +68,11 @@ html body nav.navbar #navLinks .modern-dropdown-menu a * {
     html body nav.navbar #navLinks > li > .nav-link-item:hover {
         color: #dc2626 !important;
         background: rgba(220,38,38,.07) !important;
+        border-color: rgba(220,38,38,.22) !important;
+    }
+
+    html body nav.navbar #navLinks > li > .nav-link-item:hover .nav-item-icon {
+        color: #dc2626 !important;
     }
 }
 
@@ -156,6 +171,14 @@ html body nav.navbar #navLinks .modern-dropdown-menu a * {
     html body nav.navbar #navLinks .nav-mega-dropdown.menu-open > .nav-menu-trigger {
         color: #dc2626 !important;
         background: #fff1f2 !important;
+        border-color: rgba(220,38,38,.22) !important;
+    }
+
+    html body nav.navbar #navLinks .nav-dropdown.open > .nav-menu-trigger .nav-item-icon,
+    html body nav.navbar #navLinks .nav-dropdown.menu-open > .nav-menu-trigger .nav-item-icon,
+    html body nav.navbar #navLinks .nav-mega-dropdown.open > .nav-menu-trigger .nav-item-icon,
+    html body nav.navbar #navLinks .nav-mega-dropdown.menu-open > .nav-menu-trigger .nav-item-icon {
+        color: #dc2626 !important;
     }
 
     html body nav.navbar #navLinks .nav-dropdown.open > .nav-menu-trigger .nav-arrow,
@@ -386,6 +409,7 @@ html body nav.navbar #navLinks .modern-dropdown-menu a * {
     html body nav.navbar #navLinks > li.nav-mega-dropdown.menu-open > .nav-menu-trigger {
         color: #dc2626 !important;
         background: rgba(220,38,38,.07) !important;
+        border-color: rgba(220,38,38,.22) !important;
     }
 
     html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .nav-menu-trigger:hover) > .nav-menu-trigger .nav-item-icon,
