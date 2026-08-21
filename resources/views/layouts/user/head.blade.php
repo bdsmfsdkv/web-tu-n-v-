@@ -148,6 +148,13 @@
 
         /* Guest mobile header: keep Login/Register beside theme, never inside hamburger. */
         @media (max-width: 1199px) {
+            html body nav.navbar > .nav-container > .nav-brand img {
+                height: 34px !important;
+                width: auto !important;
+                max-width: 125px !important;
+                object-fit: contain !important;
+            }
+
             html body nav.navbar > .nav-container > .nav-user > .nav-guest-actions {
                 display: flex !important;
                 visibility: visible !important;
