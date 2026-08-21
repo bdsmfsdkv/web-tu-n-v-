@@ -119,7 +119,7 @@
                                         <input class="form-check-input" type="checkbox" id="welcome_modal" name="welcome_modal" value="1" {{ $configs['welcome_modal'] ? 'checked' : '' }}>
                                         <label class="form-check-label fw-semibold" for="welcome_modal">Bật popup thông báo trên website</label>
                                     </div>
-                                    <small class="form-text text-muted d-block mt-2">Tắt công tắc để ẩn popup cho toàn bộ website. Khi bật, người dùng có thể chọn “Ẩn trong 2 giờ” và vẫn có nút để bật lại trước khi hết 2 giờ.</small>
+                                    <small class="form-text text-muted d-block mt-2">Tắt công tắc để ẩn popup cho toàn bộ website. Khi bật, người dùng chỉ cần đóng popup hoặc bấm “Đã hiểu”.</small>
                                 </div>
                             </div>
                             <div class="col-lg-12">
