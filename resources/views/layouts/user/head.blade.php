@@ -41,9 +41,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/antd@4.24.16/dist/antd.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lelinh014756/fui-toast-js@master/assets/css/toast@1.0.1/fuiToast.min.css">
-    <link href="/css/style.css" rel="stylesheet">
-    <link href="/css/legacy-compat.css" rel="stylesheet">
-    <link href="/css/ui-fixes.css?v=20260820-6" rel="stylesheet">
+
+    {{-- Local CSS uses filemtime so localhost and production never keep an old menu file after deployment. --}}
+    <link href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}" rel="stylesheet">
+    <link href="{{ asset('css/legacy-compat.css') }}?v={{ filemtime(public_path('css/legacy-compat.css')) }}" rel="stylesheet">
+    <link href="{{ asset('css/ui-fixes.css') }}?v={{ filemtime(public_path('css/ui-fixes.css')) }}" rel="stylesheet">
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
@@ -76,8 +78,8 @@
     @endif
 
     @stack('css')
-    <link href="/css/mobile-header-final.css?v=20260820-5" rel="stylesheet">
-    <link href="/css/navbar-hover-hotfix.css?v=20260820-1" rel="stylesheet">
+    <link href="{{ asset('css/mobile-header-final.css') }}?v={{ filemtime(public_path('css/mobile-header-final.css')) }}" rel="stylesheet">
+    <link href="{{ asset('css/navbar-hover-hotfix.css') }}?v={{ filemtime(public_path('css/navbar-hover-hotfix.css')) }}" rel="stylesheet">
 
     <style>
         .ant-header-lang-dropdown {
@@ -132,32 +134,17 @@
             transform: translateY(0) !important;
         }
 
-        iframe.goog-te-banner-frame {
-            display: none !important;
-        }
-
-        body {
-            top: 0px !important;
-        }
-
+        iframe.goog-te-banner-frame { display: none !important; }
+        body { top: 0px !important; }
         .goog-tooltip,
-        .goog-tooltip:hover {
-            display: none !important;
-        }
-
+        .goog-tooltip:hover { display: none !important; }
         .goog-text-highlight {
             background-color: transparent !important;
             border: none !important;
             box-shadow: none !important;
         }
-
-        .goog-te-gadget {
-            font-size: 0px !important;
-        }
-
-        .skiptranslate {
-            display: none !important;
-        }
+        .goog-te-gadget { font-size: 0px !important; }
+        .skiptranslate { display: none !important; }
 
         /* Guest mobile header: keep Login/Register beside theme, never inside hamburger. */
         @media (max-width: 1199px) {
@@ -207,20 +194,12 @@
                 padding-right: 7px !important;
                 gap: 4px !important;
             }
-
             html body nav.navbar > .nav-container > .nav-brand img {
                 max-width: 72px !important;
                 height: 28px !important;
             }
-
-            html body nav.navbar > .nav-container > .nav-user {
-                gap: 4px !important;
-            }
-
-            html body nav.navbar > .nav-container > .nav-user > .nav-guest-actions {
-                gap: 3px !important;
-            }
-
+            html body nav.navbar > .nav-container > .nav-user { gap: 4px !important; }
+            html body nav.navbar > .nav-container > .nav-user > .nav-guest-actions { gap: 3px !important; }
             html body nav.navbar > .nav-container > .nav-user > .nav-guest-actions .btn-nav-login,
             html body nav.navbar > .nav-container > .nav-user > .nav-guest-actions .btn-nav-register {
                 height: 30px !important;
@@ -229,69 +208,18 @@
                 font-size: .66rem !important;
                 gap: 3px !important;
             }
-
-            html body nav.navbar > .nav-container > .nav-user > .nav-guest-actions .iconify {
-                font-size: .78rem !important;
-            }
-
+            html body nav.navbar > .nav-container > .nav-user > .nav-guest-actions .iconify { font-size: .78rem !important; }
             html body nav.navbar .theme-toggle {
                 width: 31px !important;
                 height: 31px !important;
                 min-width: 31px !important;
                 flex-basis: 31px !important;
             }
-
             html body nav.navbar #navToggle {
                 width: 34px !important;
                 height: 34px !important;
                 min-width: 34px !important;
                 flex-basis: 34px !important;
-            }
-        }
-
-        /* Desktop dropdowns: only the visible button/menu can receive the mouse.
-           The old li::after bridge made empty space around Nạp Tiền trigger hover. */
-        @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
-            html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown,
-            html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown {
-                pointer-events: none !important;
-                padding-bottom: 0 !important;
-                margin-bottom: 0 !important;
-            }
-
-            html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown::after,
-            html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown::after {
-                content: none !important;
-                display: none !important;
-                width: 0 !important;
-                height: 0 !important;
-                pointer-events: none !important;
-            }
-
-            html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown > .nav-link-item,
-            html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown > .nav-link-item,
-            html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown > .modern-dropdown-menu,
-            html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown > .mega-menu {
-                pointer-events: auto !important;
-            }
-
-            /* Narrow vertical bridge: same width as the real button only.
-               It lets the cursor travel down to the menu without making side gaps hoverable. */
-            html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown > .nav-link-item,
-            html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown > .nav-link-item {
-                position: relative !important;
-            }
-
-            html body nav.navbar > .nav-container > #navLinks > li.nav-dropdown > .nav-link-item::after,
-            html body nav.navbar > .nav-container > #navLinks > li.nav-mega-dropdown > .nav-link-item::after {
-                content: "" !important;
-                position: absolute !important;
-                top: 100% !important;
-                left: 0 !important;
-                right: 0 !important;
-                height: 14px !important;
-                background: transparent !important;
-                pointer-events: auto !important;
             }
         }
     </style>
