@@ -100,26 +100,26 @@
                                     <small class="form-text text-muted">Giờ làm việc hỗ trợ khách hàng</small>
                                 </div>
                             </div>
+
                             <div class="col-lg-12">
-                                <div class="mb-3">
-                                    <label class="form-label">Thông báo trang chủ</label>
-                                    <textarea name="home_notification" class="form-control @error('home_notification') is-invalid @enderror" rows="3"
-                                        placeholder="Thông báo hiển thị ở trang chủ">{{ old('home_notification', $configs['home_notification']) }}</textarea>
+                                <div class="mb-3 mt-2 border-top pt-4">
+                                    <h5 class="mb-3">Popup thông báo website</h5>
+                                    <label class="form-label">Nội dung popup</label>
+                                    <textarea name="home_notification" class="form-control @error('home_notification') is-invalid @enderror" rows="5"
+                                        placeholder="Ví dụ: KUNCHEAP vừa cập nhật chương trình khuyến mãi mới...">{{ old('home_notification', $configs['home_notification']) }}</textarea>
                                     @error('home_notification')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                    <small class="form-text text-muted">Thông báo này sẽ hiển thị ở trang chủ
-                                        website</small>
+                                    <small class="form-text text-muted">Bạn có thể sửa nội dung bất cứ lúc nào. Khi nội dung thay đổi, popup mới sẽ được hiển thị lại cho người dùng.</small>
                                 </div>
                             </div>
                             <div class="col-lg-12">
-                                <div class="mb-4 mt-3 border-top pt-4">
-                                    <h5 class="mb-3">Cài đặt Modal Chào Mừng</h5>
+                                <div class="mb-4">
                                     <div class="form-check form-switch mt-2">
                                         <input class="form-check-input" type="checkbox" id="welcome_modal" name="welcome_modal" value="1" {{ $configs['welcome_modal'] ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-semibold" for="welcome_modal">Hiển thị thông báo khi vào website</label>
+                                        <label class="form-check-label fw-semibold" for="welcome_modal">Bật popup thông báo trên website</label>
                                     </div>
-                                    <small class="form-text text-muted d-block mt-2">Khi được bật, cửa sổ thông báo chào mừng sẽ hiển thị khi người dùng truy cập trang chủ.</small>
+                                    <small class="form-text text-muted d-block mt-2">Tắt công tắc để ẩn popup cho toàn bộ website. Khi bật, người dùng có thể chọn “Ẩn trong 2 giờ” và vẫn có nút để bật lại trước khi hết 2 giờ.</small>
                                 </div>
                             </div>
                             <div class="col-lg-12">
