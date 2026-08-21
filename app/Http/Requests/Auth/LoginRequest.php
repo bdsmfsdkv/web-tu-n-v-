@@ -29,6 +29,16 @@ class LoginRequest extends FormRequest
         ];
     }
 
+    public function messages(): array
+    {
+        return [
+            'username.required' => 'Vui lòng nhập tên tài khoản hoặc email.',
+            'username.string' => 'Tên tài khoản hoặc email không hợp lệ.',
+            'password.required' => 'Vui lòng nhập mật khẩu.',
+            'password.string' => 'Mật khẩu không hợp lệ.',
+        ];
+    }
+
     /**
      * Cho phép đăng nhập bằng username hoặc email.
      */
@@ -48,7 +58,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'username' => trans('auth.failed'),
+                'username' => 'Tên tài khoản/email hoặc mật khẩu không đúng. Vui lòng kiểm tra và thử lại.',
             ]);
         }
 
@@ -66,10 +76,7 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'username' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
+            'username' => 'Bạn đã thử đăng nhập quá nhiều lần. Vui lòng thử lại sau ' . $seconds . ' giây.',
         ]);
     }
 
