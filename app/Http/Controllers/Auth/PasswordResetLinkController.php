@@ -39,9 +39,9 @@ class PasswordResetLinkController extends Controller
                 ->withErrors(['email' => 'Không tìm thấy tài khoản với địa chỉ email này.']);
         }
 
+        $isLocal = app()->environment('local');
+
         // Chặn hai request quên mật khẩu chạy cùng lúc cho cùng một email.
-        // Nếu người dùng double-click hoặc trình duyệt gửi lại POST, Laravel trước đây
-        // có thể cùng lúc DELETE/INSERT vào password_reset_tokens và gây Duplicate entry.
         $lock = Cache::lock('forgot-password:'.sha1(strtolower($validated['email'])), 15);
 
         if (! $lock->get()) {
@@ -54,9 +54,15 @@ class PasswordResetLinkController extends Controller
             $repository = $broker->getRepository();
 
             if ($repository->recentlyCreatedToken($user)) {
-                return back()
-                    ->withInput($request->only('email'))
-                    ->withErrors(['email' => 'Bạn vừa yêu cầu email đặt lại mật khẩu. Vui lòng đợi khoảng 60 giây rồi thử lại.']);
+                // Local là môi trường test: xóa token cũ để có thể bấm thử lại ngay,
+                // không bắt người test phải chờ throttle 60 giây.
+                if ($isLocal) {
+                    $repository->delete($user);
+                } else {
+                    return back()
+                        ->withInput($request->only('email'))
+                        ->withErrors(['email' => 'Bạn vừa yêu cầu email đặt lại mật khẩu. Vui lòng đợi khoảng 60 giây rồi thử lại.']);
+                }
             }
 
             try {
@@ -66,13 +72,19 @@ class PasswordResetLinkController extends Controller
                     'email' => $user->getEmailForPasswordReset(),
                 ]);
 
-                // Chỉ dành cho localhost: lưu link reset để có thể test toàn bộ flow
-                // ngay cả khi Gmail chặn mail của shared hosting.
-                if (app()->environment('local')) {
+                // LOCAL: không chờ SMTP. Hiện link reset ngay để test toàn bộ flow.
+                // Khi đưa lên host với APP_ENV=production, nhánh này không chạy và
+                // email thật vẫn được gửi qua SMTP bên dưới.
+                if ($isLocal) {
                     Log::info('LOCAL PASSWORD RESET URL', [
                         'email' => $user->getEmailForPasswordReset(),
                         'url' => $resetUrl,
                     ]);
+
+                    return back()
+                        ->withInput($request->only('email'))
+                        ->with('status', 'Đã tạo liên kết đặt lại mật khẩu để test local. Bấm nút bên dưới để tiếp tục.')
+                        ->with('local_reset_url', $resetUrl);
                 }
 
                 $body = "KUNCHEAP - Đặt lại mật khẩu\n\n"
@@ -93,17 +105,8 @@ class PasswordResetLinkController extends Controller
                     'email' => $validated['email'],
                 ]);
 
-                $response = back()->with('status', 'Đã gửi liên kết đặt lại mật khẩu. Vui lòng kiểm tra hộp thư và cả mục Spam/Thư rác.');
-
-                // Trên local hiện luôn link reset ngay trên form để test không cần Gmail.
-                if (app()->environment('local')) {
-                    $response->with('local_reset_url', $resetUrl);
-                }
-
-                return $response;
+                return back()->with('status', 'Đã gửi liên kết đặt lại mật khẩu. Vui lòng kiểm tra hộp thư và cả mục Spam/Thư rác.');
             } catch (\Throwable $e) {
-                // createToken cũng nằm trong try để lỗi DB không còn làm bung trang Ignition.
-                // Chỉ xóa token khi repository đã sẵn sàng; lần thử sau sẽ tạo token mới.
                 try {
                     $repository->delete($user);
                 } catch (\Throwable $cleanupError) {
@@ -113,7 +116,7 @@ class PasswordResetLinkController extends Controller
                     ]);
                 }
 
-                Log::error('Lỗi gửi link đặt lại mật khẩu trực tiếp', [
+                Log::error('Lỗi xử lý liên kết đặt lại mật khẩu', [
                     'email' => $validated['email'],
                     'exception' => get_class($e),
                     'error' => $e->getMessage(),
@@ -121,7 +124,7 @@ class PasswordResetLinkController extends Controller
 
                 return back()
                     ->withInput($request->only('email'))
-                    ->with('error', 'Không thể gửi email lúc này. Vui lòng thử lại sau.');
+                    ->with('error', 'Không thể tạo liên kết đặt lại mật khẩu lúc này. Vui lòng thử lại sau.');
             }
         } finally {
             $lock->release();
