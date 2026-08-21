@@ -6,6 +6,7 @@
 @endpush
 
 @section('content')
+    <div class="wheel-page">
     <div class="container" style="padding-top: 20px; padding-bottom: 40px;">
         
         <!-- Top Header Box -->
@@ -17,7 +18,7 @@
                 {{ mb_strtoupper($wheel->name) }}
             </div>
             <div class="wheel-header-desc">
-                Đây là mô tả cho danh mục này
+                {!! $wheel->description ?: 'Thử vận may và nhận phần thưởng hấp dẫn.' !!}
             </div>
             <div class="online-badge">
                 <div class="online-dot"></div> Đang có 545+ người chơi trực tuyến
@@ -60,47 +61,6 @@
                     </div>
                 </div>
 
-                <!-- Comment Section -->
-                <div class="comment-box">
-                    <h3 class="comment-title">Bình luận</h3>
-                    <div class="comment-list custom-scrollbar">
-                        <div class="comment-item">
-                            <div class="comment-avatar"><i class="fas fa-user"></i></div>
-                            <div class="comment-content">
-                                <div style="display: flex; align-items: center;">
-                                    <span class="comment-name">NamGamer</span>
-                                    <span class="comment-time">- 11:02, Vừa xong</span>
-                                </div>
-                                <div class="comment-text">Vừa quay trúng quả ngon quá kkk</div>
-                                <div class="comment-actions">
-                                    <span><i class="fas fa-heart"></i> Thích</span>
-                                    <span><i class="fas fa-comment"></i> Trả lời</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="comment-item">
-                            <div class="comment-avatar"><i class="fas fa-user"></i></div>
-                            <div class="comment-content">
-                                <div style="display: flex; align-items: center;">
-                                    <span class="comment-name">Bùi Anh Khoa</span>
-                                    <span class="comment-time">- 11:00, Vừa xong</span>
-                                </div>
-                                <div class="comment-text">Nhanh gọn lẹ, rút phát về nick luôn</div>
-                                <div class="comment-actions">
-                                    <span><i class="fas fa-heart"></i> Thích</span>
-                                    <span><i class="fas fa-comment"></i> Trả lời</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="comment-input-wrapper">
-                        <div class="comment-avatar"><i class="fas fa-user"></i></div>
-                        <textarea id="user-comment-input" class="comment-textarea" placeholder="Nhập bình luận của bạn..." style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-subtle);"></textarea>
-                    </div>
-                    <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-                        <button id="btn-submit-comment" style="background: var(--primary); color: white; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;">Gửi bình luận</button>
-                    </div>
-                </div>
             </div>
 
             <!-- Right Panel -->
@@ -184,6 +144,7 @@
             <button class="btn-blue" id="continue-btn" style="width: 100%;">Tiếp tục</button>
         </div>
     </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -212,18 +173,34 @@
 
                 isSpinning = true;
                 spinBtn.disabled = true;
+                trialBtn.disabled = true;
 
                 if (isTrial) {
-                    // Logic for trial spin
-                    let totalProb = 0;
-                    wheelConfig.forEach(r => totalProb += parseFloat(r.trial_probability || 0));
-                    
+                    if (!Array.isArray(wheelConfig) || wheelConfig.length === 0) {
+                        showSpinError('Vòng quay chưa được cấu hình.');
+                        return;
+                    }
+
+                    const probabilities = wheelConfig.map(reward => {
+                        const trialProbability = Number(reward.trial_probability);
+                        const probability = Number(reward.probability);
+                        return Number.isFinite(trialProbability) && trialProbability > 0
+                            ? trialProbability
+                            : (Number.isFinite(probability) && probability > 0 ? probability : 0);
+                    });
+                    const totalProb = probabilities.reduce((sum, probability) => sum + probability, 0);
+
+                    if (totalProb <= 0) {
+                        showSpinError('Xác suất quay thử chưa được cấu hình.');
+                        return;
+                    }
+
                     let rand = Math.random() * totalProb;
                     let currentSum = 0;
                     let selectedIndex = 0;
-                    
+
                     for (let i = 0; i < wheelConfig.length; i++) {
-                        currentSum += parseFloat(wheelConfig[i].trial_probability || 0);
+                        currentSum += probabilities[i];
                         if (rand <= currentSum) {
                             selectedIndex = i;
                             break;
@@ -242,6 +219,7 @@
                         showResult(resultMessage);
                         isSpinning = false;
                         spinBtn.disabled = false;
+                        trialBtn.disabled = false;
 
                         setTimeout(() => {
                             wheelElement.style.transition = 'none';
@@ -265,6 +243,7 @@
                     }
                     isSpinning = false;
                     spinBtn.disabled = false;
+                    trialBtn.disabled = false;
                 } else {
                     // Send AJAX request to the server
                     fetch('{{ route('lucky.spin', $wheel->slug) }}', {
@@ -287,6 +266,7 @@
                                 }
                                 isSpinning = false;
                                 spinBtn.disabled = false;
+                                trialBtn.disabled = false;
                                 return;
                             }
 
@@ -312,6 +292,7 @@
                                 showResult(resultMessage);
                                 isSpinning = false;
                                 spinBtn.disabled = false;
+                                trialBtn.disabled = false;
 
                                 // Update user balance if provided
                                 if (data.new_gem !== undefined) {
@@ -334,10 +315,6 @@
                                     }, 50);
                                 }, 1000);
 
-                                // Reload history section
-                                setTimeout(() => {
-                                    location.reload();
-                                }, 3000);
                             }, 5000);
                         })
                         .catch(error => {
@@ -349,7 +326,20 @@
                             }
                             isSpinning = false;
                             spinBtn.disabled = false;
+                            trialBtn.disabled = false;
                         });
+                }
+            }
+
+            function showSpinError(message) {
+                isSpinning = false;
+                spinBtn.disabled = false;
+                trialBtn.disabled = false;
+
+                if (typeof FuiToast !== 'undefined') {
+                    FuiToast.error(message);
+                } else {
+                    alert(message);
                 }
             }
 
@@ -374,72 +364,6 @@
                 modal.classList.remove('active');
             }
 
-            // Handle comments
-            const commentInput = document.getElementById('user-comment-input');
-            const submitCommentBtn = document.getElementById('btn-submit-comment');
-            const commentList = document.querySelector('.comment-list');
-            const username = '{{ Auth::check() ? Auth::user()->username : "Khách" }}';
-
-            // Load local comments
-            const wheelSlug = '{{ $wheel->slug }}';
-            const localComments = JSON.parse(localStorage.getItem('wheel_comments_' + wheelSlug) || '[]');
-            
-            localComments.forEach(comment => {
-                addCommentToDOM(comment.name, comment.text, comment.time);
-            });
-
-            submitCommentBtn.addEventListener('click', submitComment);
-            commentInput.addEventListener('keypress', function (e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    submitComment();
-                }
-            });
-
-            function submitComment() {
-                const text = commentInput.value.trim();
-                if (!text) {
-                    if (typeof FuiToast !== 'undefined') {
-                        FuiToast.error('Vui lòng nhập bình luận!');
-                    } else {
-                        alert('Vui lòng nhập bình luận!');
-                    }
-                    return;
-                }
-
-                // Add to DOM
-                addCommentToDOM(username, text, 'Vừa xong');
-                
-                // Save to local storage
-                localComments.unshift({ name: username, text: text, time: 'Vừa xong' });
-                localStorage.setItem('wheel_comments_' + wheelSlug, JSON.stringify(localComments));
-
-                // Clear input
-                commentInput.value = '';
-                if (typeof FuiToast !== 'undefined') {
-                    FuiToast.success('Bình luận thành công!');
-                }
-            }
-
-            function addCommentToDOM(name, text, time) {
-                const commentHTML = `
-                    <div class="comment-item">
-                        <div class="comment-avatar"><i class="fas fa-user"></i></div>
-                        <div class="comment-content">
-                            <div style="display: flex; align-items: center;">
-                                <span class="comment-name">${name}</span>
-                                <span class="comment-time">- ${time}</span>
-                            </div>
-                            <div class="comment-text">${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
-                            <div class="comment-actions">
-                                <span><i class="fas fa-heart"></i> Thích</span>
-                                <span><i class="fas fa-comment"></i> Trả lời</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                commentList.insertAdjacentHTML('afterbegin', commentHTML);
-            }
         });
     </script>
 @endpush

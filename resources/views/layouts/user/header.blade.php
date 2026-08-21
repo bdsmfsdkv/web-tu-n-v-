@@ -6,6 +6,7 @@
 @php
     $navCategories = \App\Models\Category::where('active', 1)->get();
     $navRandomCategories = \App\Models\RandomCategory::where('active', 1)->get();
+    $navLuckyWheels = \App\Models\LuckyWheel::where('active', 1)->orderByDesc('updated_at')->get();
     $navServices = \App\Models\GameService::where('active', 1)->get();
 @endphp
 
@@ -743,7 +744,7 @@
             </li>
 
             <li class="nav-mega-dropdown">
-                <button type="button" class="nav-link-item nav-menu-trigger" aria-expanded="false">
+                <button type="button" class="nav-link-item nav-menu-trigger {{ request()->routeIs('category.*', 'account.*', 'random.*', 'lucky.*', 'service.*') ? 'active' : '' }}" aria-expanded="false">
                     <span class="nav-item-icon"><span class="iconify" data-icon="ant-design:appstore-outlined"></span></span>
                     <span>Danh Mục</span>
                     <span class="iconify nav-arrow" data-icon="ant-design:down-outlined"></span>
@@ -778,21 +779,32 @@
                                 <div class="mega-menu-col-header">
                                     <span class="mega-col-icon" style="background:rgba(245,158,11,.12);color:#d97706;"><i class="fa-solid fa-dice"></i></span>
                                     <span class="mega-col-title">Thử Vận May</span>
-                                    <span class="mega-col-count">{{ $navRandomCategories->count() }}</span>
+                                    <span class="mega-col-count">{{ $navLuckyWheels->count() + $navRandomCategories->count() }}</span>
                                 </div>
                                 <div class="mega-menu-list">
-                                    @forelse($navRandomCategories as $cat)
+                                    @foreach($navLuckyWheels as $wheel)
+                                        <a href="{{ route('lucky.index', ['slug' => $wheel->slug]) }}" class="mega-menu-item">
+                                            @if($wheel->thumbnail)
+                                                <img src="{{ $wheel->thumbnail }}" alt="{{ $wheel->name }}" class="mega-menu-icon" loading="lazy">
+                                            @else
+                                                <span class="mega-menu-icon-fallback"><i class="fa-solid fa-gift"></i></span>
+                                            @endif
+                                            <span class="mega-item-info"><span class="mega-item-name">{{ $wheel->name }}</span></span>
+                                        </a>
+                                    @endforeach
+                                    @foreach($navRandomCategories as $cat)
                                         <a href="{{ route('random.index', ['slug' => $cat->slug]) }}" class="mega-menu-item">
                                             @if($cat->thumbnail)
                                                 <img src="{{ $cat->thumbnail }}" alt="{{ $cat->name }}" class="mega-menu-icon" loading="lazy">
                                             @else
-                                                <span class="mega-menu-icon-fallback"><i class="fa-solid fa-gift"></i></span>
+                                                <span class="mega-menu-icon-fallback"><i class="fa-solid fa-shuffle"></i></span>
                                             @endif
                                             <span class="mega-item-info"><span class="mega-item-name">{{ $cat->name }}</span></span>
                                         </a>
-                                    @empty
+                                    @endforeach
+                                    @if($navLuckyWheels->isEmpty() && $navRandomCategories->isEmpty())
                                         <div class="mega-empty">Đang cập nhật...</div>
-                                    @endforelse
+                                    @endif
                                 </div>
                             </div>
 
@@ -823,7 +835,7 @@
             </li>
 
             <li class="nav-mega-dropdown">
-                <button type="button" class="nav-link-item nav-menu-trigger" aria-expanded="false">
+                <button type="button" class="nav-link-item nav-menu-trigger {{ request()->routeIs('profile.deposit-*') ? 'active' : '' }}" aria-expanded="false">
                     <span class="nav-item-icon"><span class="iconify" data-icon="ant-design:wallet-outlined"></span></span>
                     <span>Nạp Tiền</span>
                     <span class="iconify nav-arrow" data-icon="ant-design:down-outlined"></span>
@@ -833,6 +845,9 @@
                         <div class="deposit-menu-grid">
                             <a href="{{ route('profile.deposit-card') }}" class="mega-menu-item"><span class="mega-menu-icon-fallback" style="background:#fef2f2;color:#dc2626;"><i class="fa-solid fa-credit-card"></i></span><span class="mega-item-info"><span class="mega-item-name">Nạp thẻ cào</span></span></a>
                             <a href="{{ route('profile.deposit-atm') }}" class="mega-menu-item"><span class="mega-menu-icon-fallback" style="background:#eff6ff;color:#2563eb;"><i class="fa-solid fa-building-columns"></i></span><span class="mega-item-info"><span class="mega-item-name">Ngân hàng / QR</span></span></a>
+                            @if (config_get('payment.usdt.active', true))
+                                <a href="{{ route('profile.deposit-usdt') }}" class="mega-menu-item"><span class="mega-menu-icon-fallback" style="background:#fef3c7;color:#d97706;"><i class="fa-solid fa-coins"></i></span><span class="mega-item-info"><span class="mega-item-name">Nạp USDT</span></span></a>
+                            @endif
                         </div>
                     </div>
                 </div>

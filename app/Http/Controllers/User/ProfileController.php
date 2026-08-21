@@ -248,7 +248,6 @@ class ProfileController extends Controller
 
     public function depositUsdt(Request $request)
     {
-        if (!\Auth::check()) { \Auth::loginUsingId(1); }
         $title = 'Nạp tiền USDT';
         $transactions = UsdtDeposit::where('user_id', \Auth::id())
             ->orderBy('created_at', 'desc')

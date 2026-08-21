@@ -472,7 +472,12 @@ function enhanceFuiToast(toast) {
     closeBtn.addEventListener('click', function (event) {
         event.preventDefault();
         event.stopPropagation();
-        toast.remove();
+        var toastId = toast.dataset.id;
+        if (toastId && typeof FuiToast !== 'undefined' && typeof FuiToast.close === 'function') {
+            FuiToast.close(toastId);
+        } else {
+            toast.remove();
+        }
     });
     toast.appendChild(closeBtn);
 }

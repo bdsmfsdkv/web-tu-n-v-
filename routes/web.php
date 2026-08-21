@@ -87,28 +87,28 @@ Route::prefix('category')->name('category.')->group(function () {
 });
 Route::prefix('account')->name('account.')->group(function () {
     Route::get('/{id}', [GameAccountController::class, 'show'])->name(name: 'show');
-    Route::post('/{id}/purchase', [GameAccountController::class, 'purchase'])->name('purchase');
+    Route::post('/{id}/purchase', [GameAccountController::class, 'purchase'])->middleware('auth')->name('purchase');
 });
 Route::prefix('service')->name('service.')->group(function () {
     Route::get('/', [GameServiceController::class, 'showAll'])->name('show-all');
     Route::get('/{slug}', [GameServiceController::class, 'show'])->name('show');
-    Route::post('/{slug}/order', [ServiceOrderController::class, 'processOrder'])->name('order');
+    Route::post('/{slug}/order', [ServiceOrderController::class, 'processOrder'])->middleware('auth')->name('order');
 });
 
 // Routes for random categories
 Route::prefix('random')->name('random.')->group(function () {
     Route::get('/', [RandomCategoryController::class, 'showAll'])->name('show-all');
     Route::get('/account/{id}', [RandomAccountController::class, 'show'])->name('account.show');
-    Route::post('/account/{id}/purchase', [RandomAccountController::class, 'purchase'])->name('account.purchase');
+    Route::post('/account/{id}/purchase', [RandomAccountController::class, 'purchase'])->middleware('auth')->name('account.purchase');
     Route::get('/{slug}', [RandomCategoryController::class, 'index'])->name('index');
-    Route::post('/{slug}/purchase', [RandomCategoryController::class, 'purchase'])->name('category.purchase');
+    Route::post('/{slug}/purchase', [RandomCategoryController::class, 'purchase'])->middleware('auth')->name('category.purchase');
 });
 
 // Routes for lucky wheel categories
 Route::prefix('lucky')->name('lucky.')->group(function () {
     Route::get('/', [LuckyCategoryController::class, 'showAll'])->name('show-all');
     Route::get('/wheel/{slug}', [LuckyCategoryController::class, 'index'])->name('index');
-    Route::post('/wheel/{slug}/spin', [LuckyCategoryController::class, 'spin'])->name('spin');
+    Route::post('/wheel/{slug}/spin', [LuckyCategoryController::class, 'spin'])->middleware('auth')->name('spin');
 });
 
 // Discount code routes

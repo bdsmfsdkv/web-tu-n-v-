@@ -107,6 +107,7 @@ class RandomCategoryController extends Controller
             $quantity = (int)$request->input('quantity', 1);
 
             if ($quantity < 1) {
+                DB::rollBack();
                 return response()->json([
                     'success' => false,
                     'message' => 'Số lượng mua không hợp lệ.'
@@ -261,4 +262,3 @@ class RandomCategoryController extends Controller
         }
     }
 }
-

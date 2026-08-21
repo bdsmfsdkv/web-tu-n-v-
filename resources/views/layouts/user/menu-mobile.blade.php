@@ -97,6 +97,11 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('lucky.show-all') }}" class="mobile-overlay-menu__link">
+                        <i class="fas fa-dice"></i> Thử Vận May
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('service.show-all') }}" class="mobile-overlay-menu__link">
                         <i class="fas fa-cogs"></i> Dịch vụ Game
                     </a>

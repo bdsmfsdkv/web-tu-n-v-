@@ -119,9 +119,18 @@
                                         <input class="form-check-input" type="checkbox" id="welcome_modal" name="welcome_modal" value="1" {{ $configs['welcome_modal'] ? 'checked' : '' }}>
                                         <label class="form-check-label fw-semibold" for="welcome_modal">Bật popup thông báo trên website</label>
                                     </div>
-                                    <small class="form-text text-muted d-block mt-2">Tắt công tắc để ẩn popup cho toàn bộ website. Khi bật, người dùng có thể chọn “Ẩn trong 2 giờ” và vẫn có nút để bật lại trước khi hết 2 giờ.</small>
+                                    <small class="form-text text-muted d-block mt-2">Tắt công tắc để ẩn popup cho toàn bộ website.</small>
                                 </div>
                             </div>
+                            <div class="col-lg-12">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="welcome_modal_snooze" name="welcome_modal_snooze" value="1" {{ old('welcome_modal_snooze', $configs['welcome_modal_snooze']) ? 'checked' : '' }}>
+                                    <label class="form-check-label fw-semibold" for="welcome_modal_snooze">Cho phép người dùng ẩn thông báo theo giờ</label>
+                                </div>
+                            </div>
+                            <div class="col-lg-4"><div class="mb-3"><label class="form-label">Số giờ ẩn</label><input type="number" name="welcome_modal_snooze_hours" class="form-control" value="{{ old('welcome_modal_snooze_hours', $configs['welcome_modal_snooze_hours']) }}" min="0.1" max="720" step="0.1" required></div></div>
+                            <div class="col-lg-4"><div class="mb-3"><label class="form-label">Text nút đóng</label><input type="text" name="welcome_modal_close_text" class="form-control" value="{{ old('welcome_modal_close_text', $configs['welcome_modal_close_text']) }}" maxlength="50" required></div></div>
+                            <div class="col-lg-4"><div class="mb-3"><label class="form-label">Text nút ẩn</label><input type="text" name="welcome_modal_snooze_text" class="form-control" value="{{ old('welcome_modal_snooze_text', $configs['welcome_modal_snooze_text']) }}" maxlength="100" required><small class="form-text text-muted">Dùng <code>:hours</code> để hiện số giờ.</small></div></div>
                             <div class="col-lg-12">
                                 <button type="submit" class="btn btn-primary me-2">Lưu thay đổi</button>
                                 <a href="{{ route('admin.index') }}" class="btn btn-secondary">Hủy bỏ</a>

@@ -1,5 +1,5 @@
 /* CLEAN WHITE/BLUE THEME - SHOPACC GAME V2 STYLE */
-:root {
+.wheel-page {
     --primary: #3b82f6; /* Blue 500 */
     --primary-light: rgba(59, 130, 246, 0.15);
     --primary-hover: #2563eb; /* Blue 600 */
@@ -12,7 +12,7 @@
     --danger: #ef4444;
 }
 
-[data-theme="dark"] {
+[data-theme="dark"] .wheel-page {
     --primary: #3b82f6; 
     --primary-light: rgba(59, 130, 246, 0.15);
     --primary-hover: #2563eb; 

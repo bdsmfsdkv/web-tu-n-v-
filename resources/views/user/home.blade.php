@@ -678,18 +678,27 @@
 
 <!-- Announcement Modal -->
 @if (config_get('welcome_modal', false))
-<div class="announce-overlay" id="announceOverlay" onclick="if(event.target===this)closeAnnounce(false)">
+@php
+    $announceSnoozeEnabled = (bool) config_get('welcome_modal_snooze', true);
+    $announceSnoozeHours = max(0.1, min(720, (float) config_get('welcome_modal_snooze_hours', 2)));
+    $announceHoursLabel = rtrim(rtrim(number_format($announceSnoozeHours, 1, '.', ''), '0'), '.');
+    $announceCloseText = trim((string) config_get('welcome_modal_close_text', 'Đóng')) ?: 'Đóng';
+    $announceSnoozeText = str_replace(':hours', $announceHoursLabel, trim((string) config_get('welcome_modal_snooze_text', 'Đóng trong :hours giờ')));
+@endphp
+<div class="announce-overlay" id="announceOverlay">
     <div class="announce-modal">
         <div class="announce-header">
-            <span><span class="iconify" data-icon="ant-design:notification-filled" style="color:var(--primary); margin-right:6px;"></span> Thông Báo</span>
-            <button class="announce-close-x" onclick="closeAnnounce(false)" aria-label="Close modal">&times;</button>
+            <span class="announce-title"><span class="iconify" data-icon="ant-design:notification-filled"></span> Thông Báo</span>
+            <button type="button" class="announce-close-x" id="announceClose" aria-label="Đóng thông báo">&times;</button>
         </div>
         <div class="announce-body">
             {!! config_get('home_notification') !!}
         </div>
         <div class="announce-footer">
-            <button class="btn-announce btn-close-now" onclick="closeAnnounce(false)">Đóng</button>
-            <button class="btn-announce btn-close-2h" onclick="closeAnnounce(true)">Đóng trong 2 giờ</button>
+            <button type="button" class="btn-announce btn-close-now" id="announceCloseNow">{{ $announceCloseText }}</button>
+            @if($announceSnoozeEnabled)
+                <button type="button" class="btn-announce btn-close-2h" id="announceClose2h">{{ $announceSnoozeText }}</button>
+            @endif
         </div>
     </div>
 </div>
@@ -738,7 +747,7 @@
     }
     @keyframes announceFadeIn { to { opacity: 1; } }
     .announce-modal {
-        background: #fff; border-radius: 12px; max-width: 500px; width: 92%; max-height: 85vh;
+        position: relative; background: #fff; border-radius: 12px; max-width: 500px; width: 92%; max-height: 85vh;
         display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
         animation: announceSlideUp .3s ease;
     }
@@ -747,12 +756,20 @@
         to { transform: translateY(0); opacity: 1; }
     }
     .announce-header {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 16px 20px; font-weight: 700; font-size: 1.15rem; border-bottom: 1px solid #f0f0f0; color: #111827;
+        display: flex; min-height: 62px; align-items: center;
+        padding: 16px 64px 16px 20px; font-weight: 700; font-size: 1.15rem; border-bottom: 1px solid #f0f0f0; color: #111827;
+    }
+    .announce-title {
+        display: inline-flex; align-items: center; gap: 7px;
+    }
+    .announce-title .iconify {
+        flex: 0 0 auto; color: var(--primary);
     }
     .announce-close-x {
-        background: none; border: none; font-size: 1.8rem; cursor: pointer;
-        color: #9ca3af; line-height: 1; padding: 0 4px; transition: 0.2s; font-weight: 300;
+        position: absolute; top: 13px; right: 14px; z-index: 2;
+        display: inline-flex; width: 36px; height: 36px; align-items: center; justify-content: center;
+        margin: 0; padding: 0; border: 0; border-radius: 50%; background: transparent;
+        color: #9ca3af; font-size: 1.8rem; font-weight: 300; line-height: 1; cursor: pointer; transition: .2s;
     }
     .announce-close-x:hover { color: #111827; }
     .announce-body {
@@ -985,20 +1002,29 @@
 <script>
     (function() {
         var KEY = 'announce_dismiss_until';
+        var snoozeDuration = {{ (int) round($announceSnoozeHours * 60 * 60 * 1000) }};
+        var overlay = document.getElementById('announceOverlay');
+        if (!overlay) return;
+
         var ts = localStorage.getItem(KEY);
         if (ts && Date.now() < parseInt(ts)) {
-            var el = document.getElementById('announceOverlay');
-            if (el) el.style.display = 'none';
+            overlay.style.display = 'none';
         }
-    })();
 
-    function closeAnnounce(silent2h) {
-        var el = document.getElementById('announceOverlay');
-        if (el) el.style.display = 'none';
-        if (silent2h) {
-            localStorage.setItem('announce_dismiss_until', Date.now() + 2 * 60 * 60 * 1000);
+        function closeAnnounce(silent2h) {
+            overlay.style.display = 'none';
+            if (silent2h) {
+                localStorage.setItem(KEY, Date.now() + snoozeDuration);
+            }
         }
-    }
+
+        document.getElementById('announceClose')?.addEventListener('click', function() { closeAnnounce(@json($announceSnoozeEnabled)); });
+        document.getElementById('announceCloseNow')?.addEventListener('click', function() { closeAnnounce(false); });
+        document.getElementById('announceClose2h')?.addEventListener('click', function() { closeAnnounce(true); });
+        overlay.addEventListener('click', function(event) {
+            if (event.target === overlay) closeAnnounce(false);
+        });
+    })();
 
         // Flash Sale Countdown Logic
         (function() {

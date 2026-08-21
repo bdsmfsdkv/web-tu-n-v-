@@ -12,7 +12,12 @@
             <table role="presentation" width="620" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:620px;background:#ffffff;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(15,23,42,.08);">
                 <tr>
                     <td align="center" style="background:#1f45dc;padding:28px 28px 32px;">
-                        <div style="font-size:20px;line-height:1.2;font-weight:800;color:#ffffff;letter-spacing:.5px;margin-bottom:18px;">{{ $siteName }}</div>
+                        @if (config_get('site_logo'))
+                            @php($logoPath = public_path(ltrim(parse_url(config_get('site_logo'), PHP_URL_PATH), '/')))
+                            <img src="{{ is_file($logoPath) ? $message->embed($logoPath) : asset(config_get('site_logo')) }}" alt="{{ $siteName }}" width="150" style="display:block;width:100%;max-width:150px;height:auto;margin:0 auto 18px;">
+                        @else
+                            <div style="font-size:20px;line-height:1.2;font-weight:800;color:#ffffff;letter-spacing:.5px;margin-bottom:18px;">{{ $siteName }}</div>
+                        @endif
                         <div style="font-size:24px;line-height:1.3;font-weight:800;color:#ffffff;">Đặt lại mật khẩu</div>
                     </td>
                 </tr>

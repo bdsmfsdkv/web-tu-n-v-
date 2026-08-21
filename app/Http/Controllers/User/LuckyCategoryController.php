@@ -5,9 +5,13 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\LuckyWheel;
 use App\Models\LuckyWheelHistory;
+use App\Models\RandomCategoryAccount;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class LuckyCategoryController extends Controller
 {
@@ -47,6 +51,8 @@ class LuckyCategoryController extends Controller
     // Xử lý quay vòng quay
     public function spin(Request $request, $slug)
     {
+        $startedAt = hrtime(true);
+
         if (!Auth::check()) {
             return response()->json([
                 'success' => false,
@@ -72,19 +78,32 @@ class LuckyCategoryController extends Controller
                 ]);
             }
 
+            DB::beginTransaction();
+            $user = $user->newQuery()->lockForUpdate()->findOrFail($user->id);
+
+            if ($user->balance < $totalCost) {
+                DB::rollBack();
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Số dư không đủ để quay. Vui lòng nạp thêm tiền.'
+                ]);
+            }
+
             // Lấy config từ wheel
             $config = $wheel->config;
 
             // Tính toán phần thưởng dựa trên tỷ lệ
             $rewardIndex = $this->calculateReward($config);
             $reward = $config[$rewardIndex];
+            $rewardType = $reward['reward_type'] ?? $reward['type'] ?? 'empty';
             
-            $rewardAmount = isset($reward['amount']) ? (int)$reward['amount'] : 0;
+            $rewardAmount = $this->rewardAmount($reward['amount'] ?? null);
             $totalRewardAmount = $rewardAmount * $spinCount;
 
             // Tạo kết quả phần thưởng
             $rewardResult = [
-                'type' => $reward['reward_type'],
+                'type' => $rewardType,
                 'content' => $reward['content'],
                 'amount' => $totalRewardAmount,
                 'index' => $rewardIndex // Thêm index để frontend biết vị trí trúng
@@ -96,21 +115,61 @@ class LuckyCategoryController extends Controller
                 'lucky_wheel_id' => $wheel->id,
                 'spin_count' => $spinCount,
                 'total_cost' => $totalCost,
-                'reward_type' => $reward['reward_type'],
+                'reward_type' => $rewardType,
                 'reward_amount' => $totalRewardAmount,
                 'description' => $reward['content'],
             ]);
 
             // Cộng thưởng vào tài khoản
-            if ($reward['reward_type'] === 'money') {
+            if ($rewardType === 'money') {
                 $user->balance += $totalRewardAmount;
-            } else if ($reward['reward_type'] === 'item') {
+            } else if ($rewardType === 'gold') {
+                $user->gold += $totalRewardAmount;
+            } else if ($rewardType === 'item' || $rewardType === 'gem') {
                 $user->gem += $totalRewardAmount;
+            } else if ($rewardType === 'random_account') {
+                $accounts = RandomCategoryAccount::where('status', 'available')
+                    ->lockForUpdate()
+                    ->limit($totalRewardAmount)
+                    ->get();
+
+                if ($accounts->count() < $totalRewardAmount) {
+                    throw new \RuntimeException('Kho tài khoản thưởng không đủ.');
+                }
+
+                $batchId = uniqid('WHEEL-');
+                foreach ($accounts as $account) {
+                    $account->update([
+                        'status' => 'sold',
+                        'buyer_id' => $user->id,
+                        'batch_id' => $batchId,
+                    ]);
+                }
             }
 
             // Trừ tiền từ tài khoản
             $user->balance -= $totalCost;
             $user->save();
+
+            DB::table('money_transactions')->insert([
+                'user_id' => $user->id,
+                'type' => 'purchase',
+                'amount' => -$totalCost,
+                'balance_before' => $user->balance + $totalCost - ($rewardType === 'money' ? $totalRewardAmount : 0),
+                'balance_after' => $user->balance,
+                'description' => 'Quay ' . $wheel->name . ' x' . $spinCount . ' - ' . $reward['content'],
+                'reference_id' => 'LW-' . $wheel->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            DB::commit();
+
+            Log::info('Đo thời gian quay vòng quay', [
+                'user_id' => $user->id,
+                'slug' => $slug,
+                'elapsed_ms' => round((hrtime(true) - $startedAt) / 1e6, 2),
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -120,26 +179,51 @@ class LuckyCategoryController extends Controller
                 'new_gem' => $user->gem ?? 0
             ]);
         } catch (ValidationException $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+
             return response()->json([
                 'success' => false,
-                'error' => $e->errors() ? $e->errors()[0][0] : 'Validation error', // Lấy lỗi đầu tiên từ danh sách lỗi validation
+                'message' => collect($e->errors())->flatten()->first() ?? 'Dữ liệu quay không hợp lệ.',
             ]); // Mã trạng thái HTTP 422: Unprocessable Entity
+        } catch (Throwable $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+
+            Log::error('Lỗi quay vòng quay', [
+                'user_id' => Auth::id(),
+                'slug' => $slug,
+                'elapsed_ms' => round((hrtime(true) - $startedAt) / 1e6, 2),
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể quay lúc này. Vui lòng thử lại.',
+            ], 500);
         }
     }
 
     // Tính toán phần thưởng dựa trên tỷ lệ
     private function calculateReward($config)
     {
-        $totalProbability = 0;
-        foreach ($config as $reward) {
-            $totalProbability += $reward['probability'];
+        if (!is_array($config) || $config === []) {
+            throw new \RuntimeException('Vòng quay chưa được cấu hình.');
         }
 
-        $random = mt_rand(1, $totalProbability);
+        $weights = array_map(static fn (array $reward): int => (int) round((float) ($reward['probability'] ?? 0) * 1000), $config);
+        $totalProbability = array_sum($weights);
+        if ($totalProbability <= 0) {
+            throw new \RuntimeException('Xác suất vòng quay không hợp lệ.');
+        }
+
+        $random = random_int(1, $totalProbability);
         $currentSum = 0;
 
         foreach ($config as $index => $reward) {
-            $currentSum += $reward['probability'];
+            $currentSum += $weights[$index];
             if ($random <= $currentSum) {
                 return $index;
             }
@@ -147,5 +231,21 @@ class LuckyCategoryController extends Controller
 
         // Mặc định trả về phần thưởng đầu tiên nếu có lỗi
         return 0;
+    }
+
+    private function rewardAmount(mixed $amount): int
+    {
+        if ($amount === null || $amount === '') {
+            return 0;
+        }
+
+        if (preg_match('/^(\d+):(\d+)$/', (string) $amount, $matches)) {
+            $min = (int) $matches[1];
+            $max = (int) $matches[2];
+
+            return random_int(min($min, $max), max($min, $max));
+        }
+
+        return max(0, (int) $amount);
     }
 }

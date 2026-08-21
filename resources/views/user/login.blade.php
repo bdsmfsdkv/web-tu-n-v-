@@ -2,6 +2,35 @@
 
 @section('title', 'Đăng nhập')
 
+@push('css')
+<style>
+    .password-input-wrap { position: relative; }
+    .password-input-wrap .form-input { padding-right: 48px !important; }
+    .password-toggle {
+        position: absolute;
+        top: 50%;
+        right: 7px;
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transform: translateY(-50%);
+        color: #64748b;
+        background: transparent;
+        border: 0;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    .password-toggle:hover,
+    .password-toggle:focus-visible { color: #dc2626; background: #fff1f2; outline: none; }
+    [data-theme="dark"] .password-toggle { color: #a3a3a3; }
+    [data-theme="dark"] .password-toggle:hover,
+    [data-theme="dark"] .password-toggle:focus-visible { color: #f87171; background: #2a1718; }
+</style>
+@endpush
+
 @section('content')
 <div class="auth-page">
     <div class="auth-card">
@@ -58,17 +87,20 @@
 
             <div class="form-group">
                 <label for="password" class="form-label">Mật khẩu</label>
-                <div style="position:relative;">
+                <div class="password-input-wrap">
                     <input id="password"
                            type="password"
                            class="form-input"
                            name="password"
                            required
                            autocomplete="current-password"
-                           placeholder="••••••••"
-                           style="padding-right:46px;">
-                    <button type="button" id="toggleLoginPassword" aria-label="Hiện mật khẩu" title="Hiện/ẩn mật khẩu" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#64748b;cursor:pointer;padding:6px;display:flex;align-items:center;justify-content:center;">
-                        <span class="iconify" data-icon="ant-design:eye-outlined"></span>
+                           placeholder="••••••••">
+                    <button type="button"
+                            class="password-toggle"
+                            data-password-target="password"
+                            aria-label="Hiện mật khẩu"
+                            aria-pressed="false">
+                        <i class="fa-regular fa-eye" aria-hidden="true"></i>
                     </button>
                 </div>
                 @error('password')
@@ -115,15 +147,20 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    var input = document.getElementById('password');
-    var button = document.getElementById('toggleLoginPassword');
-    if (!input || !button) return;
-    button.addEventListener('click', function () {
-        var show = input.type === 'password';
-        input.type = show ? 'text' : 'password';
-        button.setAttribute('aria-label', show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
-        var icon = button.querySelector('.iconify');
-        if (icon) icon.setAttribute('data-icon', show ? 'ant-design:eye-invisible-outlined' : 'ant-design:eye-outlined');
+    document.querySelectorAll('.password-toggle').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var input = document.getElementById(this.getAttribute('data-password-target'));
+            if (!input) return;
+
+            var show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            this.setAttribute('aria-pressed', String(show));
+            this.setAttribute('aria-label', show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+
+            var icon = this.querySelector('i');
+            icon.classList.toggle('fa-eye', !show);
+            icon.classList.toggle('fa-eye-slash', show);
+        });
     });
 });
 </script>

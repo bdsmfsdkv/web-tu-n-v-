@@ -20,6 +20,8 @@ class ServiceConfigProvider extends ServiceProvider
         }
 
         $settings = Cache::remember('runtime_service_settings', 3600, fn () => Config::pluck('value', 'key')->all());
+        $mailEncryption = $settings['mail_encryption'] ?? null;
+        $mailPort = $settings['mail_port'] ?? config('mail.mailers.smtp.port');
 
         config([
             'services.google.client_id' => $settings['login_social.google.client_id'] ?? config('services.google.client_id'),
@@ -30,12 +32,13 @@ class ServiceConfigProvider extends ServiceProvider
             'services.facebook.redirect' => $settings['login_social.facebook.redirect'] ?? config('services.facebook.redirect'),
             'mail.default' => $settings['mail_mailer'] ?? config('mail.default'),
             'mail.mailers.smtp.host' => $settings['mail_host'] ?? config('mail.mailers.smtp.host'),
-            'mail.mailers.smtp.port' => $settings['mail_port'] ?? config('mail.mailers.smtp.port'),
+            'mail.mailers.smtp.port' => $mailPort,
             'mail.mailers.smtp.username' => $settings['mail_username'] ?? config('mail.mailers.smtp.username'),
             'mail.mailers.smtp.password' => $settings['mail_password'] ?? config('mail.mailers.smtp.password'),
-            'mail.mailers.smtp.encryption' => ($settings['mail_encryption'] ?? null) === 'null'
+            'mail.mailers.smtp.scheme' => $mailEncryption === 'ssl' || (string) $mailPort === '465' ? 'smtps' : 'smtp',
+            'mail.mailers.smtp.encryption' => $mailEncryption === 'null'
                 ? null
-                : ($settings['mail_encryption'] ?? config('mail.mailers.smtp.encryption')),
+                : ($mailEncryption ?? config('mail.mailers.smtp.encryption')),
             'mail.from.address' => $settings['mail_from_address'] ?? config('mail.from.address'),
             'mail.from.name' => $settings['mail_from_name'] ?? config('mail.from.name'),
         ]);

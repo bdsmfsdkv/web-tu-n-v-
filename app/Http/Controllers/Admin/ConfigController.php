@@ -54,6 +54,10 @@ class ConfigController extends Controller
             'working_hours' => config_get('working_hours', '8:00 - 22:00'),
             'home_notification' => config_get('home_notification', ''),
             'welcome_modal' => config_get('welcome_modal', true),
+            'welcome_modal_snooze' => config_get('welcome_modal_snooze', true),
+            'welcome_modal_snooze_hours' => config_get('welcome_modal_snooze_hours', 2),
+            'welcome_modal_close_text' => config_get('welcome_modal_close_text', 'Đóng'),
+            'welcome_modal_snooze_text' => config_get('welcome_modal_snooze_text', 'Đóng trong :hours giờ'),
 
             // email
             'mail_mailer' => config_get('mail_mailer', 'smtp'),
@@ -268,6 +272,10 @@ class ConfigController extends Controller
             'working_hours' => config_get('working_hours', '8:00 - 22:00'),
             'home_notification' => config_get('home_notification', ''),
             'welcome_modal' => config_get('welcome_modal', true),
+            'welcome_modal_snooze' => config_get('welcome_modal_snooze', true),
+            'welcome_modal_snooze_hours' => config_get('welcome_modal_snooze_hours', 2),
+            'welcome_modal_close_text' => config_get('welcome_modal_close_text', 'Đóng'),
+            'welcome_modal_snooze_text' => config_get('welcome_modal_snooze_text', 'Đóng trong :hours giờ'),
         ];
 
         return view('admin.settings.social', compact('title', 'configs'));
@@ -288,6 +296,10 @@ class ConfigController extends Controller
             'working_hours' => 'nullable|string|max:100',
             'home_notification' => 'nullable|string',
             'welcome_modal' => 'nullable|boolean',
+            'welcome_modal_snooze' => 'nullable|boolean',
+            'welcome_modal_snooze_hours' => 'required|numeric|min:0.1|max:720',
+            'welcome_modal_close_text' => 'required|string|max:50',
+            'welcome_modal_snooze_text' => 'required|string|max:100',
         ]);
 
         try {
@@ -303,6 +315,10 @@ class ConfigController extends Controller
             config_set('working_hours', $request->working_hours);
             config_set('home_notification', $request->home_notification);
             config_set('welcome_modal', $request->has('welcome_modal') ? true : false);
+            config_set('welcome_modal_snooze', $request->has('welcome_modal_snooze') ? true : false);
+            config_set('welcome_modal_snooze_hours', $request->welcome_modal_snooze_hours);
+            config_set('welcome_modal_close_text', $request->welcome_modal_close_text);
+            config_set('welcome_modal_snooze_text', $request->welcome_modal_snooze_text);
 
             // Xóa cache để cập nhật cài đặt
             config_clear_cache();
@@ -617,6 +633,7 @@ class ConfigController extends Controller
                 'mail.default' => $mailDriver,
                 'mail.mailers.smtp.host' => $mailHost,
                 'mail.mailers.smtp.port' => $mailPort,
+                'mail.mailers.smtp.scheme' => $mailEncryption === 'ssl' || (string) $mailPort === '465' ? 'smtps' : 'smtp',
                 'mail.mailers.smtp.username' => $mailUsername,
                 'mail.mailers.smtp.password' => $mailPassword,
                 'mail.mailers.smtp.encryption' => $mailEncryption,

@@ -78,7 +78,10 @@
     <div class="container">
         <div class="header">
             @if (config_get('site_logo'))
-                <img src="{{ config_get('site_logo') }}" alt="{{ config_get('site_name') }}" class="logo">
+                @php($logoPath = public_path(ltrim(parse_url(config_get('site_logo'), PHP_URL_PATH), '/')))
+                <img src="{{ is_file($logoPath) ? $message->embed($logoPath) : asset(config_get('site_logo')) }}" alt="{{ config_get('site_name') }}" class="logo">
+            @else
+                <strong>{{ config_get('site_name', config('app.name')) }}</strong>
             @endif
             <h2>Đặt lại mật khẩu</h2>
         </div>

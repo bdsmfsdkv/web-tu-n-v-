@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class LuckyWheelController extends Controller
 {
@@ -67,23 +67,15 @@ class LuckyWheelController extends Controller
             'config' => 'required|array|size:8',
             'config.*.reward_type' => 'required|in:item,empty,money,random_account',
             'config.*.content' => 'required|string|max:255',
-            'config.*.amount' => 'nullable|string|max:255',
+            'config.*.amount' => ['nullable', 'regex:/^\d+(?::\d+)?$/'],
             'config.*.reward_item_id' => 'nullable|exists:reward_items,id',
             'config.*.probability' => 'required|numeric|min:0|max:100',
             'config.*.trial_probability' => 'nullable|numeric|min:0|max:100',
         ]);
 
+        $config = $this->validatedConfig($request);
+
         try {
-
-            $totalProbability = 0;
-            foreach ($request->config as $item) {
-                $totalProbability += $item['probability'];
-            }
-
-            if ($totalProbability != 100) {
-                return back()->withInput()->withErrors(['config' => 'Tổng xác suất phải bằng 100%']);
-            }
-
             DB::beginTransaction();
 
             $luckyWheel = new LuckyWheel();
@@ -108,7 +100,7 @@ class LuckyWheelController extends Controller
             $luckyWheel->description = $request->description;
             $luckyWheel->rules = $request->rules;
             $luckyWheel->active = $request->boolean('active');
-            $luckyWheel->config = $request->config;
+            $luckyWheel->config = $config;
             $luckyWheel->save();
 
             DB::commit();
@@ -138,6 +130,7 @@ class LuckyWheelController extends Controller
                 ];
             }
         }
+        $config = old('config', $config);
 
         $rewardItems = \App\Models\RewardItem::where('active', 1)->orderBy('priority', 'asc')->get();
 
@@ -162,23 +155,15 @@ class LuckyWheelController extends Controller
             'config' => 'required|array|size:8',
             'config.*.reward_type' => 'required|in:item,empty,money,random_account',
             'config.*.content' => 'required|string|max:255',
-            'config.*.amount' => 'nullable|string|max:255',
+            'config.*.amount' => ['nullable', 'regex:/^\d+(?::\d+)?$/'],
             'config.*.reward_item_id' => 'nullable|exists:reward_items,id',
             'config.*.probability' => 'required|numeric|min:0|max:100',
             'config.*.trial_probability' => 'nullable|numeric|min:0|max:100',
         ]);
 
+        $config = $this->validatedConfig($request);
+
         try {
-
-            $totalProbability = 0;
-            foreach ($request->config as $item) {
-                $totalProbability += $item['probability'];
-            }
-
-            if ($totalProbability != 100) {
-                return back()->withInput()->withErrors(['config' => 'Tổng xác suất phải bằng 100%']);
-            }
-
             DB::beginTransaction();
 
             $luckyWheel = LuckyWheel::findOrFail($id);
@@ -217,7 +202,7 @@ class LuckyWheelController extends Controller
             $luckyWheel->description = $request->description;
             $luckyWheel->rules = $request->rules;
             $luckyWheel->active = $request->boolean('active');
-            $luckyWheel->config = $request->config;
+            $luckyWheel->config = $config;
             $luckyWheel->save();
 
             DB::commit();
@@ -229,6 +214,38 @@ class LuckyWheelController extends Controller
             Log::error($e);
             return back()->withInput()->withErrors(['message' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
         }
+    }
+
+    private function validatedConfig(Request $request): array
+    {
+        $config = $request->input('config');
+        $totalProbability = array_sum(array_column($config, 'probability'));
+        $totalTrialProbability = array_sum(array_column($config, 'trial_probability'));
+
+        if (abs($totalProbability - 100) > 0.001) {
+            throw ValidationException::withMessages(['config' => 'Tổng tỉ lệ trúng phải bằng 100%.']);
+        }
+
+        if (abs($totalTrialProbability - 100) > 0.001) {
+            throw ValidationException::withMessages(['config' => 'Tổng tỉ lệ quay thử phải bằng 100%.']);
+        }
+
+        foreach ($config as $index => $reward) {
+            if ($reward['reward_type'] !== 'empty' && empty($reward['amount'])) {
+                throw ValidationException::withMessages([
+                    "config.$index.amount" => 'Phần thưởng #' . ($index + 1) . ' phải có số lượng nhận.',
+                ]);
+            }
+        }
+
+        return array_map(static function (array $reward): array {
+            $reward['probability'] = (float) $reward['probability'];
+            $reward['trial_probability'] = (float) $reward['trial_probability'];
+            $reward['reward_item_id'] = $reward['reward_item_id'] ?: null;
+            $reward['amount'] = $reward['amount'] ?: null;
+
+            return $reward;
+        }, $config);
     }
 
     /**

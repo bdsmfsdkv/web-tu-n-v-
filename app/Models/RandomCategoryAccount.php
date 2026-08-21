@@ -15,6 +15,7 @@ class RandomCategoryAccount extends Model
         'status',
         'server',
         'buyer_id',
+        'batch_id',
         'note',
         'note_buyer',
         'thumbnail',

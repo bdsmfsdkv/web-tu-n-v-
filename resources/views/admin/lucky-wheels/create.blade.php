@@ -162,6 +162,9 @@
                             <!-- Phần cấu hình phần thưởng -->
                             <div class="col-lg-12 mt-3">
                                 <h5 class="fw-bold mb-3 text-warning"><i class="ti ti-gift me-2"></i>Cấu hình phần thưởng (8 ô)</h5>
+                                <div class="alert alert-info py-2">
+                                    Tổng tỉ lệ trúng: <strong id="probabilityTotal">0%</strong> · Tổng tỉ lệ quay thử: <strong id="trialProbabilityTotal">0%</strong>. Cả hai phải bằng 100%.
+                                </div>
                                 <div class="row g-3">
                                     @php
                                         $oldConfig = old('config', $defaultConfig);
@@ -176,7 +179,7 @@
                                                 <div class="card-body pt-2">
                                                     <div class="mb-3">
                                                         <label class="form-label small fw-semibold text-muted mb-1">Tên phần thưởng</label>
-                                                        <input type="text" name="config[{{ $i }}][content]" value="{{ isset($oldConfig[$i]['content']) ? $oldConfig[$i]['content'] : '' }}" class="form-control form-control-sm" required placeholder="VD: 19999 Kim Cương">
+                                                        <input type="text" name="config[{{ $i }}][content]" value="{{ $oldConfig[$i]['content'] ?? '' }}" class="form-control form-control-sm" required placeholder="Text hiện khi quay trúng">
                                                     </div>
                                                     
                                                     <div class="mb-3">
@@ -243,6 +246,15 @@
     <script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const updateProbabilityTotals = function() {
+                const total = Array.from(document.querySelectorAll('[name$="[probability]"]')).reduce((sum, input) => sum + (Number(input.value) || 0), 0);
+                const trialTotal = Array.from(document.querySelectorAll('[name$="[trial_probability]"]')).reduce((sum, input) => sum + (Number(input.value) || 0), 0);
+                document.getElementById('probabilityTotal').textContent = total.toFixed(1).replace('.0', '') + '%';
+                document.getElementById('trialProbabilityTotal').textContent = trialTotal.toFixed(1).replace('.0', '') + '%';
+            };
+            document.querySelectorAll('[name$="[probability]"], [name$="[trial_probability]"]').forEach(input => input.addEventListener('input', updateProbabilityTotals));
+            updateProbabilityTotals();
+
             // Khởi tạo CKEditor cho mô tả
             let descriptionEditor;
             if (document.querySelector('#description')) {

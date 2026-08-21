@@ -154,5 +154,4 @@
 </style>
 @endonce
 
-@include('layouts.user.site-popup')
 @include('layouts.user.session-flash')
