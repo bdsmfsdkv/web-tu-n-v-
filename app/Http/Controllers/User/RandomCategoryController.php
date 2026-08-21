@@ -10,9 +10,53 @@ use Illuminate\Support\Facades\DB;
 
 class RandomCategoryController extends Controller
 {
-    public function index(string $slug)
+    public function index(string $slug, Request $request)
     {
         $category = RandomCategory::where("slug", $slug)->firstOrFail();
+
+        // Kiểm tra nếu là category_type == 'account_list' (Loại 2: chọn mua từng acc)
+        if ($category->category_type === 'account_list') {
+            $accounts = RandomCategoryAccount::where('random_category_id', $category->id);
+            if (!$request->filled('status')) {
+                $accounts->where('status', 'available');
+            }
+
+            if ($request->hasAny(['code', 'price_range', 'price_from', 'price_to', 'status'])) {
+                if ($request->filled('code')) {
+                    $accounts->where('id', $request->code);
+                }
+                if ($request->filled('price_range')) {
+                    $range = explode('-', $request->price_range);
+                    if (count($range) == 2) {
+                        $accounts->whereBetween('price', [(float)$range[0], (float)$range[1]]);
+                    } else {
+                        $accounts->where('price', '>=', (float)$range[0]);
+                    }
+                } else {
+                    if ($request->filled('price_from')) {
+                        $accounts->where('price', '>=', (float)$request->price_from);
+                    }
+                    if ($request->filled('price_to')) {
+                        $accounts->where('price', '<=', (float)$request->price_to);
+                    }
+                }
+                if ($request->filled('status')) {
+                    $accounts->where('status', $request->status);
+                }
+            }
+
+            $accounts = $accounts->orderBy('id', 'DESC')->paginate(12)->withQueryString();
+
+            $flashSalePrice = \App\Models\FlashSale::getActivePrice('random', $category->id);
+            if ($flashSalePrice !== null) {
+                $accounts->each(function($acc) use ($flashSalePrice) {
+                    $acc->price = $flashSalePrice;
+                });
+            }
+
+            $title = mb_strtoupper($category->name, 'UTF-8');
+            return view('user.random.category-list', compact('category', 'accounts', 'title', 'flashSalePrice'));
+        }
 
         // Count available accounts
         $availableCount = RandomCategoryAccount::where('random_category_id', $category->id)

@@ -33,6 +33,22 @@
                             </div>
                             <div class="col-lg-6 col-sm-6 col-12">
                                 <div class="mb-3">
+                                    <label class="form-label">Loại danh mục Random <span class="text-danger">*</span></label>
+                                    <select name="category_type" class="form-select @error('category_type') is-invalid @enderror">
+                                        <option value="random" {{ old('category_type', 'random') == 'random' ? 'selected' : '' }}>
+                                            Loại 1: Mua ngẫu nhiên (Chọn số lượng mua random)
+                                        </option>
+                                        <option value="account_list" {{ old('category_type') == 'account_list' ? 'selected' : '' }}>
+                                            Loại 2: Chọn mua theo danh sách acc (Hiện danh sách acc, xem chi tiết & mua)
+                                        </option>
+                                    </select>
+                                    @error('category_type')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-6 col-12">
+                                <div class="mb-3">
                                     <label class="form-label">Danh mục mẹ (Game Group)</label>
                                     <select name="game_group_id" class="form-select @error('game_group_id') is-invalid @enderror">
                                         <option value="">-- Không có --</option>

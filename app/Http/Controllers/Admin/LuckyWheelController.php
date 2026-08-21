@@ -62,8 +62,8 @@ class LuckyWheelController extends Controller
             'thumbnail' => 'nullable|image',
             'wheel_image' => 'nullable|image',
             'description' => 'nullable|string',
-            'rules' => 'required|string',
-            'active' => 'required|boolean',
+            'rules' => 'nullable|string',
+            'active' => 'nullable|boolean',
             'config' => 'required|array|size:8',
             'config.*.reward_type' => 'required|in:item,empty,money,random_account',
             'config.*.content' => 'required|string|max:255',
@@ -107,7 +107,7 @@ class LuckyWheelController extends Controller
 
             $luckyWheel->description = $request->description;
             $luckyWheel->rules = $request->rules;
-            $luckyWheel->active = $request->active;
+            $luckyWheel->active = $request->boolean('active');
             $luckyWheel->config = $request->config;
             $luckyWheel->save();
 
@@ -157,8 +157,8 @@ class LuckyWheelController extends Controller
             'wheel_image' => 'nullable|image',
             'remove_wheel_image' => 'nullable|boolean',
             'description' => 'nullable|string',
-            'rules' => 'required|string',
-            'active' => 'required|boolean',
+            'rules' => 'nullable|string',
+            'active' => 'nullable|boolean',
             'config' => 'required|array|size:8',
             'config.*.reward_type' => 'required|in:item,empty,money,random_account',
             'config.*.content' => 'required|string|max:255',
@@ -216,7 +216,7 @@ class LuckyWheelController extends Controller
 
             $luckyWheel->description = $request->description;
             $luckyWheel->rules = $request->rules;
-            $luckyWheel->active = $request->active;
+            $luckyWheel->active = $request->boolean('active');
             $luckyWheel->config = $request->config;
             $luckyWheel->save();
 

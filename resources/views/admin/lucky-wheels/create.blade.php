@@ -273,17 +273,6 @@
                     });
             }
 
-            // Xử lý loại phần thưởng
-            const rewardTypes = document.querySelectorAll('.reward-type');
-            rewardTypes.forEach(input => {
-                input.addEventListener('input', function() {
-                    const index = this.getAttribute('data-index');
-                    const value = this.value;
-                    const symbolElement = document.querySelector(`.reward-symbol-${index}`);
-                    symbolElement.textContent = value || '...';
-                });
-            });
-
             // Xử lý form submit
             document.getElementById('luckyWheelForm').addEventListener('submit', function() {
                 // Cập nhật dữ liệu từ CKEditor vào textarea

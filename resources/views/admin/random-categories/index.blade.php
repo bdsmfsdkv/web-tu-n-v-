@@ -64,6 +64,7 @@
                                     </th>
                                     <th class="text-uppercase small">ID</th>
                                     <th class="text-uppercase small">Tên danh mục</th>
+                                    <th class="text-uppercase small">Loại Random</th>
                                     <th class="text-uppercase small">Ảnh đại diện</th>
                                     <th class="text-uppercase small">Trạng thái</th>
                                     <th class="text-uppercase small">Ngày tạo</th>
@@ -78,6 +79,13 @@
                                         </td>
                                         <td>{{ $category->id }}</td>
                                         <td class="text-bolds">{{ $category->name }}</td>
+                                        <td>
+                                            @if(($category->category_type ?? 'random') === 'account_list')
+                                                <span class="badge bg-primary">Chọn mua từng acc</span>
+                                            @else
+                                                <span class="badge bg-info">Random ngẫu nhiên</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             @if ($category->thumbnail)
                                                 <img src="{{ asset($category->thumbnail) }}" alt="{{ $category->name }}"

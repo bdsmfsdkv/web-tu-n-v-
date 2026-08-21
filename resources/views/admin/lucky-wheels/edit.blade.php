@@ -228,9 +228,6 @@
 
                             <!-- Phần cấu hình phần thưởng -->
                             <div class="col-lg-12 mt-3">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="card-title">Cấu hình phần thưởng (8 ô)</h5>
                                 <h5 class="fw-bold mb-3 text-warning"><i class="ti ti-gift me-2"></i>Cấu hình phần thưởng (8 ô)</h5>
                                 <div class="row g-3">
                                     @for ($i = 0; $i < 8; $i++)
@@ -399,17 +396,6 @@
             // Bắt sự kiện thay đổi ảnh vòng quay
             document.getElementById('wheel_image').addEventListener('change', function() {
                 previewImage(this, 'preview-wheel');
-            });
-
-            // Xử lý loại phần thưởng
-            const rewardTypes = document.querySelectorAll('.reward-type');
-            rewardTypes.forEach(input => {
-                input.addEventListener('input', function() {
-                    const index = this.getAttribute('data-index');
-                    const value = this.value;
-                    const symbolElement = document.querySelector(`.reward-symbol-${index}`);
-                    symbolElement.textContent = value || '...';
-                });
             });
 
             // Xử lý form submit
