@@ -27,20 +27,9 @@
 
         <div class="kc-site-popup-actions">
             <button type="button" class="kc-site-popup-primary" id="siteAnnouncementOk">Đã hiểu</button>
-            <button type="button" class="kc-site-popup-snooze" id="siteAnnouncementSnooze">
-                <span class="iconify" data-icon="ant-design:clock-circle-outlined"></span>
-                Ẩn trong 2 giờ
-            </button>
         </div>
-
-        <p class="kc-site-popup-note">Bạn có thể bật lại thông báo bất cứ lúc nào.</p>
     </div>
 </div>
-
-<button type="button" id="siteAnnouncementRestore" class="kc-site-popup-restore" hidden>
-    <span class="iconify" data-icon="ant-design:bell-outlined"></span>
-    Bật lại thông báo
-</button>
 
 <style>
     .kc-site-popup-overlay {
@@ -120,77 +109,32 @@
         white-space: normal;
     }
     .kc-site-popup-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
         margin-top: 22px;
     }
-    .kc-site-popup-actions button {
+    .kc-site-popup-primary {
+        width: 100%;
         min-height: 44px;
+        border: 1px solid #dc2626;
         border-radius: 10px;
+        background: #dc2626;
+        color: #fff;
         font: inherit;
         font-size: .88rem;
         font-weight: 750;
         cursor: pointer;
     }
-    .kc-site-popup-primary {
-        border: 1px solid #dc2626;
-        background: #dc2626;
-        color: #fff;
-    }
-    .kc-site-popup-snooze {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 7px;
-        border: 1px solid #e5e7eb;
-        background: #fff;
-        color: #334155;
-    }
-    .kc-site-popup-note {
-        margin: 12px 0 0;
-        color: #94a3b8;
-        font-size: .75rem;
-        text-align: center;
-    }
-    .kc-site-popup-restore {
-        position: fixed;
-        right: 18px;
-        bottom: 18px;
-        z-index: 30040;
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        min-height: 40px;
-        padding: 8px 12px;
-        border: 1px solid rgba(220,38,38,.24);
-        border-radius: 999px;
-        background: #fff;
-        color: #dc2626;
-        box-shadow: 0 8px 24px rgba(15,23,42,.12);
-        font: inherit;
-        font-size: .78rem;
-        font-weight: 750;
-        cursor: pointer;
-    }
-    .kc-site-popup-restore[hidden] { display: none !important; }
     [data-theme="dark"] .kc-site-popup,
-    [data-theme="dark"] .kc-site-popup-close,
-    [data-theme="dark"] .kc-site-popup-snooze,
-    [data-theme="dark"] .kc-site-popup-restore {
+    [data-theme="dark"] .kc-site-popup-close {
         background: #1f1f1f;
         border-color: #353535;
     }
     [data-theme="dark"] .kc-site-popup h2 { color: #f8fafc; }
-    [data-theme="dark"] .kc-site-popup-message,
-    [data-theme="dark"] .kc-site-popup-snooze { color: #cbd5e1; }
+    [data-theme="dark"] .kc-site-popup-message { color: #cbd5e1; }
     [data-theme="dark"] .kc-site-popup-close { color: #a3a3a3; }
     @media (max-width: 560px) {
         .kc-site-popup-overlay { align-items: flex-end; padding: 10px; }
         .kc-site-popup { padding: 24px 18px 20px; border-radius: 16px; }
-        .kc-site-popup-actions { grid-template-columns: 1fr; }
         .kc-site-popup-message { max-height: 36vh; }
-        .kc-site-popup-restore { right: 12px; bottom: 12px; }
     }
     @media (prefers-reduced-motion: reduce) {
         .kc-site-popup-overlay, .kc-site-popup { transition-duration: .01ms; }
@@ -200,77 +144,43 @@
 <script>
 (function () {
     var overlay = document.getElementById('siteAnnouncementOverlay');
-    var restore = document.getElementById('siteAnnouncementRestore');
-    if (!overlay || !restore) return;
+    if (!overlay) return;
 
     var version = overlay.getAttribute('data-popup-version') || 'default';
-    var snoozeKey = 'kuncheap_site_popup_snooze_until_' + version;
     var sessionKey = 'kuncheap_site_popup_dismissed_' + version;
-    var twoHours = 2 * 60 * 60 * 1000;
-
-    function snoozedUntil() {
-        var raw = localStorage.getItem(snoozeKey);
-        var value = raw ? Number(raw) : 0;
-        if (!Number.isFinite(value) || value <= Date.now()) {
-            localStorage.removeItem(snoozeKey);
-            return 0;
-        }
-        return value;
-    }
 
     function openPopup() {
         overlay.classList.add('is-open');
         overlay.setAttribute('aria-hidden', 'false');
-        restore.hidden = true;
         document.body.style.overflow = 'hidden';
         var close = document.getElementById('siteAnnouncementClose');
         if (close) setTimeout(function () { close.focus(); }, 20);
     }
 
-    function closePopup(sessionOnly) {
+    function closePopup() {
         overlay.classList.remove('is-open');
         overlay.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
-        if (sessionOnly) sessionStorage.setItem(sessionKey, '1');
-    }
-
-    function updateInitialState() {
-        if (snoozedUntil()) {
-            restore.hidden = false;
-            return;
-        }
-        if (sessionStorage.getItem(sessionKey) === '1') return;
-        setTimeout(openPopup, 350);
+        sessionStorage.setItem(sessionKey, '1');
     }
 
     var close = document.getElementById('siteAnnouncementClose');
     var ok = document.getElementById('siteAnnouncementOk');
-    var snooze = document.getElementById('siteAnnouncementSnooze');
 
-    if (close) close.addEventListener('click', function () { closePopup(true); });
-    if (ok) ok.addEventListener('click', function () { closePopup(true); });
-    if (snooze) snooze.addEventListener('click', function () {
-        localStorage.setItem(snoozeKey, String(Date.now() + twoHours));
-        sessionStorage.removeItem(sessionKey);
-        closePopup(false);
-        restore.hidden = false;
-    });
-
-    restore.addEventListener('click', function () {
-        localStorage.removeItem(snoozeKey);
-        sessionStorage.removeItem(sessionKey);
-        openPopup();
-    });
+    if (close) close.addEventListener('click', closePopup);
+    if (ok) ok.addEventListener('click', closePopup);
 
     overlay.addEventListener('click', function (event) {
-        if (event.target === overlay) closePopup(true);
+        if (event.target === overlay) closePopup();
     });
 
     document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && overlay.classList.contains('is-open')) closePopup(true);
+        if (event.key === 'Escape' && overlay.classList.contains('is-open')) closePopup();
     });
 
-    updateInitialState();
+    if (sessionStorage.getItem(sessionKey) !== '1') {
+        setTimeout(openPopup, 350);
+    }
 })();
 </script>
 @endif
