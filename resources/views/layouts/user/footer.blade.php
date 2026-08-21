@@ -563,6 +563,38 @@
         }
     }
 
+    /* Explicit click state for both category and deposit menus. */
+    html body nav.navbar .nav-menu-trigger {
+        appearance: none;
+        border: 0;
+        cursor: pointer;
+        font: inherit;
+    }
+
+    /* Native state. Must defeat every legacy display rule. */
+    html body nav.navbar .mega-menu[hidden],
+    html body nav.navbar .modern-dropdown-menu[hidden] {
+        display: none !important;
+    }
+
+    /* Button keeps :focus after tap/click. This explicit state must beat it. */
+    html body nav.navbar .nav-mega-dropdown.menu-closed > .mega-menu {
+        display: none !important;
+        max-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        transform: translate3d(0, -4px, 0) !important;
+        border-width: 0 !important;
+    }
+
+    html body nav.navbar .nav-mega-dropdown.menu-closed > .nav-menu-trigger .nav-arrow {
+        transform: rotate(0deg) !important;
+    }
+
     /* Desktop panels open from visible trigger or panel only, never empty LI area. */
     @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
         html body nav.navbar .nav-dropdown:not(:has(> .nav-link-item:hover)):not(:has(> .modern-dropdown-menu:hover)):not(:focus-within):not(.deposit-click-open) > .modern-dropdown-menu,
@@ -583,6 +615,168 @@
             pointer-events: auto !important;
             transform: translate3d(0, 0, 0) !important;
             transition-delay: 0s !important;
+        }
+    }
+
+    /* Final desktop menu. Ignore all legacy hover/pointer states above. */
+    @media (min-width: 1200px) {
+        html body nav.navbar .nav-mega-dropdown:not(:has(> .deposit-mega-menu)) > .mega-menu {
+            display: block !important;
+            top: 64px !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            transform: translate3d(0, -6px, 0) !important;
+        }
+
+        html body nav.navbar .nav-mega-dropdown:not(:has(> .deposit-mega-menu)):hover > .mega-menu,
+        html body nav.navbar .nav-mega-dropdown:not(:has(> .deposit-mega-menu)):focus-within > .mega-menu {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            transform: translate3d(0, -6px, 0) !important;
+        }
+
+        html body nav.navbar .nav-mega-dropdown:not(:has(> .deposit-mega-menu)).menu-open > .mega-menu {
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            transform: translate3d(0, 0, 0) !important;
+        }
+
+        html body nav.navbar .nav-mega-dropdown.menu-open > .nav-menu-trigger {
+            color: #dc2626 !important;
+            background: rgba(220,38,38,.075) !important;
+        }
+
+        html body nav.navbar .nav-mega-dropdown.menu-open > .nav-menu-trigger .nav-arrow {
+            transform: rotate(180deg) !important;
+        }
+    }
+
+    /* Category panel uses one plain surface, without gray card wrappers. */
+    html body nav.navbar .mega-menu-column,
+    html body nav.navbar .mega-menu-column .mega-menu-list {
+        background: transparent !important;
+        border-color: transparent !important;
+        box-shadow: none !important;
+    }
+
+    html body nav.navbar .mega-menu-column {
+        padding: 14px 0 !important;
+        border-radius: 0 !important;
+    }
+
+    html body nav.navbar .mega-menu-column .mega-menu-item {
+        background: transparent !important;
+        border-color: transparent !important;
+    }
+
+    html body nav.navbar .mega-menu-column .mega-menu-item:hover {
+        background: #fff7f7 !important;
+        border-color: rgba(220,38,38,.18) !important;
+    }
+
+    [data-theme="dark"] body nav.navbar .mega-menu-column,
+    [data-theme="dark"] body nav.navbar .mega-menu-column .mega-menu-list,
+    [data-theme="dark"] body nav.navbar .mega-menu-column .mega-menu-item {
+        background: transparent !important;
+        border-color: transparent !important;
+        box-shadow: none !important;
+    }
+
+    /* Deposit is a compact white dropdown, not a full-width mega menu. */
+    @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
+        html body nav.navbar .nav-mega-dropdown:has(> .deposit-mega-menu) {
+            position: relative !important;
+            pointer-events: none !important;
+        }
+
+        html body nav.navbar .nav-mega-dropdown:has(> .deposit-mega-menu) > .nav-menu-trigger,
+        html body nav.navbar .nav-mega-dropdown:has(> .deposit-mega-menu) > .deposit-mega-menu {
+            pointer-events: auto !important;
+        }
+
+        /* Panel touches trigger. No invisible bridge can open it from surrounding space. */
+        html body nav.navbar .nav-mega-dropdown:has(> .deposit-mega-menu) > .nav-menu-trigger::after {
+            content: none !important;
+            display: none !important;
+            pointer-events: none !important;
+        }
+
+        html body nav.navbar .nav-mega-dropdown:has(> .deposit-mega-menu) > .deposit-mega-menu {
+            display: block !important;
+            position: absolute !important;
+            top: 100% !important;
+            right: auto !important;
+            left: 0 !important;
+            width: max-content !important;
+            min-width: 0 !important;
+            margin: 0 !important;
+            padding: 8px !important;
+            background: #fff !important;
+            border: 1px solid #e5e7eb !important;
+            border-radius: 10px !important;
+            box-shadow: 0 10px 24px rgba(15,23,42,.12) !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            transform: translate3d(0,-4px,0) !important;
+            z-index: 1100 !important;
+        }
+
+        html body nav.navbar .nav-mega-dropdown:has(> .deposit-mega-menu) > .deposit-mega-menu::before,
+        html body nav.navbar .nav-mega-dropdown:has(> .deposit-mega-menu) > .deposit-mega-menu::after {
+            content: none !important;
+            display: none !important;
+        }
+
+        html body nav.navbar .nav-mega-dropdown:has(> .deposit-mega-menu):has(> .nav-menu-trigger:hover) > .deposit-mega-menu,
+        html body nav.navbar .nav-mega-dropdown:has(> .deposit-mega-menu):has(> .deposit-mega-menu:hover) > .deposit-mega-menu {
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            transform: translate3d(0,0,0) !important;
+        }
+
+        html body nav.navbar .deposit-mega-menu .mega-menu-container {
+            width: auto !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #fff !important;
+        }
+
+        html body nav.navbar .deposit-mega-menu .deposit-menu-grid {
+            display: flex !important;
+            width: max-content !important;
+            gap: 4px !important;
+            background: #fff !important;
+        }
+
+        html body nav.navbar .deposit-mega-menu .mega-menu-item {
+            width: auto !important;
+            min-height: 40px !important;
+            padding: 8px 10px !important;
+            background: #fff !important;
+            border: 1px solid transparent !important;
+            box-shadow: none !important;
+        }
+
+        html body nav.navbar .deposit-mega-menu .mega-menu-item:hover {
+            background: #fff7f7 !important;
+            border-color: rgba(220,38,38,.18) !important;
+        }
+
+        [data-theme="dark"] body nav.navbar .deposit-mega-menu,
+        [data-theme="dark"] body nav.navbar .deposit-mega-menu .mega-menu-container,
+        [data-theme="dark"] body nav.navbar .deposit-mega-menu .deposit-menu-grid,
+        [data-theme="dark"] body nav.navbar .deposit-mega-menu .mega-menu-item {
+            background: #fff !important;
+        }
+
+        [data-theme="dark"] body nav.navbar .deposit-mega-menu .mega-menu-item:hover {
+            background: #fff7f7 !important;
         }
     }
 </style>

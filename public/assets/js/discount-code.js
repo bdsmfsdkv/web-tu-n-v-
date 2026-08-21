@@ -339,7 +339,6 @@ function setupDirectPurchaseDepositLinks() {
 
 function runGlobalUiFixes() {
     syncAccountPurchaseModalActions();
-    setupPreciseDesktopNavHover();
     setupDirectPurchaseDepositLinks();
 }
 

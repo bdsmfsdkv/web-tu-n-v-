@@ -221,8 +221,8 @@
     </button>
     
     <script src="https://cdn.jsdelivr.net/gh/lelinh014756/fui-toast-js@master/assets/js/toast@1.0.1/fuiToast.min.js"></script>
-    <script src="/js/app.js"></script>
-    <script src="<?php echo e(asset('assets/js/discount-code.js')); ?>"></script>
+    <script src="<?php echo e(asset('js/app.js')); ?>?v=<?php echo e(filemtime(public_path('js/app.js'))); ?>"></script>
+    <script src="<?php echo e(asset('assets/js/discount-code.js')); ?>?v=<?php echo e(filemtime(public_path('assets/js/discount-code.js'))); ?>"></script>
     <script>
     (function() {
       function hidePreloader() {
@@ -376,14 +376,15 @@
         
         @media (max-width: 768px) {
             .live-purchase-toast {
-                left: 50%;
+                left: 16px;
+                right: auto;
                 bottom: 12px;
-                transform: translate(-50%, 80px);
+                transform: translateX(-120%);
                 width: calc(100% - 32px);
                 max-width: 280px;
             }
             .live-purchase-toast.show {
-                transform: translate(-50%, 0);
+                transform: translateX(0);
             }
         }
     </style>

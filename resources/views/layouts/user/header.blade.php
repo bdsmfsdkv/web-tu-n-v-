@@ -743,11 +743,11 @@
             </li>
 
             <li class="nav-mega-dropdown">
-                <a href="javascript:void(0)" class="nav-link-item">
+                <button type="button" class="nav-link-item nav-menu-trigger" aria-expanded="false">
                     <span class="nav-item-icon"><span class="iconify" data-icon="ant-design:appstore-outlined"></span></span>
                     <span>Danh Mục</span>
                     <span class="iconify nav-arrow" data-icon="ant-design:down-outlined"></span>
-                </a>
+                </button>
 
                 <div class="mega-menu">
                     <div class="mega-menu-container">
@@ -822,43 +822,20 @@
                 </div>
             </li>
 
-            <li class="nav-dropdown">
-                <a href="javascript:void(0)" class="nav-link-item">
+            <li class="nav-mega-dropdown">
+                <button type="button" class="nav-link-item nav-menu-trigger" aria-expanded="false">
                     <span class="nav-item-icon"><span class="iconify" data-icon="ant-design:wallet-outlined"></span></span>
                     <span>Nạp Tiền</span>
                     <span class="iconify nav-arrow" data-icon="ant-design:down-outlined"></span>
-                </a>
-                <ul class="modern-dropdown-menu">
-                    <li>
-                        <a href="{{ route('profile.deposit-card') }}" class="dropdown-link-card">
-                            <span class="dropdown-link-icon-box bg-card-icon"><i class="fa-solid fa-credit-card"></i></span>
-                            <span>
-                                <span class="dropdown-link-title">Nạp thẻ cào</span>
-                                <span class="dropdown-link-desc">Tự động 24/7</span>
-                            </span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('profile.deposit-atm') }}" class="dropdown-link-card">
-                            <span class="dropdown-link-icon-box bg-atm-icon"><i class="fa-solid fa-building-columns"></i></span>
-                            <span>
-                                <span class="dropdown-link-title">Ngân hàng / QR</span>
-                                <span class="dropdown-link-desc">Chuyển khoản nhanh</span>
-                            </span>
-                        </a>
-                    </li>
-                    @if(config_get('payment.usdt.active', true))
-                        <li>
-                            <a href="{{ route('profile.deposit-usdt') }}" class="dropdown-link-card">
-                                <span class="dropdown-link-icon-box bg-usdt-icon"><i class="fa-brands fa-bitcoin"></i></span>
-                                <span>
-                                    <span class="dropdown-link-title">Nạp USDT</span>
-                                    <span class="dropdown-link-desc">BEP20 / TRC20</span>
-                                </span>
-                            </a>
-                        </li>
-                    @endif
-                </ul>
+                </button>
+                <div class="mega-menu deposit-mega-menu">
+                    <div class="mega-menu-container">
+                        <div class="deposit-menu-grid">
+                            <a href="{{ route('profile.deposit-card') }}" class="mega-menu-item"><span class="mega-menu-icon-fallback" style="background:#fef2f2;color:#dc2626;"><i class="fa-solid fa-credit-card"></i></span><span class="mega-item-info"><span class="mega-item-name">Nạp thẻ cào</span></span></a>
+                            <a href="{{ route('profile.deposit-atm') }}" class="mega-menu-item"><span class="mega-menu-icon-fallback" style="background:#eff6ff;color:#2563eb;"><i class="fa-solid fa-building-columns"></i></span><span class="mega-item-info"><span class="mega-item-name">Ngân hàng / QR</span></span></a>
+                        </div>
+                    </div>
+                </div>
             </li>
 
             <li>

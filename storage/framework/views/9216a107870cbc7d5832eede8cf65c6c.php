@@ -1,0 +1,184 @@
+<?php if(session('success')): ?>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <?php echo e(session('success')); ?>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
+
+            <div class="card">
+
+                <div class="card-body">
+                    <form action="<?php echo e(route('admin.settings.payment.update')); ?>" method="POST">
+                        <?php echo csrf_field(); ?>
+
+                        <!-- CÀI ĐẶT THẺ CÀO -->
+                        <div class="card border border-light-subtle shadow-sm mb-4">
+                            <div class="card-header bg-light-subtle">
+                                <h5 class="card-title mb-0">
+                                    <i class="ti ti-credit-card text-primary me-2"></i>Cài đặt nạp thẻ <span class="text-muted fw-normal fs-6">(Thanh toán qua thẻ cào)</span>
+                                </h5>
+                            </div>
+                            <div class="card-body pb-0">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="mb-4 pb-2 border-bottom">
+                                            <div class="form-check form-switch mt-2">
+                                                <input class="form-check-input" type="checkbox" id="card_active" name="card_active" value="1" <?php echo e(old('card_active', $configs['card_active']) ? 'checked' : ''); ?>>
+                                                <label class="form-check-label fw-semibold" for="card_active">Kích hoạt phương thức thanh toán thẻ cào</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                        <div class="row">
+
+                            <div class="col-lg-6 col-sm-6 col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Website đối tác <span class="text-danger">*</span></label>
+                                    <select name="partner_website_card"
+                                        class="form-select <?php $__errorArgs = ['partner_website_card'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>">
+                                        <option value="">Chọn đối tác</option>
+                                        <option value="thesieure.com"
+                                            <?php echo e($configs['partner_website_card'] === 'thesieure.com' ? 'selected' : ''); ?>>
+                                            THESIEURE.COM</option>
+                                        <option value="cardvip.vn"
+                                            <?php echo e($configs['partner_website_card'] === 'cardvip.vn' ? 'selected' : ''); ?>>
+                                            CARDVIP.VN</option>
+                                        <option value="doithe1s.vn"
+                                            <?php echo e($configs['partner_website_card'] === 'doithe1s.vn' ? 'selected' : ''); ?>>
+                                            DOITHE1S.VN</option>
+                                    </select>
+                                    <?php $__errorArgs = ['partner_website_card'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-6 col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Chiết khấu nạp thẻ <span class="text-danger">*</span></label>
+                                    <input type="text" name="discount_percent_card"
+                                        value="<?php echo e(old('discount_percent_card', $configs['discount_percent_card'])); ?>"
+                                        class="form-control <?php $__errorArgs = ['discount_percent_card'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                                        placeholder="Nhập chiết khấu nạp thẻ">
+                                    <?php $__errorArgs = ['discount_percent_card'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-6 col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Partner ID <span class="text-danger">*</span></label>
+                                    <input type="text" name="partner_id_card"
+                                        value="<?php echo e(old('partner_id_card', $configs['partner_id_card'])); ?>"
+                                        class="form-control <?php $__errorArgs = ['partner_id_card'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                                        placeholder="Nhập Partner ID">
+                                    <?php $__errorArgs = ['partner_id_card'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-6 col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Partner Key <span class="text-danger">*</span></label>
+                                    <input type="text" name="partner_key_card"
+                                        value="<?php echo e(old('partner_key_card', $configs['partner_key_card'])); ?>"
+                                        class="form-control <?php $__errorArgs = ['partner_key_card'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                                        placeholder="Nhập Partner Key">
+                                    <?php $__errorArgs = ['partner_key_card'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                                </div>
+                            </div>
+
+                        </div>
+                        </div> <!-- end card-body -->
+                        </div> <!-- end card -->
+
+                        <div class="row mt-4">
+                            <div class="col-lg-12">
+                                <button type="submit" class="btn btn-primary me-2">Lưu thay đổi</button>
+                                <a href="<?php echo e(route('admin.index')); ?>" class="btn btn-secondary">Hủy bỏ</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        <?php $__env->startPush('scripts'); ?>
+    <script>
+        $(document).ready(function() {
+            // Toggle input fields based on payment method status
+            function toggleInputFields(checkboxId, containerClass) {
+                const isChecked = $('#' + checkboxId).is(':checked');
+                $('.' + containerClass + ' input, .' + containerClass + ' select').prop('disabled', !isChecked);
+            }
+
+            // Initial state and event handlers
+            $('.payment-method-container').each(function() {
+                const checkboxId = $(this).data('checkbox');
+                const containerClass = $(this).data('container');
+                toggleInputFields(checkboxId, containerClass);
+
+                $('#' + checkboxId).on('change', function() {
+                    toggleInputFields(checkboxId, containerClass);
+                });
+            });
+        });
+    </script>
+<?php $__env->stopPush(); ?><?php /**PATH C:\xampp\htdocs\resources\views\admin\settings\partials\payment.blade.php ENDPATH**/ ?>
