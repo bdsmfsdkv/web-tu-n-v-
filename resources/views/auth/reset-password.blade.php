@@ -24,6 +24,36 @@
         color: #64748b !important;
         cursor: default;
     }
+    .password-input-wrap {
+        position: relative;
+    }
+    .password-input-wrap .form-input {
+        padding-right: 46px !important;
+    }
+    .password-toggle {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transform: translateY(-50%);
+        color: #64748b;
+        background: transparent;
+        border: 0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: color .15s ease, background-color .15s ease;
+    }
+    .password-toggle:hover,
+    .password-toggle:focus-visible {
+        color: #dc2626;
+        background: #fff1f2;
+        outline: none;
+    }
     .password-back-link {
         display: inline-flex;
         align-items: center;
@@ -39,6 +69,9 @@
     .password-back-link:hover { color: #dc2626; }
     [data-theme="dark"] .password-recovery-icon { background: #2a1718; border-color: #4b2427; }
     [data-theme="dark"] .password-readonly { background: #202020 !important; color: #a3a3a3 !important; }
+    [data-theme="dark"] .password-toggle { color: #a3a3a3; }
+    [data-theme="dark"] .password-toggle:hover,
+    [data-theme="dark"] .password-toggle:focus-visible { color: #f87171; background: #2a1718; }
     [data-theme="dark"] .password-back-link { color: #a3a3a3; }
 </style>
 @endpush
@@ -75,14 +108,23 @@
 
             <div class="form-group">
                 <label for="password" class="form-label">Mật khẩu mới</label>
-                <input id="password"
-                       type="password"
-                       class="form-input @error('password') is-invalid @enderror"
-                       name="password"
-                       required
-                       autofocus
-                       autocomplete="new-password"
-                       placeholder="Nhập mật khẩu mới">
+                <div class="password-input-wrap">
+                    <input id="password"
+                           type="password"
+                           class="form-input @error('password') is-invalid @enderror"
+                           name="password"
+                           required
+                           autofocus
+                           autocomplete="new-password"
+                           placeholder="Nhập mật khẩu mới">
+                    <button type="button"
+                            class="password-toggle"
+                            data-password-target="password"
+                            aria-label="Hiện mật khẩu"
+                            aria-pressed="false">
+                        <i class="fa-regular fa-eye"></i>
+                    </button>
+                </div>
                 @error('password')
                     <span class="form-error">{{ $message }}</span>
                 @enderror
@@ -90,13 +132,22 @@
 
             <div class="form-group">
                 <label for="password_confirmation" class="form-label">Xác nhận mật khẩu mới</label>
-                <input id="password_confirmation"
-                       type="password"
-                       class="form-input"
-                       name="password_confirmation"
-                       required
-                       autocomplete="new-password"
-                       placeholder="Nhập lại mật khẩu mới">
+                <div class="password-input-wrap">
+                    <input id="password_confirmation"
+                           type="password"
+                           class="form-input"
+                           name="password_confirmation"
+                           required
+                           autocomplete="new-password"
+                           placeholder="Nhập lại mật khẩu mới">
+                    <button type="button"
+                            class="password-toggle"
+                            data-password-target="password_confirmation"
+                            aria-label="Hiện mật khẩu"
+                            aria-pressed="false">
+                        <i class="fa-regular fa-eye"></i>
+                    </button>
+                </div>
             </div>
 
             <button type="submit" class="auth-btn">
@@ -111,4 +162,26 @@
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.password-toggle').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var input = document.getElementById(this.getAttribute('data-password-target'));
+            if (!input) return;
+
+            var show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            this.setAttribute('aria-pressed', String(show));
+            this.setAttribute('aria-label', show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+
+            var icon = this.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('fa-eye', !show);
+                icon.classList.toggle('fa-eye-slash', show);
+            }
+        });
+    });
+});
+</script>
 @endsection
