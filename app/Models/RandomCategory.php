@@ -10,6 +10,7 @@ class RandomCategory extends Model
     protected $fillable = [
         'name',
         'slug',
+        'category_type',
         'thumbnail',
         'tag_image',
         'description',

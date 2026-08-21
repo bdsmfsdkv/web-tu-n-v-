@@ -14,9 +14,22 @@ class RandomAccountController extends Controller
 {
     public function show($id)
     {
-        $account = RandomCategoryAccount::findOrFail($id);
+        $account = RandomCategoryAccount::with('category')->findOrFail($id);
 
-        return view("user.random.detail", compact('account'));
+        $flashSalePrice = \App\Models\FlashSale::getActivePrice('random', $account->random_category_id);
+        if ($flashSalePrice !== null) {
+            $account->price = $flashSalePrice;
+            $account->is_flash_sale = true;
+        }
+
+        $relatedAccounts = RandomCategoryAccount::where('random_category_id', $account->random_category_id)
+            ->where('id', '!=', $account->id)
+            ->where('status', 'available')
+            ->orderBy('id', 'desc')
+            ->take(6)
+            ->get();
+
+        return view("user.random.detail", compact('account', 'relatedAccounts'));
     }
 
     public function purchase(Request $request, $id)
@@ -30,6 +43,11 @@ class RandomAccountController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            $flashSalePrice = \App\Models\FlashSale::getActivePrice('random', $account->random_category_id);
+            if ($flashSalePrice !== null) {
+                $account->price = $flashSalePrice;
+            }
+
             $user = Auth::user();
             $discountAmount = 0;
             $finalPrice = $account->price;
@@ -37,7 +55,7 @@ class RandomAccountController extends Controller
             // Check discount code if provided
             if ($request->filled('discount_code')) {
                 $discountCode = DiscountCode::where('code', $request->discount_code)
-                    ->where('status', 'active')
+                    ->where('is_active', '1')
                     ->first();
 
                 if (!$discountCode) {
@@ -158,12 +176,15 @@ class RandomAccountController extends Controller
                 ->where('id', $user->id)
                 ->update(['balance' => $balanceAfter]);
 
+            $batchId = uniqid('ORD-');
+
             // Update account status
             DB::table('random_category_accounts')
                 ->where('id', $account->id)
                 ->update([
                     'status' => 'sold',
-                    'buyer_id' => $user->id
+                    'buyer_id' => $user->id,
+                    'batch_id' => $batchId
                 ]);
 
             // Add transaction history
@@ -187,7 +208,7 @@ class RandomAccountController extends Controller
                 'data' => [
                     'new_balance' => $balanceAfter
                 ],
-                'redirect_url' => route('profile.purchased-random-accounts')
+                'redirect_url' => route('profile.purchased-random-account-detail', $batchId)
             ]);
         } catch (\Exception $e) {
             DB::rollBack();

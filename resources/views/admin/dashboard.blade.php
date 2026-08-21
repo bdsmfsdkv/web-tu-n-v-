@@ -26,13 +26,13 @@
                 </div>
             @else
                             <!-- Comparison Block -->
-            <div class="card border border-dashed shadow-sm mb-4">
+            <div id="comparison-card" class="card border border-dashed shadow-sm mb-4">
                 <div class="card-header border-bottom-0 pb-0 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold"><i class="ti ti-scale text-primary me-2"></i>So sánh 2 kỳ</h5>
-                    <a href="?period_a=today&period_b=yesterday" class="btn btn-sm btn-info text-white">Hôm nay vs Hôm qua</a>
+                    <a href="?period_a=today&period_b=yesterday" data-comparison-link class="btn btn-sm btn-info text-white">Hôm nay vs Hôm qua</a>
                 </div>
                 <div class="card-body">
-                    <form method="GET" class="row align-items-end mb-3">
+                    <form id="comparison-form" method="GET" class="row align-items-end mb-3">
                         <div class="col-md-4">
                             <label class="form-label fw-semibold small">Kỳ A</label>
                             <select name="period_a" class="form-select form-select-sm">
@@ -61,9 +61,9 @@
                     </form>
 
                     <div class="d-flex gap-2 mb-3 flex-wrap">
-                        <a href="?period_a=today&period_b=yesterday" class="btn btn-xs {{ $comparison['period_a'] == 'today' && $comparison['period_b'] == 'yesterday' ? 'btn-warning text-white' : 'btn-outline-secondary' }}">Hôm nay / Hôm qua</a>
-                        <a href="?period_a=this_week&period_b=last_week" class="btn btn-xs {{ $comparison['period_a'] == 'this_week' && $comparison['period_b'] == 'last_week' ? 'btn-warning text-white' : 'btn-outline-secondary' }}">Tuần này / Tuần trước</a>
-                        <a href="?period_a=this_month&period_b=last_month" class="btn btn-xs {{ $comparison['period_a'] == 'this_month' && $comparison['period_b'] == 'last_month' ? 'btn-warning text-white' : 'btn-outline-secondary' }}">Tháng này / Tháng trước</a>
+                        <a href="?period_a=today&period_b=yesterday" data-comparison-link class="btn btn-xs {{ $comparison['period_a'] == 'today' && $comparison['period_b'] == 'yesterday' ? 'btn-warning text-white' : 'btn-outline-secondary' }}">Hôm nay / Hôm qua</a>
+                        <a href="?period_a=this_week&period_b=last_week" data-comparison-link class="btn btn-xs {{ $comparison['period_a'] == 'this_week' && $comparison['period_b'] == 'last_week' ? 'btn-warning text-white' : 'btn-outline-secondary' }}">Tuần này / Tuần trước</a>
+                        <a href="?period_a=this_month&period_b=last_month" data-comparison-link class="btn btn-xs {{ $comparison['period_a'] == 'this_month' && $comparison['period_b'] == 'last_month' ? 'btn-warning text-white' : 'btn-outline-secondary' }}">Tháng này / Tháng trước</a>
                     </div>
 
                     @if($comparison['a']['revenue'] >= $comparison['b']['revenue'])
@@ -948,6 +948,56 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
+        (() => {
+            const loadComparison = async (url) => {
+                const card = document.getElementById('comparison-card');
+                if (!card || card.dataset.loading === 'true') return;
+
+                card.dataset.loading = 'true';
+                card.style.opacity = '0.6';
+                console.debug('[comparison] loading', url.toString());
+
+                try {
+                    const response = await fetch(url, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        credentials: 'same-origin',
+                    });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                    const documentResponse = new DOMParser().parseFromString(await response.text(), 'text/html');
+                    const nextCard = documentResponse.getElementById('comparison-card');
+                    if (!nextCard) throw new Error('Không tìm thấy khối so sánh trong phản hồi.');
+
+                    card.replaceWith(nextCard);
+                    history.pushState({}, '', url);
+                    console.debug('[comparison] loaded', url.toString());
+                } catch (error) {
+                    card.dataset.loading = 'false';
+                    card.style.opacity = '';
+                    console.error('[comparison] load failed', error);
+                    alert('Không thể tải dữ liệu so sánh. Vui lòng thử lại.');
+                }
+            };
+
+            document.addEventListener('click', (event) => {
+                const link = event.target.closest('[data-comparison-link]');
+                if (!link) return;
+
+                event.preventDefault();
+                loadComparison(new URL(link.href, window.location.href));
+            });
+
+            document.addEventListener('submit', (event) => {
+                const form = event.target.closest('#comparison-form');
+                if (!form) return;
+
+                event.preventDefault();
+                const url = new URL(form.action || window.location.href, window.location.href);
+                url.search = new URLSearchParams(new FormData(form)).toString();
+                loadComparison(url);
+            });
+        })();
+
         $(document).ready(function() {
             var salesData = {!! json_encode($last7Days ?? []) !!};
             if(salesData.length === 0) return;

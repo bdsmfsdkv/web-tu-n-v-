@@ -26,7 +26,7 @@
                         <h2 style="margin: 0 0 12px 0; font-size: 1.4rem; color: var(--text-color); font-weight: 700;">Mua Tài Khoản Ngẫu Nhiên</h2>
                         <p style="color: var(--text-muted); margin: 0 0 16px 0; font-size: 0.95rem;">Bạn sẽ nhận được 1 tài khoản ngẫu nhiên từ danh mục <strong>{{ $category->name }}</strong></p>
                         
-                        <div style="display: flex; gap: 24px; margin-bottom: 24px; align-items: center; font-size: 0.95rem;">
+                        <div style="display: flex; gap: 24px; margin-bottom: 24px; align-items: center; font-size: 0.95rem; flex-wrap: wrap;">
                             <div>
                                 <span style="color: var(--text-muted);">Còn lại: </span>
                                 <span style="color: #10b981; font-weight: 600;">{{ number_format($availableCount) }} acc</span>
@@ -34,6 +34,10 @@
                             <div>
                                 <span style="color: var(--text-muted);">Giá: </span>
                                 <span style="color: #ef4444; font-weight: 700; font-size: 1.1rem;">{{ number_format($price) }}đ</span>
+                            </div>
+                            <div>
+                                <span style="color: var(--text-muted);">Tỉ lệ trúng: </span>
+                                <span style="color: #10b981; font-weight: 700;">100% NHẬN NICK</span>
                             </div>
                         </div>
 
