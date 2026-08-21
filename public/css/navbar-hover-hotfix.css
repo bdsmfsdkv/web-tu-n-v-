@@ -1,20 +1,22 @@
 /*
  * FINAL navbar interaction layer — 2026-08-21
- *
- * This file intentionally uses #navLinks in the important selectors so it
- * wins over the older inline navbar rules that are still rendered later in
- * footer.blade.php.  The important rule here is simple: a visible submenu and
- * every real link inside it must be an actual pointer target.
+ * Authoritative overrides for Danh Muc / Nap Tien.
  */
 
-/* JS uses the native hidden attribute for the closed click state. */
-html body nav.navbar #navLinks .mega-menu[hidden],
-html body nav.navbar #navLinks .modern-dropdown-menu[hidden] {
-    display: none !important;
+/* Reset button-native gray background so dropdown triggers look like every
+   other navbar item. */
+html body nav.navbar #navLinks .nav-menu-trigger {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: inherit;
+    cursor: pointer !important;
+    font: inherit !important;
 }
 
-/* Submenu links are real click/tap targets.  This also fixes browsers where a
-   legacy pointer-events:none on a dropdown owner leaked into descendants. */
+/* Real submenu links must always remain clickable. */
 html body nav.navbar #navLinks .mega-menu a,
 html body nav.navbar #navLinks .modern-dropdown-menu a,
 html body nav.navbar #navLinks .mega-menu .mega-menu-item,
@@ -24,6 +26,13 @@ html body nav.navbar #navLinks .modern-dropdown-menu a * {
     pointer-events: auto !important;
     cursor: pointer !important;
     touch-action: manipulation;
+}
+
+/* Native hidden state is authoritative unless a desktop hover/click rule below
+   explicitly opens the same panel. */
+html body nav.navbar #navLinks .mega-menu[hidden],
+html body nav.navbar #navLinks .modern-dropdown-menu[hidden] {
+    display: none !important;
 }
 
 @media (min-width: 1200px) {
@@ -37,8 +46,7 @@ html body nav.navbar #navLinks .modern-dropdown-menu a * {
 
 /* =========================================================
    TABLET / MOBILE
-   One click opens, the next click closes.  No :focus-within is used because
-   touch browsers keep focus on the button and used to trap the submenu open.
+   Click once opens; click again closes. No focus-within state.
    ========================================================= */
 @media (max-width: 1199px) {
     html body nav.navbar #navLinks .nav-dropdown > .modern-dropdown-menu,
@@ -78,13 +86,9 @@ html body nav.navbar #navLinks .modern-dropdown-menu a * {
         opacity: 1 !important;
         visibility: visible !important;
         pointer-events: auto !important;
-        transform: none !important;
         transition-delay: 0s !important;
-        position: relative !important;
-        z-index: 2 !important;
     }
 
-    /* Explicit close always wins, even while the trigger still owns focus. */
     html body nav.navbar #navLinks .nav-dropdown.menu-closed > .modern-dropdown-menu,
     html body nav.navbar #navLinks .nav-mega-dropdown.menu-closed > .mega-menu {
         display: block !important;
@@ -113,37 +117,15 @@ html body nav.navbar #navLinks .modern-dropdown-menu a * {
         transform: rotate(180deg) !important;
     }
 
-    html body nav.navbar #navLinks .nav-dropdown.menu-closed > .nav-menu-trigger .nav-arrow,
-    html body nav.navbar #navLinks .nav-mega-dropdown.menu-closed > .nav-menu-trigger .nav-arrow {
-        transform: rotate(0deg) !important;
-    }
-
-    /* Keep the submenu clean: no gray slab/card around child groups. */
     html body nav.navbar #navLinks .mega-menu-container,
     html body nav.navbar #navLinks .mega-menu-grid,
     html body nav.navbar #navLinks .mega-menu-column,
     html body nav.navbar #navLinks .mega-menu-list,
-    html body nav.navbar #navLinks .deposit-menu-grid {
-        background: transparent !important;
-        box-shadow: none !important;
-    }
-
-    html body nav.navbar #navLinks .mega-menu-column {
-        border-color: transparent !important;
-    }
-
+    html body nav.navbar #navLinks .deposit-menu-grid,
     html body nav.navbar #navLinks .mega-menu-item,
     html body nav.navbar #navLinks .dropdown-link-card {
-        position: relative !important;
-        z-index: 3 !important;
         background: transparent !important;
         box-shadow: none !important;
-        pointer-events: auto !important;
-    }
-
-    html body nav.navbar #navLinks .mega-menu-item:active,
-    html body nav.navbar #navLinks .dropdown-link-card:active {
-        background: #fff7f7 !important;
     }
 
     [data-theme="dark"] body nav.navbar #navLinks .nav-dropdown > .modern-dropdown-menu,
@@ -151,28 +133,19 @@ html body nav.navbar #navLinks .modern-dropdown-menu a * {
         background: #171717 !important;
         border-color: #303030 !important;
     }
-
-    [data-theme="dark"] body nav.navbar #navLinks .mega-menu-container,
-    [data-theme="dark"] body nav.navbar #navLinks .mega-menu-grid,
-    [data-theme="dark"] body nav.navbar #navLinks .mega-menu-column,
-    [data-theme="dark"] body nav.navbar #navLinks .mega-menu-list,
-    [data-theme="dark"] body nav.navbar #navLinks .deposit-menu-grid,
-    [data-theme="dark"] body nav.navbar #navLinks .mega-menu-item,
-    [data-theme="dark"] body nav.navbar #navLinks .dropdown-link-card {
-        background: transparent !important;
-    }
 }
 
 /* =========================================================
-   DESKTOP FINE POINTER
-   Keep the hover target narrow without disabling pointer events on the parent
-   LI.  Disabling the parent caused visible descendants to become unreliable
-   click targets in some browser/layout combinations.
+   DESKTOP
+   The entire 64px owner LI is a continuous hover corridor. This deliberately
+   avoids the old 13px dead zone between the 38px button and the submenu.
+   Moving the mouse straight down can no longer close the menu halfway.
    ========================================================= */
 @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
     html body nav.navbar #navLinks > li.nav-mega-dropdown,
     html body nav.navbar #navLinks > li.nav-dropdown {
         display: flex !important;
+        position: relative;
         height: 64px !important;
         min-height: 64px !important;
         margin: 0 !important;
@@ -186,11 +159,15 @@ html body nav.navbar #navLinks .modern-dropdown-menu a * {
         position: relative !important;
         height: 38px !important;
         min-height: 38px !important;
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
         pointer-events: auto !important;
         z-index: 4 !important;
     }
 
-    /* Remove legacy invisible hit boxes around triggers. */
+    /* Remove all old pseudo hover bridges. They are unnecessary now because
+       the full-height LI itself is the safe hover corridor. */
     html body nav.navbar #navLinks > li.nav-mega-dropdown::before,
     html body nav.navbar #navLinks > li.nav-mega-dropdown::after,
     html body nav.navbar #navLinks > li.nav-dropdown::before,
@@ -204,77 +181,38 @@ html body nav.navbar #navLinks .modern-dropdown-menu a * {
         pointer-events: none !important;
     }
 
-    /* ---------------- Normal category mega menu ---------------- */
+    /* Category mega menu. */
     html body nav.navbar #navLinks > li.nav-mega-dropdown:not(:has(> .deposit-mega-menu)) > .mega-menu {
         display: block !important;
         top: 64px !important;
         opacity: 0 !important;
         visibility: hidden !important;
         pointer-events: none !important;
-        transform: translate3d(0,-5px,0) !important;
+        transform: translate3d(0,-4px,0) !important;
+        transition: opacity .14s ease, transform .16s ease, visibility 0s linear .16s !important;
     }
 
-    /* Empty LI space must not open the menu even though the LI itself is now
-       pointer-capable.  Only the real trigger, the open panel, or click state. */
-    html body nav.navbar #navLinks > li.nav-mega-dropdown:not(:has(> .deposit-mega-menu)):not(:has(> .nav-menu-trigger:hover)):not(:has(> .mega-menu:hover)):not(.menu-open) > .mega-menu {
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-        transform: translate3d(0,-5px,0) !important;
-    }
-
-    html body nav.navbar #navLinks > li.nav-mega-dropdown:not(:has(> .deposit-mega-menu)):has(> .nav-menu-trigger:hover) > .mega-menu,
-    html body nav.navbar #navLinks > li.nav-mega-dropdown:not(:has(> .deposit-mega-menu)):has(> .mega-menu:hover) > .mega-menu,
-    html body nav.navbar #navLinks > li.nav-mega-dropdown:not(:has(> .deposit-mega-menu)).menu-open > .mega-menu {
+    html body nav.navbar #navLinks > li.nav-mega-dropdown:not(:has(> .deposit-mega-menu)):hover > .mega-menu,
+    html body nav.navbar #navLinks > li.nav-mega-dropdown:not(:has(> .deposit-mega-menu)).menu-open > .mega-menu,
+    html body nav.navbar #navLinks > li.nav-mega-dropdown:not(:has(> .deposit-mega-menu)):hover > .mega-menu[hidden],
+    html body nav.navbar #navLinks > li.nav-mega-dropdown:not(:has(> .deposit-mega-menu)).menu-open > .mega-menu[hidden] {
         display: block !important;
         opacity: 1 !important;
         visibility: visible !important;
         pointer-events: auto !important;
         transform: translate3d(0,0,0) !important;
+        transition-delay: 0s !important;
         z-index: 1100 !important;
     }
 
-    html body nav.navbar #navLinks > li.nav-mega-dropdown:not(:has(> .deposit-mega-menu)):has(> .nav-menu-trigger:hover) > .mega-menu::before,
-    html body nav.navbar #navLinks > li.nav-mega-dropdown:not(:has(> .deposit-mega-menu)):has(> .mega-menu:hover) > .mega-menu::before,
-    html body nav.navbar #navLinks > li.nav-mega-dropdown:not(:has(> .deposit-mega-menu)).menu-open > .mega-menu::before {
-        content: "" !important;
-        display: block !important;
-        position: absolute !important;
-        top: -13px !important;
-        right: 0 !important;
-        left: 0 !important;
-        height: 13px !important;
-        background: transparent !important;
-        pointer-events: auto !important;
-    }
-
-    /* A visible panel and every child element must remain clickable. */
-    html body nav.navbar #navLinks > li.nav-mega-dropdown > .mega-menu,
-    html body nav.navbar #navLinks > li.nav-mega-dropdown > .mega-menu .mega-menu-container,
-    html body nav.navbar #navLinks > li.nav-mega-dropdown > .mega-menu .mega-menu-grid,
-    html body nav.navbar #navLinks > li.nav-mega-dropdown > .mega-menu .mega-menu-column,
-    html body nav.navbar #navLinks > li.nav-mega-dropdown > .mega-menu .mega-menu-list,
-    html body nav.navbar #navLinks > li.nav-mega-dropdown > .mega-menu .mega-menu-item,
-    html body nav.navbar #navLinks > li.nav-mega-dropdown > .mega-menu .mega-menu-item * {
-        pointer-events: auto !important;
-    }
-
-    html body nav.navbar #navLinks > li.nav-mega-dropdown > .mega-menu .mega-menu-item {
-        position: relative !important;
-        z-index: 2 !important;
-    }
-
-    /* ---------------- Deposit compact menu ---------------- */
-    html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu) {
-        position: relative !important;
-    }
-
+    /* Deposit compact dropdown. Starts exactly at the bottom of the full LI,
+       so the hover corridor and the panel touch with zero dead space. */
     html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu) > .deposit-mega-menu {
         display: block !important;
         position: absolute !important;
-        top: calc(100% - 13px) !important;
-        right: auto !important;
+        top: 100% !important;
         left: 0 !important;
+        right: auto !important;
         width: max-content !important;
         min-width: 0 !important;
         margin: 0 !important;
@@ -287,30 +225,20 @@ html body nav.navbar #navLinks .modern-dropdown-menu a * {
         visibility: hidden !important;
         pointer-events: none !important;
         transform: translate3d(0,-4px,0) !important;
+        transition: opacity .14s ease, transform .16s ease, visibility 0s linear .16s !important;
         z-index: 1100 !important;
     }
 
-    html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu):not(:has(> .nav-menu-trigger:hover)):not(:has(> .deposit-mega-menu:hover)):not(.menu-open) > .deposit-mega-menu {
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-        transform: translate3d(0,-4px,0) !important;
-    }
-
-    html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu):has(> .nav-menu-trigger:hover) > .deposit-mega-menu,
-    html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu):has(> .deposit-mega-menu:hover) > .deposit-mega-menu,
-    html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu).menu-open > .deposit-mega-menu {
+    html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu):hover > .deposit-mega-menu,
+    html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu).menu-open > .deposit-mega-menu,
+    html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu):hover > .deposit-mega-menu[hidden],
+    html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu).menu-open > .deposit-mega-menu[hidden] {
+        display: block !important;
         opacity: 1 !important;
         visibility: visible !important;
         pointer-events: auto !important;
         transform: translate3d(0,0,0) !important;
-    }
-
-    html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu) > .deposit-mega-menu::before,
-    html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu) > .deposit-mega-menu::after {
-        content: none !important;
-        display: none !important;
-        pointer-events: none !important;
+        transition-delay: 0s !important;
     }
 
     html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu) > .deposit-mega-menu,
@@ -320,14 +248,34 @@ html body nav.navbar #navLinks .modern-dropdown-menu a * {
         background: #fff !important;
     }
 
-    html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu) > .deposit-mega-menu .mega-menu-item:hover {
-        background: #fff7f7 !important;
+    /* Active hover styling matches the other nav links instead of a permanent
+       gray pill. */
+    html body nav.navbar #navLinks > li.nav-mega-dropdown:hover > .nav-menu-trigger,
+    html body nav.navbar #navLinks > li.nav-dropdown:hover > .nav-menu-trigger,
+    html body nav.navbar #navLinks > li.nav-mega-dropdown.menu-open > .nav-menu-trigger,
+    html body nav.navbar #navLinks > li.nav-dropdown.menu-open > .nav-menu-trigger {
+        color: #dc2626 !important;
+        background: rgba(220,38,38,.06) !important;
     }
 
-    /* Arrow follows real open state, not empty LI space. */
-    html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .nav-menu-trigger:hover) > .nav-menu-trigger .nav-arrow,
-    html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .mega-menu:hover) > .nav-menu-trigger .nav-arrow,
-    html body nav.navbar #navLinks > li.nav-mega-dropdown.menu-open > .nav-menu-trigger .nav-arrow {
+    html body nav.navbar #navLinks > li.nav-mega-dropdown:hover > .nav-menu-trigger .nav-arrow,
+    html body nav.navbar #navLinks > li.nav-dropdown:hover > .nav-menu-trigger .nav-arrow,
+    html body nav.navbar #navLinks > li.nav-mega-dropdown.menu-open > .nav-menu-trigger .nav-arrow,
+    html body nav.navbar #navLinks > li.nav-dropdown.menu-open > .nav-menu-trigger .nav-arrow {
         transform: rotate(180deg) !important;
+    }
+
+    html body nav.navbar #navLinks > li.nav-mega-dropdown > .mega-menu,
+    html body nav.navbar #navLinks > li.nav-mega-dropdown > .mega-menu *,
+    html body nav.navbar #navLinks > li.nav-dropdown > .modern-dropdown-menu,
+    html body nav.navbar #navLinks > li.nav-dropdown > .modern-dropdown-menu * {
+        pointer-events: auto !important;
+    }
+
+    [data-theme="dark"] body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu) > .deposit-mega-menu,
+    [data-theme="dark"] body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu) > .deposit-mega-menu .mega-menu-container,
+    [data-theme="dark"] body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu) > .deposit-mega-menu .deposit-menu-grid,
+    [data-theme="dark"] body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .deposit-mega-menu) > .deposit-mega-menu .mega-menu-item {
+        background: #171717 !important;
     }
 }
