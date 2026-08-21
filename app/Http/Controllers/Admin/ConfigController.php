@@ -136,13 +136,13 @@ class ConfigController extends Controller
             'email' => 'nullable|email|max:255',
             'min_withdraw_gold' => 'nullable|integer|min:0',
             'max_withdraw_gold' => 'nullable|integer|gte:min_withdraw_gold',
-            'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120',
-            'site_logo_footer' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120',
-            'site_view_all_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120',
-            'site_share_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:20480',
+            'site_logo_footer' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:20480',
+            'site_view_all_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:20480',
+            'site_share_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
             'site_banner' => 'nullable|array',
-            'site_banner.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            'site_favicon' => 'nullable|mimes:ico,png,jpg,jpeg,webp,svg|max:2048',
+            'site_banner.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:20480',
+            'site_favicon' => 'nullable|mimes:ico,png,jpg,jpeg,gif,webp,svg|max:5120',
         ]);
 
         try {
