@@ -28,7 +28,10 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(RouteServiceProvider::HOME);
+        $username = Auth::user()?->username ?: 'bạn';
+
+        return redirect()->intended(RouteServiceProvider::HOME)
+            ->with('success', 'Đăng nhập thành công. Chào mừng ' . $username . '!');
     }
 
     /**
@@ -42,6 +45,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/')->with('success', 'Bạn đã đăng xuất thành công.');
     }
 }
