@@ -10,9 +10,27 @@
             <p class="auth-subtitle">Chào mừng bạn quay trở lại!</p>
         </div>
 
+        @if (session('success'))
+            <div style="background:#ecfdf5;color:#15803d;padding:12px;border-radius:8px;font-size:0.85rem;margin-bottom:16px;border:1px solid #bbf7d0;display:flex;gap:8px;align-items:flex-start;">
+                <i class="fas fa-check-circle" style="margin-top:2px;"></i>
+                <span>{{ session('success') }}</span>
+            </div>
+        @endif
+
         @if (session('error'))
-            <div style="background:#fee2e2;color:#dc2626;padding:12px;border-radius:8px;font-size:0.85rem;margin-bottom:16px;border:1px solid #fecaca;">
-                <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
+            <div style="background:#fee2e2;color:#dc2626;padding:12px;border-radius:8px;font-size:0.85rem;margin-bottom:16px;border:1px solid #fecaca;display:flex;gap:8px;align-items:flex-start;">
+                <i class="fas fa-exclamation-circle" style="margin-top:2px;"></i>
+                <span>{{ session('error') }}</span>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div style="background:#fff7ed;color:#c2410c;padding:12px;border-radius:8px;font-size:0.85rem;margin-bottom:16px;border:1px solid #fed7aa;display:flex;gap:8px;align-items:flex-start;">
+                <i class="fas fa-triangle-exclamation" style="margin-top:2px;"></i>
+                <div>
+                    <strong>Đăng nhập chưa thành công.</strong>
+                    <div style="margin-top:3px;">{{ $errors->first() }}</div>
+                </div>
             </div>
         @endif
 
@@ -28,8 +46,7 @@
                        value="{{ old('username') }}"
                        required
                        autofocus
-                       autocomplete="email"
-                       inputmode="email"
+                       autocomplete="username"
                        autocapitalize="none"
                        autocorrect="off"
                        spellcheck="false"
@@ -41,15 +58,19 @@
 
             <div class="form-group">
                 <label for="password" class="form-label">Mật khẩu</label>
-                <input id="password"
-                       type="password"
-                       class="form-input"
-                       name="password"
-                       required
-                       autocomplete="off"
-                       data-lpignore="true"
-                       data-form-type="other"
-                       placeholder="••••••••">
+                <div style="position:relative;">
+                    <input id="password"
+                           type="password"
+                           class="form-input"
+                           name="password"
+                           required
+                           autocomplete="current-password"
+                           placeholder="••••••••"
+                           style="padding-right:46px;">
+                    <button type="button" id="toggleLoginPassword" aria-label="Hiện mật khẩu" title="Hiện/ẩn mật khẩu" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#64748b;cursor:pointer;padding:6px;display:flex;align-items:center;justify-content:center;">
+                        <span class="iconify" data-icon="ant-design:eye-outlined"></span>
+                    </button>
+                </div>
                 @error('password')
                     <span class="form-error">{{ $message }}</span>
                 @enderror
@@ -91,4 +112,19 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var input = document.getElementById('password');
+    var button = document.getElementById('toggleLoginPassword');
+    if (!input || !button) return;
+    button.addEventListener('click', function () {
+        var show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        button.setAttribute('aria-label', show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+        var icon = button.querySelector('.iconify');
+        if (icon) icon.setAttribute('data-icon', show ? 'ant-design:eye-invisible-outlined' : 'ant-design:eye-outlined');
+    });
+});
+</script>
 @endsection
