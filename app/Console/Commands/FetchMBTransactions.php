@@ -183,75 +183,77 @@ class FetchMBTransactions extends Command
                     try {
                         DB::beginTransaction();
 
-                        $bankDeposit = BankDeposit::updateOrCreate(
-                            ['transaction_id' => $reference_number],
-                            [
-                                'user_id' => $id,
-                                'account_number' => $bankAccount->account_number,
-                                'amount' => $amount_in,
-                                'content' => $content,
-                                'bank' => $bankAccount->bank_name,
-                                'status' => 'completed',
-                            ]
-                        );
-
-                        if ($bankDeposit->wasRecentlyCreated) {
-                            $user = User::find($id);
-
-                            if (!$user) {
-                                $this->error("Không tìm thấy người dùng với ID: $id");
-                                DB::rollBack();
-                                continue;
-                            }
-
-                            $balanceBefore = $user->balance;
-                            $user->balance += $amount_in;
-                            $user->total_deposited += $amount_in;
-                            $user->save();
-
-                            MoneyTransaction::create([
-                                'user_id' => $id,
-                                'type' => 'deposit',
-                                'amount' => $amount_in,
-                                'balance_before' => $balanceBefore,
-                                'balance_after' => $user->balance,
-                                'description' => "Nạp tiền qua {$bankAccount->bank_name} - Mã giao dịch: {$reference_number}",
-                                'reference_id' => $reference_number
-                            ]);
-
-                            // Affiliate Commission Logic (10%)
-                            if ($user->referrer_id) {
-                                $referrer = User::find($user->referrer_id);
-                                if ($referrer) {
-                                    $commission = (int) ($amount_in * 0.10);
-                                    $refPrevBalance = $referrer->balance;
-                                    $referrer->balance += $commission;
-                                    $referrer->total_commission += $commission;
-                                    $referrer->save();
-
-                                    \App\Models\AffiliateHistory::create([
-                                        'referrer_id' => $referrer->id,
-                                        'referred_id' => $user->id,
-                                        'commission_amount' => $commission,
-                                        'type' => 'deposit',
-                                        'description' => 'Hoa hồng nạp thẻ từ ' . $user->username
-                                    ]);
-
-                                    MoneyTransaction::create([
-                                        'user_id' => $referrer->id,
-                                        'type' => 'affiliate',
-                                        'amount' => $commission,
-                                        'balance_before' => $refPrevBalance,
-                                        'balance_after' => $referrer->balance,
-                                        'description' => 'Hoa hồng 10% từ người được giới thiệu (' . $user->username . ')',
-                                    ]);
-                                }
-                            }
-
-                            $this->info("► Cộng thành công " . number_format($amount_in) . "đ cho người dùng #$id");
-                            $processedCount++;
-                            $totalProcessed++;
+                        // Kiểm tra lại trong transaction với lockForUpdate
+                        if (BankDeposit::where('transaction_id', $reference_number)->lockForUpdate()->exists()) {
+                            DB::rollBack();
+                            $skippedCount++;
+                            continue;
                         }
+
+                        $user = User::where('id', $id)->lockForUpdate()->first();
+                        if (!$user) {
+                            DB::rollBack();
+                            $this->line("Bỏ qua do không tìm thấy user ID=$id (Nội dung: $content)");
+                            $skippedCount++;
+                            continue;
+                        }
+
+                        $bankDeposit = BankDeposit::create([
+                            'transaction_id' => $reference_number,
+                            'user_id' => $id,
+                            'account_number' => $bankAccount->account_number,
+                            'amount' => $amount_in,
+                            'content' => $content,
+                            'bank' => $bankAccount->bank_name,
+                        ]);
+
+                        $balanceBefore = $user->balance;
+                        $user->balance += $amount_in;
+                        $user->total_deposited += $amount_in;
+                        $user->save();
+
+                        MoneyTransaction::create([
+                            'user_id' => $id,
+                            'type' => 'deposit',
+                            'amount' => $amount_in,
+                            'balance_before' => $balanceBefore,
+                            'balance_after' => $user->balance,
+                            'description' => "Nạp tiền qua {$bankAccount->bank_name} - Mã giao dịch: {$reference_number}",
+                            'reference_id' => $reference_number
+                        ]);
+
+                        // Affiliate Commission Logic (10%)
+                        if ($user->referrer_id) {
+                            $referrer = User::where('id', $user->referrer_id)->lockForUpdate()->first();
+                            if ($referrer) {
+                                $commission = (int) ($amount_in * 0.10);
+                                $refPrevBalance = $referrer->balance;
+                                $referrer->balance += $commission;
+                                $referrer->total_commission += $commission;
+                                $referrer->save();
+
+                                \App\Models\AffiliateHistory::create([
+                                    'referrer_id' => $referrer->id,
+                                    'referred_id' => $user->id,
+                                    'commission_amount' => $commission,
+                                    'type' => 'deposit',
+                                    'description' => 'Hoa hồng nạp thẻ từ ' . $user->username
+                                ]);
+
+                                MoneyTransaction::create([
+                                    'user_id' => $referrer->id,
+                                    'type' => 'affiliate',
+                                    'amount' => $commission,
+                                    'balance_before' => $refPrevBalance,
+                                    'balance_after' => $referrer->balance,
+                                    'description' => 'Hoa hồng 10% từ người được giới thiệu (' . $user->username . ')',
+                                ]);
+                            }
+                        }
+
+                        $this->info("► Cộng thành công " . number_format($amount_in) . "đ cho người dùng #$id");
+                        $processedCount++;
+                        $totalProcessed++;
 
                         DB::commit();
 

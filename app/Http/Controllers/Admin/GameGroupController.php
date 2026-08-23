@@ -142,6 +142,10 @@ class GameGroupController extends Controller
         try {
             DB::beginTransaction();
 
+            if ($gameGroup->thumbnail) {
+                UploadHelper::deleteByUrl($gameGroup->thumbnail);
+            }
+
             $gameGroup->delete();
 
             DB::commit();

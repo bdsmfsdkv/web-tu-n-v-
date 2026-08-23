@@ -25,7 +25,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 require __DIR__ . '/auth.php';
-require __DIR__ . '/admin.php';
 // KHÔNG require routes/api.php ở đây: RouteServiceProvider đã load file đó với prefix
 // "api", require thêm lần nữa sẽ đăng ký trùng tên route và làm `route:cache` thất bại.
 // Hai URL không có prefix bên dưới được giữ lại nguyên trạng để không phá link callback

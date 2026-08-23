@@ -227,6 +227,35 @@ class ProfileController extends Controller
         ]);
     }
 
+    private function randomOrderTransactionTotals(int $userId, array $batchIds): array
+    {
+        $validBatchIds = array_filter($batchIds, static fn ($id) => !str_starts_with((string) $id, 'LEGACY-'));
+        if (empty($validBatchIds)) {
+            return [];
+        }
+
+        $transactions = MoneyTransaction::where('user_id', $userId)
+            ->where('type', 'purchase')
+            ->where(function ($q) use ($validBatchIds) {
+                foreach ($validBatchIds as $batchId) {
+                    $q->orWhere('description', 'like', '%(Đơn: ' . $batchId . ')');
+                }
+            })
+            ->get(['amount', 'description']);
+
+        $totals = [];
+        foreach ($transactions as $tx) {
+            foreach ($validBatchIds as $batchId) {
+                if (str_contains($tx->description, '(Đơn: ' . $batchId . ')')) {
+                    $totals[$batchId] = ($totals[$batchId] ?? 0) + abs((float) $tx->amount);
+                    break;
+                }
+            }
+        }
+
+        return $totals;
+    }
+
     private function randomOrderTransactionTotal(int $userId, string $batchId): ?float
     {
         if (str_starts_with($batchId, 'LEGACY-')) {
@@ -285,14 +314,23 @@ class ProfileController extends Controller
     {
         $userId = Auth::id();
         $since = $request->input('since');
+        $afterId = $request->input('after_id');
         
         $query = BankDeposit::where('user_id', $userId)
             ->orderBy('created_at', 'desc');
 
-        if ($since) {
+        if ($afterId && is_string($afterId) && $afterId !== '') {
+            $query->where('transaction_id', '!=', $afterId);
+        } elseif ($since) {
             try {
-                $query->where('created_at', '>=', Carbon::parse($since));
+                $query->where('created_at', '>', Carbon::parse($since));
             } catch (\Exception $e) {}
+        } else {
+            // Nếu không truyền mốc thời gian hay after_id, không trả về lịch sử cũ để tránh lặp popup
+            return response()->json([
+                'success' => true,
+                'found' => false,
+            ]);
         }
 
         $latestDeposit = $query->first();
@@ -450,14 +488,14 @@ class ProfileController extends Controller
             'user_note' => 'nullable|string|max:255',
         ]);
 
-        $user = auth()->user();
-
-        if ($user->gold < $request->amount) {
-            return back()->with('error', 'Số vàng không đủ để thực hiện giao dịch.')->withInput();
-        }
-
         try {
             DB::beginTransaction();
+
+            $user = User::whereKey(auth()->id())->lockForUpdate()->first();
+            if (!$user || $user->gold < $request->amount) {
+                DB::rollBack();
+                return back()->with('error', 'Số vàng không đủ để thực hiện giao dịch.')->withInput();
+            }
 
             // Tạo yêu cầu rút vàng
             WithdrawalHistory::create([
@@ -527,7 +565,7 @@ class ProfileController extends Controller
 
         try {
             DB::beginTransaction();
-            $user = auth()->user()->newQuery()->lockForUpdate()->findOrFail(auth()->id());
+            $user = User::whereKey(auth()->id())->lockForUpdate()->firstOrFail();
             $rewardItem = null;
 
             if ($request->filled('reward_item_id')) {
@@ -538,10 +576,12 @@ class ProfileController extends Controller
 
                 $wonAmount = LuckyWheelHistory::where('user_id', $user->id)
                     ->where('reward_item_id', $rewardItem->id)
+                    ->lockForUpdate()
                     ->sum('reward_amount');
                 $withdrawnAmount = WithdrawalHistory::where('user_id', $user->id)
                     ->where('reward_item_id', $rewardItem->id)
                     ->whereIn('status', ['processing', 'success'])
+                    ->lockForUpdate()
                     ->sum('amount');
                 $availableAmount = max(0, $wonAmount - $withdrawnAmount);
 

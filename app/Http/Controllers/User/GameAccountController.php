@@ -56,22 +56,76 @@ class GameAccountController extends Controller
                 $account->price = $flashSalePrice;
             }
 
-            $user = Auth::user();
+            $user = \App\Models\User::whereKey(Auth::id())->lockForUpdate()->firstOrFail();
             $finalPrice = $account->price;
             $discountAmount = 0;
-            $discountCodeController = new DiscountCodeController();
+            $discountCode = null;
 
             // Check for discount code if provided
             if ($request->filled('discount_code')) {
                 $discountCode = DiscountCode::where('code', $request->discount_code)
                     ->where('is_active', '1')
+                    ->lockForUpdate()
                     ->first();
 
                 if ($discountCode) {
+                    // Check expire date
+                    if ($discountCode->expire_date && now() > $discountCode->expire_date) {
+                        DB::rollBack();
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Mã giảm giá đã hết hạn'
+                        ]);
+                    }
+
+                    // Check usage limit
+                    if ($discountCode->usage_limit && $discountCode->usage_count >= $discountCode->usage_limit) {
+                        DB::rollBack();
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Mã giảm giá đã đạt giới hạn sử dụng'
+                        ]);
+                    }
+
+                    // Check per user limit
+                    if ($discountCode->per_user_limit) {
+                        $userUsageCount = DB::table('discount_code_usages')
+                            ->where('discount_code_id', $discountCode->id)
+                            ->where('user_id', $user->id)
+                            ->count();
+                        if ($userUsageCount >= $discountCode->per_user_limit) {
+                            DB::rollBack();
+                            return response()->json([
+                                'success' => false,
+                                'message' => 'Bạn đã sử dụng mã giảm giá này đủ số lần cho phép'
+                            ]);
+                        }
+                    }
+
+                    // Check applicable_to
+                    if ($discountCode->applicable_to && $discountCode->applicable_to !== 'account') {
+                        DB::rollBack();
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Mã giảm giá không áp dụng cho loại giao dịch này'
+                        ]);
+                    }
+
+                    // Check item_ids
+                    if ($discountCode->item_ids) {
+                        $itemIds = is_array($discountCode->item_ids) ? $discountCode->item_ids : json_decode($discountCode->item_ids, true);
+                        if (!in_array($account->id, $itemIds ?? [])) {
+                            DB::rollBack();
+                            return response()->json([
+                                'success' => false,
+                                'message' => 'Mã giảm giá không áp dụng cho tài khoản này'
+                            ]);
+                        }
+                    }
+
                     // Calculate discount
                     if ($discountCode->discount_type === 'percentage') {
                         $discountAmount = ($account->price * $discountCode->discount_value) / 100;
-                        // Apply max discount if set
                         if ($discountCode->max_discount_value && $discountAmount > $discountCode->max_discount_value) {
                             $discountAmount = $discountCode->max_discount_value;
                         }
@@ -79,33 +133,29 @@ class GameAccountController extends Controller
                         $discountAmount = $discountCode->discount_value;
                     }
 
-                    // Calculate final price
                     $finalPrice = $account->price - $discountAmount;
                     if ($finalPrice < 0) {
                         $finalPrice = 0;
                     }
 
-                    // Apply discount code
-                    if ($discountCode) {
-                        // Update usage count directly in database
-                        DB::table('discount_codes')
-                            ->where('id', $discountCode->id)
-                            ->increment('usage_count');
+                    // Update usage count directly in database
+                    DB::table('discount_codes')
+                        ->where('id', $discountCode->id)
+                        ->increment('usage_count');
 
-                        // Record usage details
-                        DB::table('discount_code_usages')->insert([
-                            'discount_code_id' => $discountCode->id,
-                            'user_id' => $user->id,
-                            'context' => 'account',
-                            'item_id' => $account->id,
-                            'original_price' => $account->price,
-                            'discounted_price' => $finalPrice,
-                            'discount_amount' => $discountAmount,
-                            'used_at' => now(),
-                            'created_at' => now(),
-                            'updated_at' => now()
-                        ]);
-                    }
+                    // Record usage details
+                    DB::table('discount_code_usages')->insert([
+                        'discount_code_id' => $discountCode->id,
+                        'user_id' => $user->id,
+                        'context' => 'account',
+                        'item_id' => $account->id,
+                        'original_price' => $account->price,
+                        'discounted_price' => $finalPrice,
+                        'discount_amount' => $discountAmount,
+                        'used_at' => now(),
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
                 }
             }
 

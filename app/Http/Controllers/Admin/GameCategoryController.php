@@ -183,6 +183,18 @@ class GameCategoryController extends Controller
         try {
             DB::beginTransaction();
 
+            // Kiểm tra ràng buộc kinh doanh an toàn: nếu có tài khoản game thuộc danh mục thì từ chối xóa vật lý
+            if ($category->accounts()->count() > 0) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không thể xóa danh mục này vì còn tài khoản game liên quan! Bạn có thể tắt trạng thái Hoạt động để ẩn danh mục.'
+                ], 422);
+            }
+
+            // Xóa các liên kết flash sale nếu có
+            \App\Models\FlashSaleItem::where('item_type', 'game')->where('item_id', $category->id)->delete();
+
             // Delete thumbnail if exists
             if ($category->thumbnail) {
                 UploadHelper::deleteByUrl($category->thumbnail);

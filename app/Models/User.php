@@ -22,6 +22,8 @@ class User extends Authenticatable
         'facebook_id',
         'role',
         'balance',
+        'gold',
+        'gem',
         'total_deposited',
         'banned',
         'ip_address',

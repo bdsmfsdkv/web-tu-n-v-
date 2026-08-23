@@ -32,62 +32,75 @@ class ServiceOrderController extends Controller
                 ->withInput();
         }
 
-        // Lấy đúng package của dịch vụ đang đặt
-        $package = ServicePackage::where('id', $request->input('package_id'))
-            ->where('game_service_id', $request->input('service_id'))
-            ->where('active', 1)
-            ->firstOrFail();
-        $user = User::findOrFail(auth()->id());
-
-        // Xử lý mã giảm giá
-        $finalPrice = (int) $package->price;
-        $discountAmount = 0;
-
-        // Check for discount code if provided
-        if ($request->filled('giftcode')) {
-            $discountCode = DiscountCode::where('code', $request->giftcode)
-                ->where('is_active', '1')
-                ->first();
-
-            if ($discountCode &&
-                $discountCode->isValid() &&
-                (!$discountCode->applicable_to || $discountCode->applicable_to === 'service') &&
-                (!$discountCode->item_ids || in_array($package->id, $discountCode->item_ids)) &&
-                (!$discountCode->min_purchase_amount || $package->price >= $discountCode->min_purchase_amount) &&
-                (!$discountCode->per_user_limit || $discountCode->usages()->where('user_id', $user->id)->count() < $discountCode->per_user_limit)
-            ) {
-                // Calculate discount
-                if ($discountCode->discount_type === 'percentage') {
-                    $discountAmount = (int) round(($package->price * $discountCode->discount_value) / 100);
-                    // Apply max discount if set
-                    if ($discountCode->max_discount_value && $discountAmount > $discountCode->max_discount_value) {
-                        $discountAmount = (int) round($discountCode->max_discount_value);
-                    }
-                } else {
-                    $discountAmount = (int) round($discountCode->discount_value);
-                }
-
-                // Calculate final price
-                $finalPrice = $package->price - $discountAmount;
-                if ($finalPrice < 0) {
-                    $finalPrice = 0;
-                }
-            }
-        }
-
-        // Kiểm tra số dư
-        if ($user->balance < $finalPrice) {
-            return redirect()->back()
-                ->with('error', 'Số dư tài khoản không đủ để thanh toán dịch vụ này.')
-                ->withInput();
-        }
-
-        // Bắt đầu transaction
         DB::beginTransaction();
         try {
+            // Lấy đúng package của dịch vụ đang đặt và lock
+            $package = ServicePackage::where('id', $request->input('package_id'))
+                ->where('game_service_id', $request->input('service_id'))
+                ->where('active', 1)
+                ->firstOrFail();
+
+            $user = User::whereKey(auth()->id())->lockForUpdate()->firstOrFail();
+
+            // Xử lý mã giảm giá
+            $finalPrice = (int) $package->price;
+            $discountAmount = 0;
+            $discountCode = null;
+
+            // Check for discount code if provided
+            if ($request->filled('giftcode')) {
+                $discountCode = DiscountCode::where('code', $request->giftcode)
+                    ->where('is_active', '1')
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($discountCode) {
+                    $isApplicable = (!$discountCode->applicable_to || $discountCode->applicable_to === 'service');
+                    $isNotExpired = ($discountCode->expire_date === null || $discountCode->expire_date > now());
+                    $underLimit = ($discountCode->usage_limit === null || $discountCode->usage_count < $discountCode->usage_limit);
+                    
+                    $itemIds = $discountCode->item_ids ? (is_array($discountCode->item_ids) ? $discountCode->item_ids : json_decode($discountCode->item_ids, true)) : null;
+                    $itemAllowed = (!$itemIds || in_array($package->id, $itemIds));
+                    $minPurchaseMet = (!$discountCode->min_purchase_amount || $package->price >= $discountCode->min_purchase_amount);
+
+                    $userUsageCount = $discountCode->per_user_limit ? DB::table('discount_code_usages')
+                        ->where('discount_code_id', $discountCode->id)
+                        ->where('user_id', $user->id)
+                        ->count() : 0;
+                    $userAllowed = (!$discountCode->per_user_limit || $userUsageCount < $discountCode->per_user_limit);
+
+                    if ($isApplicable && $isNotExpired && $underLimit && $itemAllowed && $minPurchaseMet && $userAllowed) {
+                        // Calculate discount
+                        if ($discountCode->discount_type === 'percentage') {
+                            $discountAmount = (int) round(($package->price * $discountCode->discount_value) / 100);
+                            // Apply max discount if set
+                            if ($discountCode->max_discount_value && $discountAmount > $discountCode->max_discount_value) {
+                                $discountAmount = (int) round($discountCode->max_discount_value);
+                            }
+                        } else {
+                            $discountAmount = (int) round($discountCode->discount_value);
+                        }
+
+                        // Calculate final price
+                        $finalPrice = $package->price - $discountAmount;
+                        if ($finalPrice < 0) {
+                            $finalPrice = 0;
+                        }
+                    }
+                }
+            }
+
+            // Kiểm tra số dư bên trong transaction
+            if ($user->balance < $finalPrice) {
+                DB::rollBack();
+                return redirect()->back()
+                    ->with('error', 'Số dư tài khoản không đủ để thanh toán dịch vụ này.')
+                    ->withInput();
+            }
+
             // Tạo lịch sử dịch vụ
             $serviceHistory = ServiceHistory::create([
-                'user_id' => auth()->id(),
+                'user_id' => $user->id,
                 'game_service_id' => $request->input('service_id'),
                 'service_package_id' => $package->id,
                 'game_account' => $request->input('game_account'),
@@ -120,7 +133,7 @@ class ServiceOrderController extends Controller
             ]);
 
             // Apply discount code if provided
-            if ($discountAmount > 0) {
+            if ($discountAmount > 0 && $discountCode) {
                 // Update usage count directly in database
                 DB::table('discount_codes')
                     ->where('id', $discountCode->id)
@@ -146,8 +159,12 @@ class ServiceOrderController extends Controller
             return back()->with('success', 'Đặt dịch vụ thành công. Chúng tôi sẽ xử lý trong thời gian sớm nhất.');
         } catch (\Exception $e) {
             DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Lỗi khi đặt dịch vụ', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage()
+            ]);
             return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage())
+                ->with('error', 'Có lỗi xảy ra trong quá trình xử lý đơn hàng. Vui lòng thử lại sau.')
                 ->withInput();
         }
     }

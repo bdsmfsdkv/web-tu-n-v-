@@ -166,6 +166,7 @@
 </script>
 
     <!-- Purchase Modal -->
+    @if ($account->status === 'available')
     <div id="purchaseModal" class="modal-modern">
         <div class="modal__content">
             <div class="modal__header">
@@ -229,6 +230,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     <!-- Installment Modal -->
     <div id="installmentModal" class="modal-modern">
@@ -290,6 +292,12 @@
     </div>
     
     <script>
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
                 // Initialize the lightbox for account images
                 galleryLightbox = new SimpleLightbox('.detail__images-link', {
@@ -352,6 +360,7 @@
                             }
 
                             setTimeout(() => {
+                                closePurchaseModal();
                                 window.location.href = data.redirect_url;
                             }, 1500);
                         } else {

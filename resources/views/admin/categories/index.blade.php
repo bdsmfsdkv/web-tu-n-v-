@@ -198,11 +198,15 @@
                     },
                     error: function(xhr) {
                         $('#deleteModal').modal('hide');
+                        let errMsg = 'Có lỗi xảy ra khi xóa danh mục game';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errMsg = xhr.responseJSON.message;
+                        }
                         // Hiển thị thông báo lỗi
                         Swal.fire({
                             icon: 'error',
                             title: 'Lỗi!',
-                            text: 'Có lỗi xảy ra khi xóa danh mục game',
+                            text: errMsg,
                         });
                     }
                 });

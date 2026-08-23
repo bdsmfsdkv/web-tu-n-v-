@@ -63,24 +63,35 @@ class MoneyWithdrawalController extends Controller
         try {
             DB::beginTransaction();
 
-            $withdrawal->update([
+            $lockedWithdrawal = MoneyWithdrawalHistory::where('id', $withdrawal->id)->lockForUpdate()->first();
+            if (!$lockedWithdrawal || $lockedWithdrawal->status !== 'processing') {
+                DB::rollBack();
+                return back()->with('error', 'Yêu cầu rút tiền này không thể từ chối.');
+            }
+
+            $lockedWithdrawal->update([
                 'status' => 'error',
                 'admin_note' => $request->admin_note,
             ]);
 
             // Hoàn tiền cho người dùng
-            $user = User::find($withdrawal->user_id);
-            $user->update(['balance' => $user->getAttribute('balance') + $withdrawal->amount]);
+            $user = User::whereKey($lockedWithdrawal->user_id)->lockForUpdate()->first();
+            if ($user) {
+                $balanceBefore = (int) $user->balance;
+                $user->balance += $lockedWithdrawal->amount;
+                $user->save();
 
-            // Lưu lịch sử hoàn tiền người dùng
-            $moneyTransaction = new MoneyTransaction();
-            $moneyTransaction->user_id = $withdrawal->user_id;
-            $moneyTransaction->type = 'refund';
-            $moneyTransaction->amount = $withdrawal->amount;
-            $moneyTransaction->balance_before = $user->getAttribute('balance');
-            $moneyTransaction->balance_after = $user->getAttribute('balance') + $withdrawal->amount;
-            $moneyTransaction->description = $request->input('admin_note') ?? 'Hoàn tiền cho yêu cầu rút tiền bị từ chối ID: ' . $withdrawal->id;
-            $moneyTransaction->save();
+                // Lưu lịch sử hoàn tiền người dùng
+                $moneyTransaction = new MoneyTransaction();
+                $moneyTransaction->user_id = $lockedWithdrawal->user_id;
+                $moneyTransaction->type = 'refund';
+                $moneyTransaction->amount = $lockedWithdrawal->amount;
+                $moneyTransaction->balance_before = $balanceBefore;
+                $moneyTransaction->balance_after = $user->balance;
+                $moneyTransaction->description = $request->input('admin_note') ?? 'Hoàn tiền cho yêu cầu rút tiền bị từ chối ID: ' . $lockedWithdrawal->id;
+                $moneyTransaction->reference_id = 'WD-REFUND-' . $lockedWithdrawal->id;
+                $moneyTransaction->save();
+            }
 
             DB::commit();
 

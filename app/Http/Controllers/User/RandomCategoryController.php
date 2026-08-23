@@ -112,7 +112,7 @@ class RandomCategoryController extends Controller
                 ]);
             }
 
-            $user = Auth::user();
+            $user = \App\Models\User::whereKey(Auth::id())->lockForUpdate()->firstOrFail();
             $totalSpent = $user->total_spent ?? 0;
 
             // Lock and get available accounts filtered ngầm bởi min_spent <= user.total_spent
@@ -144,10 +144,11 @@ class RandomCategoryController extends Controller
             $discountAmount = 0;
             $discountCode = null;
 
-            // Check discount code if provided
+            // Check discount code if provided (tính theo tổng giá trị giỏ hàng hoặc min_purchase_amount)
             if ($request->filled('discount_code')) {
                 $discountCode = DiscountCode::where('code', $request->discount_code)
                     ->where('is_active', '1')
+                    ->lockForUpdate()
                     ->first();
 
                 if (!$discountCode) {
@@ -170,8 +171,24 @@ class RandomCategoryController extends Controller
                     return response()->json(['success' => false, 'message' => 'Mã giảm giá không áp dụng cho danh mục này']);
                 }
 
+                if ($discountCode->item_ids) {
+                    $itemIds = is_array($discountCode->item_ids) ? $discountCode->item_ids : json_decode($discountCode->item_ids, true);
+                    if (!in_array($category->id, $itemIds ?? [])) {
+                        DB::rollBack();
+                        return response()->json(['success' => false, 'message' => 'Mã giảm giá không áp dụng cho danh mục random này']);
+                    }
+                }
+
+                if ($discountCode->min_purchase_amount > 0 && $totalPrice < $discountCode->min_purchase_amount) {
+                    DB::rollBack();
+                    return response()->json(['success' => false, 'message' => 'Giá trị đơn hàng không đủ để áp dụng mã giảm giá này']);
+                }
+
                 if ($discountCode->per_user_limit) {
-                    $userUsageCount = $discountCode->usages()->where('user_id', $user->id)->count();
+                    $userUsageCount = DB::table('discount_code_usages')
+                        ->where('discount_code_id', $discountCode->id)
+                        ->where('user_id', $user->id)
+                        ->count();
                     if ($userUsageCount >= $discountCode->per_user_limit) {
                         DB::rollBack();
                         return response()->json(['success' => false, 'message' => 'Bạn đã sử dụng mã giảm giá này đủ số lần cho phép']);
@@ -256,10 +273,15 @@ class RandomCategoryController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Lỗi khi mua danh mục random', [
+                'user_id' => Auth::id(),
+                'slug' => $slug,
+                'error' => $e->getMessage()
+            ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
-            ]);
+                'message' => 'Có lỗi xảy ra trong quá trình xử lý đơn hàng. Vui lòng thử lại sau.'
+            ], 500);
         }
     }
 }

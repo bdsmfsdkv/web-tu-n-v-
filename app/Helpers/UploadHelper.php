@@ -47,12 +47,21 @@ class UploadHelper
             // Đảm bảo thư mục tồn tại với quyền 0755
             self::ensureDirectoryExists('public/' . $directory);
 
+            // Kiểm tra PHP fileinfo extension cho an toàn môi trường
+            if (!class_exists('finfo') && !extension_loaded('fileinfo')) {
+                Log::warning('PHP extension "fileinfo" (finfo) is not enabled in this runtime environment.');
+            }
+
             // Tạo tên file nếu không được chỉ định
             if (!$filename) {
+                $ext = $file->getClientOriginalExtension();
+                if (empty($ext)) {
+                    $ext = $file->guessExtension() ?: 'bin';
+                }
                 if ($preserveFilename) {
                     $filename = $file->getClientOriginalName();
                 } else {
-                    $filename = time() . '_' . md5($file->getClientOriginalName()) . '.' . $file->getClientOriginalExtension();
+                    $filename = time() . '_' . \Illuminate\Support\Str::random(10) . '.' . $ext;
                 }
             }
 
@@ -60,7 +69,11 @@ class UploadHelper
             $path = $file->storeAs('public/' . $directory, $filename);
 
             return Storage::url($path);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            if (str_contains($e->getMessage(), 'finfo') || !class_exists('finfo')) {
+                Log::error('Upload failed due to missing PHP fileinfo extension: ' . $e->getMessage());
+                throw new \RuntimeException('Máy chủ thiếu module PHP fileinfo (finfo). Vui lòng kích hoạt extension=fileinfo trong php.ini.', 0, $e);
+            }
             Log::error('Error uploading file: ' . $e->getMessage());
             throw $e;
         }
@@ -95,7 +108,15 @@ class UploadHelper
     public static function deleteByUrl(string $url): bool
     {
         try {
-            $path = str_replace('/storage', 'public', $url);
+            if (empty($url)) {
+                return false;
+            }
+            // Không xóa URL bên ngoài (http://, https://)
+            if (preg_match('/^https?:\/\//i', $url) && !str_contains($url, '/storage/')) {
+                return false;
+            }
+            $path = str_replace('/storage', 'public', parse_url($url, PHP_URL_PATH) ?? $url);
+            $path = ltrim($path, '/');
             return Storage::delete($path);
         } catch (\Exception $e) {
             Log::error('Error deleting file: ' . $e->getMessage());

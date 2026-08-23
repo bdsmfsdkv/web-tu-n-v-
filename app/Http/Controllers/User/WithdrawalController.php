@@ -4,6 +4,8 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\MoneyWithdrawalHistory;
+use App\Models\MoneyTransaction;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -37,6 +39,12 @@ class WithdrawalController extends Controller
         try {
             DB::beginTransaction();
 
+            $user = User::whereKey(auth()->id())->lockForUpdate()->first();
+            if (!$user || $user->balance < $request->amount) {
+                DB::rollBack();
+                return back()->with('error', 'Số dư không đủ để thực hiện giao dịch.');
+            }
+
             // Tạo yêu cầu rút tiền
             $withdrawal = MoneyWithdrawalHistory::create([
                 'user_id' => $user->id,
@@ -46,7 +54,19 @@ class WithdrawalController extends Controller
             ]);
 
             // Trừ tiền từ tài khoản người dùng
-            $user->update(['balance' => $user->balance - $request->amount]);
+            $balanceBefore = (int) $user->balance;
+            $user->balance -= $request->amount;
+            $user->save();
+
+            MoneyTransaction::create([
+                'user_id' => $user->id,
+                'type' => 'withdrawal',
+                'amount' => -$request->amount,
+                'balance_before' => $balanceBefore,
+                'balance_after' => $user->balance,
+                'description' => 'Yêu cầu rút tiền ATM/Ngân hàng #' . $withdrawal->id,
+                'reference_id' => 'WD-' . $withdrawal->id,
+            ]);
 
             DB::commit();
 

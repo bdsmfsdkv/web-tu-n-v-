@@ -585,7 +585,7 @@
                 let selectedBank = null;
                 const userId = "{{ Auth::user()->id ?? '' }}";
                 let pollInterval = null;
-                let lastSeenDepositId = {{ isset($transactions) && count($transactions) > 0 ? ($transactions->first()->id ?? 0) : 0 }};
+                let lastSeenDepositId = @json(isset($transactions) && count($transactions) > 0 ? ($transactions->first()->transaction_id ?? '') : '');
                 
                 function checkSubmit() {
                     const amount = parseInt(inputAmount.value);
@@ -693,7 +693,7 @@
                 function startPolling() {
                     if (pollInterval) clearInterval(pollInterval);
                     pollInterval = setInterval(function() {
-                        fetch('{{ route('profile.deposit-atm.check') }}?after_id=' + lastSeenDepositId, {
+                        fetch('{{ route('profile.deposit-atm.check') }}?after_id=' + encodeURIComponent(lastSeenDepositId), {
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
                                 'Accept': 'application/json'

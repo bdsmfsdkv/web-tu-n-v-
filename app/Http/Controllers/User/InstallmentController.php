@@ -55,6 +55,12 @@ class InstallmentController extends Controller
 
             $depositAmount = ($price * self::MIN_DEPOSIT_PERCENT) / 100;
 
+            $user = User::whereKey(Auth::id())->lockForUpdate()->first();
+            if (!$user) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'Người dùng không tồn tại']);
+            }
+
             if ($user->balance < $depositAmount) {
                 DB::rollBack();
                 return response()->json([
@@ -64,8 +70,20 @@ class InstallmentController extends Controller
             }
 
             // Trừ tiền user
+            $balanceBefore = (int) $user->balance;
             $user->balance -= $depositAmount;
             $user->save();
+
+            // Ghi nhận biến động số dư
+            \App\Models\MoneyTransaction::create([
+                'user_id' => $user->id,
+                'type' => 'purchase',
+                'amount' => -$depositAmount,
+                'balance_before' => $balanceBefore,
+                'balance_after' => $user->balance,
+                'description' => 'Đặt cọc mua trả góp tài khoản #' . $account->id,
+                'reference_id' => 'INSTALLMENT-ACC-' . $account->id,
+            ]);
 
             // Khóa acc
             $account->status = 'installment';
@@ -91,7 +109,12 @@ class InstallmentController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['success' => false, 'message' => 'Lỗi hệ thống: ' . $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::error('Lỗi khi đăng ký trả góp', [
+                'user_id' => Auth::id(),
+                'account_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json(['success' => false, 'message' => 'Có lỗi xảy ra khi đăng ký trả góp. Vui lòng thử lại sau.'], 500);
         }
     }
 
@@ -128,14 +151,26 @@ class InstallmentController extends Controller
                 $amount = $remaining;
             }
 
-            if ($user->balance < $amount) {
+            $user = User::whereKey(Auth::id())->lockForUpdate()->first();
+            if (!$user || $user->balance < $amount) {
                 DB::rollBack();
                 return response()->json(['success' => false, 'message' => 'Số dư không đủ!']);
             }
 
             // Trừ tiền
+            $balanceBefore = (int) $user->balance;
             $user->balance -= $amount;
             $user->save();
+
+            \App\Models\MoneyTransaction::create([
+                'user_id' => $user->id,
+                'type' => 'purchase',
+                'amount' => -$amount,
+                'balance_before' => $balanceBefore,
+                'balance_after' => $user->balance,
+                'description' => 'Thanh toán đợt trả góp hợp đồng #' . $installment->id,
+                'reference_id' => 'INSTALLMENT-PAY-' . $installment->id,
+            ]);
 
             $installment->paid_amount += $amount;
             
@@ -160,7 +195,12 @@ class InstallmentController extends Controller
             
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['success' => false, 'message' => 'Lỗi hệ thống: ' . $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::error('Lỗi khi thanh toán trả góp', [
+                'user_id' => Auth::id(),
+                'installment_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json(['success' => false, 'message' => 'Có lỗi xảy ra khi thanh toán. Vui lòng thử lại sau.'], 500);
         }
     }
 }

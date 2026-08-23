@@ -108,31 +108,40 @@ class CheckUsdtDeposits extends Command
             if ($isMatch) {
                 DB::beginTransaction();
                 try {
-                    $deposit->status = 'completed';
-                    $deposit->transaction_id = $transactionID;
-                    $deposit->save();
+                    $lockedDeposit = UsdtDeposit::where('id', $deposit->id)->lockForUpdate()->first();
+                    if (!$lockedDeposit || $lockedDeposit->status !== 'pending' || UsdtDeposit::where('transaction_id', $transactionID)->exists()) {
+                        DB::rollBack();
+                        break;
+                    }
+
+                    $lockedDeposit->status = 'completed';
+                    $lockedDeposit->transaction_id = $transactionID;
+                    $lockedDeposit->save();
 
                     // Cộng tiền cho user
-                    $user = User::lockForUpdate()->find($deposit->user_id);
+                    $user = User::where('id', $lockedDeposit->user_id)->lockForUpdate()->first();
                     if ($user) {
-                        $user->balance += $deposit->vnd_amount;
-                        $user->total_deposit += $deposit->vnd_amount;
+                        $balanceBefore = (float) $user->balance;
+                        $user->balance += $lockedDeposit->vnd_amount;
+                        $user->total_deposited += $lockedDeposit->vnd_amount;
                         $user->save();
 
                         // Lưu lịch sử biến động số dư
                         MoneyTransaction::create([
                             'user_id' => $user->id,
                             'type' => 'usdt_deposit',
-                            'amount' => $deposit->vnd_amount,
-                            'description' => 'Nạp tiền qua USDT (Tự động) - ' . $deposit->request_code,
-                            'reference_id' => $deposit->id,
+                            'amount' => $lockedDeposit->vnd_amount,
+                            'balance_before' => $balanceBefore,
+                            'balance_after' => $user->balance,
+                            'description' => 'Nạp tiền qua USDT (Tự động) - ' . $lockedDeposit->request_code,
+                            'reference_id' => $lockedDeposit->id,
                             'reference_type' => UsdtDeposit::class,
                             'status' => 'completed',
                         ]);
                     }
 
                     DB::commit();
-                    $this->info("Đã duyệt thành công yêu cầu: {$deposit->request_code}");
+                    $this->info("Đã duyệt thành công yêu cầu: {$lockedDeposit->request_code}");
                 } catch (\Exception $e) {
                     DB::rollBack();
                     Log::error('Lỗi khi duyệt nạp USDT: ' . $e->getMessage());

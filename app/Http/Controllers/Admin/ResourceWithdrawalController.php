@@ -60,20 +60,27 @@ class ResourceWithdrawalController extends Controller
         try {
             DB::beginTransaction();
 
-            // Get user
-            $user = User::findOrFail($withdrawal->user_id);
-
-            // Vật phẩm riêng được tính từ lịch sử, yêu cầu lỗi tự động không còn bị trừ.
-            if ($withdrawal->type === 'gold') {
-                $user->gold += $withdrawal->amount;
-            } elseif ($withdrawal->reward_item_id === null) {
-                $user->gem += $withdrawal->amount;
+            $lockedWithdrawal = WithdrawalHistory::where('id', $withdrawal->id)->lockForUpdate()->first();
+            if (!$lockedWithdrawal || $lockedWithdrawal->status !== 'processing') {
+                DB::rollBack();
+                return back()->with('error', 'Yêu cầu rút này không thể từ chối.');
             }
 
-            $user->save();
+            // Get user with lock
+            $user = User::whereKey($lockedWithdrawal->user_id)->lockForUpdate()->first();
+            if ($user) {
+                // Vật phẩm riêng được tính từ lịch sử, yêu cầu lỗi tự động không còn bị trừ.
+                if ($lockedWithdrawal->type === 'gold') {
+                    $user->gold += $lockedWithdrawal->amount;
+                } elseif ($lockedWithdrawal->reward_item_id === null) {
+                    $user->gem += $lockedWithdrawal->amount;
+                }
+
+                $user->save();
+            }
 
             // Update withdrawal status
-            $withdrawal->update([
+            $lockedWithdrawal->update([
                 'status' => 'error',
                 'admin_note' => $request->admin_note,
             ]);

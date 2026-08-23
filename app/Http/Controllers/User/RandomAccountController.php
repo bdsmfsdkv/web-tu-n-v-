@@ -43,7 +43,7 @@ class RandomAccountController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            $user = Auth::user();
+            $user = \App\Models\User::whereKey(Auth::id())->lockForUpdate()->firstOrFail();
 
             if ($account->min_spent > 0 && ($user->total_spent ?? 0) < $account->min_spent) {
                 DB::rollBack();
@@ -58,7 +58,6 @@ class RandomAccountController extends Controller
                 $account->price = $flashSalePrice;
             }
 
-            $user = Auth::user();
             $discountAmount = 0;
             $finalPrice = $account->price;
 
@@ -66,6 +65,7 @@ class RandomAccountController extends Controller
             if ($request->filled('discount_code')) {
                 $discountCode = DiscountCode::where('code', $request->discount_code)
                     ->where('is_active', '1')
+                    ->lockForUpdate()
                     ->first();
 
                 if (!$discountCode) {
@@ -106,7 +106,8 @@ class RandomAccountController extends Controller
 
                 // Check if the user already used this code, if per user limit is set
                 if ($discountCode->per_user_limit) {
-                    $userUsageCount = $discountCode->usages()
+                    $userUsageCount = DB::table('discount_code_usages')
+                        ->where('discount_code_id', $discountCode->id)
                         ->where('user_id', $user->id)
                         ->count();
 
@@ -121,8 +122,8 @@ class RandomAccountController extends Controller
 
                 // For item-specific discount codes, check if the code applies to this item
                 if ($discountCode->item_ids) {
-                    $itemIds = json_decode($discountCode->item_ids, true);
-                    if (!in_array($account->id, $itemIds)) {
+                    $itemIds = is_array($discountCode->item_ids) ? $discountCode->item_ids : json_decode($discountCode->item_ids, true);
+                    if (!in_array($account->id, $itemIds ?? [])) {
                         DB::rollBack();
                         return response()->json([
                             'success' => false,
@@ -222,51 +223,15 @@ class RandomAccountController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Lỗi khi mua random account', [
+                'user_id' => Auth::id(),
+                'account_id' => $id,
+                'error' => $e->getMessage()
+            ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
-            ]);
+                'message' => 'Có lỗi xảy ra khi mua tài khoản. Vui lòng thử lại sau.'
+            ], 500);
         }
-    }
-
-    /**
-     * Apply a discount code and record its usage
-     *
-     * @param DiscountCode $discountCode
-     * @param int $userId
-     * @param string $context
-     * @param int $itemId
-     * @param float $originalPrice
-     * @param float $discountedPrice
-     * @param float $discountAmount
-     * @return void
-     */
-    private function applyDiscountCode(
-        DiscountCode $discountCode,
-        int $userId,
-        string $context,
-        int $itemId,
-        float $originalPrice,
-        float $discountedPrice,
-        float $discountAmount
-    ) {
-        // Update usage count directly in database
-        DB::table('discount_codes')
-            ->where('id', $discountCode->id)
-            ->increment('usage_count');
-
-        // Record usage details
-        DB::table('discount_code_usages')->insert([
-            'discount_code_id' => $discountCode->id,
-            'user_id' => $userId,
-            'context' => $context,
-            'item_id' => $itemId,
-            'original_price' => $originalPrice,
-            'discounted_price' => $discountedPrice,
-            'discount_amount' => $discountAmount,
-            'used_at' => now(),
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
     }
 }

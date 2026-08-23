@@ -124,7 +124,6 @@ class SepayWebhookController extends Controller
                     'amount' => $amountIn,
                     'content' => $content,
                     'bank' => $bankName,
-                    'status' => 'completed',
                 ]);
 
                 $balanceBefore = (int) $user->balance;
