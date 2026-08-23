@@ -14,12 +14,24 @@ class GameAccountController extends Controller
 {
     public function show($id)
     {
-        $account = GameAccount::findOrFail($id);
+        $account = GameAccount::with('category')->findOrFail($id);
+
+        // Sold accounts remain viewable only by their buyer. This prevents a user
+        // from returning to a stale purchase page and seeing the item as purchasable.
+        if ($account->status !== 'available' && (!Auth::check() || $account->buyer_id !== Auth::id())) {
+            if ($account->category) {
+                return redirect()
+                    ->route('category.index', ['slug' => $account->category->slug])
+                    ->with('error', 'Tài khoản này đã được bán.');
+            }
+
+            abort(404);
+        }
 
         $images = json_decode($account->images) ?? [];
 
         $flashSalePrice = \App\Models\FlashSale::getActivePrice('game', $account->game_category_id);
-        if ($flashSalePrice !== null) {
+        if ($flashSalePrice !== null && $account->status === 'available') {
             $account->price = $flashSalePrice;
             $account->is_flash_sale = true;
         }
@@ -31,7 +43,11 @@ class GameAccountController extends Controller
             ->take(6)
             ->get();
 
-        return view("user.account.detail", compact('account', 'images', 'relatedAccounts'));
+        return response()
+            ->view('user.account.detail', compact('account', 'images', 'relatedAccounts'))
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 
 
@@ -55,17 +71,14 @@ class GameAccountController extends Controller
             $discountAmount = 0;
             $discountCodeController = new DiscountCodeController();
 
-            // Check for discount code if provided
             if ($request->filled('discount_code')) {
                 $discountCode = DiscountCode::where('code', $request->discount_code)
                     ->where('is_active', '1')
                     ->first();
 
                 if ($discountCode) {
-                    // Calculate discount
                     if ($discountCode->discount_type === 'percentage') {
                         $discountAmount = ($account->price * $discountCode->discount_value) / 100;
-                        // Apply max discount if set
                         if ($discountCode->max_discount_value && $discountAmount > $discountCode->max_discount_value) {
                             $discountAmount = $discountCode->max_discount_value;
                         }
@@ -73,33 +86,27 @@ class GameAccountController extends Controller
                         $discountAmount = $discountCode->discount_value;
                     }
 
-                    // Calculate final price
                     $finalPrice = $account->price - $discountAmount;
                     if ($finalPrice < 0) {
                         $finalPrice = 0;
                     }
 
-                    // Apply discount code
-                    if ($discountCode) {
-                        // Update usage count directly in database
-                        DB::table('discount_codes')
-                            ->where('id', $discountCode->id)
-                            ->increment('usage_count');
+                    DB::table('discount_codes')
+                        ->where('id', $discountCode->id)
+                        ->increment('usage_count');
 
-                        // Record usage details
-                        DB::table('discount_code_usages')->insert([
-                            'discount_code_id' => $discountCode->id,
-                            'user_id' => $user->id,
-                            'context' => 'account',
-                            'item_id' => $account->id,
-                            'original_price' => $account->price,
-                            'discounted_price' => $finalPrice,
-                            'discount_amount' => $discountAmount,
-                            'used_at' => now(),
-                            'created_at' => now(),
-                            'updated_at' => now()
-                        ]);
-                    }
+                    DB::table('discount_code_usages')->insert([
+                        'discount_code_id' => $discountCode->id,
+                        'user_id' => $user->id,
+                        'context' => 'account',
+                        'item_id' => $account->id,
+                        'original_price' => $account->price,
+                        'discounted_price' => $finalPrice,
+                        'discount_amount' => $discountAmount,
+                        'used_at' => now(),
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
                 }
             }
 
@@ -111,16 +118,13 @@ class GameAccountController extends Controller
                 ]);
             }
 
-            // Update user balance
             $balanceBefore = $user->balance;
             $balanceAfter = $balanceBefore - $finalPrice;
 
-            // Use direct DB update instead of model save
             DB::table('users')
                 ->where('id', $user->id)
                 ->update(['balance' => $balanceAfter]);
 
-            // Update account status
             DB::table('game_accounts')
                 ->where('id', $account->id)
                 ->update([
@@ -128,7 +132,6 @@ class GameAccountController extends Controller
                     'buyer_id' => $user->id
                 ]);
 
-            // Thêm lịch sử biến động số dư
             DB::table('money_transactions')->insert([
                 'user_id' => $user->id,
                 'type' => 'purchase',
