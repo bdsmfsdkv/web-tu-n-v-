@@ -23,8 +23,10 @@ class GameCategoryController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('name', 'like', "%{$search}%")
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
                   ->orWhere('id', 'like', "%{$search}%");
+            });
         }
 
         $perPage = $request->input('per_page', 10);
@@ -101,7 +103,6 @@ class GameCategoryController extends Controller
     public function update(Request $request, GameCategory $category)
     {
         try {
-            // Validate request data
             $request->validate([
                 'name' => 'required|string|unique:game_categories,name,' . $category->id,
                 'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
@@ -124,26 +125,21 @@ class GameCategoryController extends Controller
             $data['is_flash_sale'] = $request->has('is_flash_sale');
 
             if ($request->hasFile('thumbnail')) {
-                // Delete old thumbnail if exists
                 if ($category->thumbnail) {
                     UploadHelper::deleteByUrl($category->thumbnail);
                 }
 
-                // Upload new thumbnail
                 $data['thumbnail'] = UploadHelper::upload($request->file('thumbnail'), self::UPLOAD_DIR);
             }
 
             if ($request->hasFile('tag_image')) {
-                // Delete old tag_image if exists
                 if ($category->tag_image) {
                     UploadHelper::deleteByUrl($category->tag_image);
                 }
 
-                // Upload new tag_image
                 $data['tag_image'] = UploadHelper::upload($request->file('tag_image'), self::UPLOAD_DIR);
             }
 
-            // Update category
             if (!$category->update($data)) {
                 throw new \Exception('Không thể cập nhật danh mục');
             }
@@ -171,7 +167,6 @@ class GameCategoryController extends Controller
         try {
             DB::beginTransaction();
 
-            // Delete thumbnail if exists
             if ($category->thumbnail) {
                 UploadHelper::deleteByUrl($category->thumbnail);
             }
@@ -180,14 +175,26 @@ class GameCategoryController extends Controller
                 UploadHelper::deleteByUrl($category->tag_image);
             }
 
+            // game_accounts.game_category_id is configured with ON DELETE CASCADE.
+            // Therefore a category can still be deleted even when it has related accounts.
             $category->delete();
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Xóa danh mục thành công!'
+                'message' => 'Xóa danh mục thành công! Các tài khoản game thuộc danh mục cũng đã được xóa theo.'
             ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+            Log::error('Database error deleting game category: ' . $e->getMessage(), [
+                'category_id' => $category->id,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể xóa danh mục do ràng buộc dữ liệu. Hãy chạy migration mới để bật xóa liên đới (cascade) cho tài khoản game.'
+            ], 409);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error deleting game category: ' . $e->getMessage());
