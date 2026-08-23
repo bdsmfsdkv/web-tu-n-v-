@@ -2,6 +2,17 @@
 @section('title', $wheel->name)
 
 @push('css')
+    @php
+        $wheelImageHost = parse_url($wheel->wheel_image, PHP_URL_HOST);
+    @endphp
+    @if($wheelImageHost && $wheelImageHost !== request()->getHost())
+        <link rel="preconnect" href="https://{{ $wheelImageHost }}" crossorigin>
+        <link rel="dns-prefetch" href="https://{{ $wheelImageHost }}">
+    @endif
+    <link rel="preload" as="image" href="{{ asset($wheel->wheel_image) }}" fetchpriority="high">
+    @if($wheel->pointer_image)
+        <link rel="preload" as="image" href="{{ asset($wheel->pointer_image) }}" fetchpriority="high">
+    @endif
     <link rel="stylesheet" href="{{ asset('assets/css/wheel.css') }}">
 @endpush
 
@@ -32,9 +43,14 @@
                 <div class="main-card">
                     <div class="wheel-arena-wrapper">
                         <div class="wheel-image-container">
-                            <img src="{{ asset($wheel->wheel_image) }}" alt="Vòng quay" class="wheel-image">
+                            <img src="{{ asset($wheel->wheel_image) }}" alt="Vòng quay" class="wheel-image" fetchpriority="high" decoding="async">
                         </div>
-                        <img src="/" class="center-pointer-core" id="btnSpinCenterInner" style="object-fit: contain; background: transparent; border-radius: 50%;" onerror="this.src='';">
+                        @if($wheel->pointer_image)
+                            <img src="{{ asset($wheel->pointer_image) }}" alt="Mũi tên vòng quay" class="wheel-pointer wheel-pointer-image">
+                        @else
+                            <span class="wheel-pointer wheel-pointer-default" aria-hidden="true"></span>
+                        @endif
+                        <button type="button" class="center-pointer-core" id="btnSpinCenterInner" aria-label="Quay ngay" style="background: transparent; border: 0; border-radius: 50%;" disabled></button>
                     </div>
 
                     <div class="action-controls">
@@ -56,8 +72,8 @@
                             <option value="10">QUAY X 10/ {{ number_format($wheel->price_per_spin * 10) }}</option>
                         </select>
 
-                        <button type="button" class="btn-white" id="trial-btn">CHƠI THỬ</button>
-                        <button type="button" class="btn-blue" id="spin-btn">QUAY NGAY</button>
+                        <button type="button" class="btn-white" id="trial-btn" disabled>CHƠI THỬ</button>
+                        <button type="button" class="btn-blue" id="spin-btn" disabled>QUAY NGAY</button>
                     </div>
                 </div>
 
@@ -74,12 +90,8 @@
                         <div>
                             <div class="inventory-label">BẠN ĐANG CÓ</div>
                             <div class="inventory-amount">
-                                @php
-                                    $rewardItem = \App\Models\RewardItem::first();
-                                    $unitName = $rewardItem ? $rewardItem->unit : 'KIM CƯƠNG';
-                                @endphp
-                                <span class="user-balance">{{ number_format(Auth::check() ? Auth::user()->gem : 0) }}</span> 
-                                <span class="inventory-unit">{{ $unitName }}</span>
+                                <span class="user-balance">{{ number_format($itemBalance) }}</span>
+                                <span class="inventory-unit">{{ $inventoryUnit ?? ($linkedItem?->unit ?? 'KIM CƯƠNG') }}</span>
                             </div>
                         </div>
                     </div>
@@ -87,7 +99,7 @@
                         <a href="{{ route('profile.wheels-history') }}" class="btn-history">
                             <i class="fas fa-history"></i> Lịch Sử Quay
                         </a>
-                        <a href="{{ route('profile.withdraw-gem') }}" class="btn-withdraw">
+                        <a href="{{ route('profile.withdraw-gem', $linkedItem ? ['item' => $linkedItem->id] : []) }}" class="btn-withdraw">
                             <i class="fas fa-gift"></i> Rút Quà
                         </a>
                     </div>
@@ -109,7 +121,7 @@
                                             <i class="fas fa-user"></i>
                                         </div>
                                         <div class="history-info">
-                                            <div class="history-name">{{ Str::limit($item->user->username, 4) }}***</div>
+                                            <div class="history-name">{{ Str::substr($item->user?->username ?? 'Khách', 0, 4) }}***</div>
                                             <div class="history-reward">
                                                 Trúng {{ $item->description }}{{ $item->spin_count > 1 ? ' x' . $item->spin_count : '' }}
                                             </div>
@@ -121,7 +133,7 @@
                                 </div>
                             @endforeach
                         @else
-                            <div style="text-align: center; color: var(--text-muted); padding: 20px 0;">
+                            <div class="history-empty" style="text-align: center; color: var(--text-muted); padding: 20px 0;">
                                 Chưa có lịch sử quay nào.
                             </div>
                         @endif
@@ -150,220 +162,332 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Spin the wheel
-            let isSpinning = false;
             const spinBtn = document.getElementById('spin-btn');
             const centerSpinBtn = document.getElementById('btnSpinCenterInner');
             const wheelElement = document.querySelector('.wheel-image');
             const spinCount = document.getElementById('spin-count');
-            const totalItems = 8; // Fixed to 8 items on the wheel
-            const arcAngle = 360 / totalItems;
-
             const trialBtn = document.getElementById('trial-btn');
-            
-            // Pass the wheel config to JS for trial spins
-            const wheelConfig = @json($wheel->config);
+            const resultModal = document.getElementById('result-modal');
+            const resultReward = document.getElementById('result-reward');
 
-            if (spinBtn) spinBtn.addEventListener('click', () => spinWheel(false));
-            if (centerSpinBtn) centerSpinBtn.addEventListener('click', () => spinWheel(false));
-            if (trialBtn) trialBtn.addEventListener('click', () => spinWheel(true));
+            if (!wheelElement || !spinBtn) return;
 
-            function spinWheel(isTrial) {
-                if (isSpinning) return;
+            const SPIN_URL = @json(route('lucky.spin', $wheel->slug));
+            const CSRF_TOKEN = @json(csrf_token());
+            const rawConfig = @json($wheel->config);
+            const wheelConfig = Array.isArray(rawConfig) ? rawConfig : [];
+            const totalItems = wheelConfig.length;
+            const arcAngle = totalItems ? 360 / totalItems : 0;
 
-                isSpinning = true;
-                spinBtn.disabled = true;
-                trialBtn.disabled = true;
+            // Chỉ các ô đang bật mới được phép trúng, giữ lại index gốc để animation dừng đúng ô trên ảnh.
+            const activeSlots = wheelConfig
+                .map((reward, index) => ({ reward, index }))
+                .filter(({ reward }) => reward && (reward.active === undefined || Boolean(reward.active)));
 
-                if (isTrial) {
-                    if (!Array.isArray(wheelConfig) || wheelConfig.length === 0) {
-                        showSpinError('Vòng quay chưa được cấu hình.');
-                        return;
-                    }
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+            const numberFormatter = new Intl.NumberFormat('vi-VN');
+            const balanceNodes = document.querySelectorAll('[data-user-balance]');
+            const itemBalanceNode = document.querySelector('.user-balance');
+            const itemUnitNode = document.querySelector('.inventory-unit');
 
-                    const probabilities = wheelConfig.map(reward => {
-                        const trialProbability = Number(reward.trial_probability);
-                        const probability = Number(reward.probability);
-                        return Number.isFinite(trialProbability) && trialProbability > 0
-                            ? trialProbability
-                            : (Number.isFinite(probability) && probability > 0 ? probability : 0);
-                    });
-                    const totalProb = probabilities.reduce((sum, probability) => sum + probability, 0);
+            let isSpinning = false;
+            let wheelReady = false;
+            let currentRotation = 0;
 
-                    if (totalProb <= 0) {
-                        showSpinError('Xác suất quay thử chưa được cấu hình.');
-                        return;
-                    }
-
-                    let rand = Math.random() * totalProb;
-                    let currentSum = 0;
-                    let selectedIndex = 0;
-
-                    for (let i = 0; i < wheelConfig.length; i++) {
-                        currentSum += probabilities[i];
-                        if (rand <= currentSum) {
-                            selectedIndex = i;
-                            break;
-                        }
-                    }
-
-                    const reward = wheelConfig[selectedIndex];
-                    const stopAngle = -(selectedIndex * arcAngle);
-                    const extraRotations = 5;
-                    const totalRotation = stopAngle - (360 * extraRotations);
-
-                    wheelElement.style.transform = `rotate(${totalRotation}deg)`;
-
-                    setTimeout(() => {
-                        const resultMessage = `${reward.content} (Chơi thử)`;
-                        showResult(resultMessage);
-                        isSpinning = false;
-                        spinBtn.disabled = false;
-                        trialBtn.disabled = false;
-
-                        setTimeout(() => {
-                            wheelElement.style.transition = 'none';
-                            wheelElement.style.transform = 'rotate(0deg)';
-                            setTimeout(() => {
-                                wheelElement.style.transition = 'transform 5s cubic-bezier(0.2, 0.8, 0.3, 1)';
-                            }, 50);
-                        }, 1000);
-                    }, 5000);
-                    
-                    return;
-                }
-
-                // Get spin count
-                const spinCountValue = parseInt(spinCount.value);
-                if (spinCountValue > 10) {
-                    if (typeof FuiToast !== 'undefined') {
-                        FuiToast.error("Mỗi lần quay tối đa 10 lần");
-                    } else {
-                        alert("Mỗi lần quay tối đa 10 lần")
-                    }
-                    isSpinning = false;
-                    spinBtn.disabled = false;
-                    trialBtn.disabled = false;
-                } else {
-                    // Send AJAX request to the server
-                    fetch('{{ route('lucky.spin', $wheel->slug) }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({
-                                spin_count: spinCountValue
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (!data.success) {
-                                if (typeof FuiToast !== 'undefined') {
-                                    FuiToast.error(data.message);
-                                } else {
-                                    alert(data.message);
-                                }
-                                isSpinning = false;
-                                spinBtn.disabled = false;
-                                trialBtn.disabled = false;
-                                return;
-                            }
-
-                            // Get the reward from server
-                            const reward = data.rewards[0]; // Lấy phần thưởng
-                            const selectedIndex = reward.index;
-
-                            // Calculate the angle to stop at
-                            const stopAngle = -(selectedIndex * arcAngle);
-                            const extraRotations = 5; // Add extra rotations for effect
-                            const totalRotation = stopAngle - (360 * extraRotations);
-
-                            // Rotate wheel
-                            wheelElement.style.transform = `rotate(${totalRotation}deg)`;
-
-                            // Show result after animation ends
-                            setTimeout(() => {
-                                // Hiển thị kết quả với số lượt quay
-                                const resultMessage = spinCountValue > 1 ?
-                                    `${reward.content} x ${spinCountValue} lượt quay` :
-                                    reward.content;
-
-                                showResult(resultMessage);
-                                isSpinning = false;
-                                spinBtn.disabled = false;
-                                trialBtn.disabled = false;
-
-                                // Update user balance if provided
-                                if (data.new_gem !== undefined) {
-                                    // Update balance display if you have one
-                                    const balanceElement = document.querySelector('.user-balance');
-                                    if (balanceElement) {
-                                        balanceElement.textContent = new Intl.NumberFormat('vi-VN')
-                                            .format(
-                                                data.new_gem);
-                                    }
-                                }
-
-                                // Reset wheel after a delay
-                                setTimeout(() => {
-                                    wheelElement.style.transition = 'none';
-                                    wheelElement.style.transform = 'rotate(0deg)';
-                                    setTimeout(() => {
-                                        wheelElement.style.transition =
-                                            'transform 5s cubic-bezier(0.2, 0.8, 0.3, 1)';
-                                    }, 50);
-                                }, 1000);
-
-                            }, 5000);
-                        })
-                        .catch(error => {
-                            // console.error('Error:', error);
-                            if (typeof FuiToast !== 'undefined') {
-                                FuiToast.error('Có lỗi xảy ra. Vui lòng thử lại sau.');
-                            } else {
-                                alert('Có lỗi xảy ra. Vui lòng thử lại sau.');
-                            }
-                            isSpinning = false;
-                            spinBtn.disabled = false;
-                            trialBtn.disabled = false;
-                        });
-                }
+            function setSpinButtons(disabled) {
+                spinBtn.disabled = disabled;
+                if (trialBtn) trialBtn.disabled = disabled;
+                if (centerSpinBtn) centerSpinBtn.disabled = disabled;
             }
 
-            function showSpinError(message) {
-                isSpinning = false;
-                spinBtn.disabled = false;
-                trialBtn.disabled = false;
-
+            function showToast(message, type) {
                 if (typeof FuiToast !== 'undefined') {
-                    FuiToast.error(message);
+                    const options = { id: 'wheel-spin-toast', isClose: true, duration: 3000 };
+                    if (type === 'success' && typeof FuiToast.success === 'function') {
+                        FuiToast.success(message, options);
+                        return;
+                    }
+                    FuiToast.error(message, options);
                 } else {
                     alert(message);
                 }
             }
 
-            // Show result modal
-            function showResult(prize) {
-                const modal = document.getElementById('result-modal');
-                const rewardText = document.getElementById('result-reward');
+            async function prepareWheel() {
+                try {
+                    if (!wheelElement.complete) {
+                        await new Promise((resolve, reject) => {
+                            wheelElement.addEventListener('load', resolve, { once: true });
+                            wheelElement.addEventListener('error', reject, { once: true });
+                        });
+                    }
+                    if (wheelElement.decode) await wheelElement.decode();
+                    wheelReady = activeSlots.length > 0;
+                } catch (error) {
+                    console.warn('Wheel image failed to load or decode.', error);
+                }
 
-                rewardText.textContent = prize;
-                modal.classList.add('active');
+                setSpinButtons(!wheelReady);
+                if (!wheelReady) {
+                    showToast(totalItems ? 'Không thể tải ảnh vòng quay.' : 'Vòng quay chưa được cấu hình.');
+                }
             }
 
-            // Handle modal close
-            const modalClose = document.getElementById('modal-close');
-            const continueBtn = document.getElementById('continue-btn');
+            function pickTrialSlot() {
+                const weights = activeSlots.map(({ reward }) => {
+                    const trial = Number(reward.trial_probability);
+                    if (Number.isFinite(trial) && trial > 0) return trial;
+                    const base = Number(reward.probability);
+                    return Number.isFinite(base) && base > 0 ? base : 0;
+                });
+                const total = weights.reduce((sum, weight) => sum + weight, 0);
+                if (total <= 0) return null;
 
-            modalClose.addEventListener('click', closeModal);
-            continueBtn.addEventListener('click', closeModal);
+                let rand = Math.random() * total;
+                for (let i = 0; i < activeSlots.length; i++) {
+                    rand -= weights[i];
+                    if (rand <= 0) return activeSlots[i];
+                }
+                return activeSlots[activeSlots.length - 1];
+            }
+
+            function animateSpin(selectedIndex) {
+                // Ô thứ i (0..N-1 theo chiều kim đồng hồ, ô 0 ở 12h) cần góc (360 - i * arcAngle) để về đỉnh.
+                const targetMod = ((360 - (selectedIndex * arcAngle)) % 360 + 360) % 360;
+                const currentMod = ((currentRotation % 360) + 360) % 360;
+                let forwardDelta = targetMod - currentMod;
+                if (forwardDelta <= 0) forwardDelta += 360;
+
+                if (prefersReducedMotion.matches) {
+                    wheelElement.style.transition = 'none';
+                    currentRotation = currentMod + forwardDelta;
+                    wheelElement.style.transform = `rotate(${currentRotation}deg)`;
+                    return Promise.resolve();
+                }
+
+                // Đưa góc về khoảng [0,360) trước mỗi lượt để số không phình to sau nhiều lượt quay.
+                // Phải tắt transition và ép reflow, nếu không lượt quay sau sẽ bị cắt ngắn.
+                if (currentRotation !== currentMod) {
+                    wheelElement.style.transition = 'none';
+                    wheelElement.style.transform = `rotate(${currentMod}deg)`;
+                    void wheelElement.offsetWidth;
+                    wheelElement.style.transition = '';
+                }
+
+                currentRotation = currentMod + 360 * 6 + forwardDelta;
+
+                return new Promise(resolve => {
+                    let settled = false;
+                    let fallbackTimer = 0;
+
+                    const done = event => {
+                        if (event && event.target !== wheelElement) return;
+                        if (settled) return;
+                        settled = true;
+                        clearTimeout(fallbackTimer);
+                        wheelElement.removeEventListener('transitionend', done);
+                        wheelElement.style.willChange = 'auto';
+                        resolve();
+                    };
+
+                    wheelElement.addEventListener('transitionend', done);
+                    wheelElement.style.willChange = 'transform';
+
+                    // Ép browser flush style trước khi đổi transform để transition luôn chạy.
+                    requestAnimationFrame(() => {
+                        wheelElement.style.transform = `rotate(${currentRotation}deg)`;
+                    });
+
+                    fallbackTimer = setTimeout(done, 6000);
+                });
+            }
+
+            function showResult(prize) {
+                if (!resultModal || !resultReward) return;
+                resultReward.textContent = prize;
+                resultModal.classList.add('active');
+            }
+
+            function applyBalances(data) {
+                // Cập nhật số dư tiền mặt tài khoản trên thanh navbar/drawer
+                if (data.new_balance !== undefined && data.new_balance !== null) {
+                    balanceNodes.forEach(el => {
+                        el.textContent = numberFormatter.format(data.new_balance);
+                    });
+                }
+
+                // Cập nhật số dư "BẠN ĐANG CÓ" ở cột bên phải theo đúng loại tài nguyên của vòng quay
+                let newInvBalance = null;
+                if (data.inventory && data.inventory.balance !== undefined && data.inventory.balance !== null) {
+                    newInvBalance = data.inventory.balance;
+                } else if (data.linked_item_balance !== undefined && data.linked_item_balance !== null) {
+                    newInvBalance = data.linked_item_balance;
+                }
+
+                if (itemBalanceNode && newInvBalance !== null) {
+                    itemBalanceNode.textContent = numberFormatter.format(newInvBalance);
+                    itemBalanceNode.classList.remove('balance-updated');
+                    void itemBalanceNode.offsetWidth; // ép reflow để kích hoạt lại animation
+                    itemBalanceNode.classList.add('balance-updated');
+                }
+
+                if (itemUnitNode && data.inventory && data.inventory.unit) {
+                    itemUnitNode.textContent = data.inventory.unit;
+                } else if (itemUnitNode && data.reward_unit && data.reward_item_id === data.linked_item_id) {
+                    itemUnitNode.textContent = data.reward_unit;
+                }
+            }
+
+            function addHistoryEntry(entry) {
+                if (!entry) return;
+                const historyList = document.querySelector('.history-list');
+                if (!historyList) return;
+
+                // Xoá dòng "Chưa có lịch sử quay nào" nếu có
+                const emptyPlaceholder = historyList.querySelector('.history-empty');
+                if (emptyPlaceholder) {
+                    emptyPlaceholder.remove();
+                }
+
+                const card = document.createElement('div');
+                card.className = 'history-card history-card-new';
+
+                const cardLeft = document.createElement('div');
+                cardLeft.className = 'history-card-left';
+
+                const avatar = document.createElement('div');
+                avatar.className = 'history-avatar';
+                avatar.innerHTML = '<i class="fas fa-user"></i>';
+
+                const info = document.createElement('div');
+                info.className = 'history-info';
+
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'history-name';
+                nameDiv.textContent = entry.username || 'Người chơi';
+
+                const rewardDiv = document.createElement('div');
+                rewardDiv.className = 'history-reward';
+                rewardDiv.textContent = entry.reward_text || `Trúng ${entry.description || ''}`;
+
+                info.appendChild(nameDiv);
+                info.appendChild(rewardDiv);
+                cardLeft.appendChild(avatar);
+                cardLeft.appendChild(info);
+
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'history-time';
+                timeDiv.textContent = entry.time || 'Vừa xong';
+
+                card.appendChild(cardLeft);
+                card.appendChild(timeDiv);
+
+                // Chèn lên đầu danh sách
+                historyList.insertBefore(card, historyList.firstChild);
+
+                // Giữ tối đa 10 thẻ lịch sử mới nhất
+                while (historyList.children.length > 10) {
+                    historyList.lastElementChild.remove();
+                }
+            }
+
+            function finishSpin() {
+                isSpinning = false;
+                setSpinButtons(false);
+            }
+
+            async function spinWheel(isTrial) {
+                if (isSpinning || !wheelReady) return;
+
+                isSpinning = true;
+                setSpinButtons(true);
+
+                if (isTrial) {
+                    const slot = pickTrialSlot();
+                    if (!slot) {
+                        showToast('Xác suất quay thử chưa được cấu hình.');
+                        finishSpin();
+                        return;
+                    }
+
+                    await animateSpin(slot.index);
+                    showResult(`${slot.reward.content} (Chơi thử)`);
+                    finishSpin();
+                    return;
+                }
+
+                const spinCountValue = Math.max(1, Math.min(10, parseInt(spinCount?.value ?? '1', 10) || 1));
+
+                try {
+                    const response = await fetch(SPIN_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': CSRF_TOKEN
+                        },
+                        body: JSON.stringify({ spin_count: spinCountValue })
+                    });
+
+                    const rawBody = await response.text();
+                    let data;
+                    try {
+                        data = JSON.parse(rawBody);
+                    } catch (error) {
+                        console.warn('Wheel spin returned non-JSON response.', { status: response.status, body: rawBody.slice(0, 500) });
+                        throw new Error('Phản hồi máy chủ không hợp lệ.');
+                    }
+
+                    if (!response.ok || !data.success) {
+                        if (response.status === 429) {
+                            throw new Error('Bạn quay quá nhanh, vui lòng chờ một chút.');
+                        }
+                        if (response.status === 401) {
+                            throw new Error(data.message || 'Vui lòng đăng nhập để có thể quay.');
+                        }
+                        throw new Error(data.message || 'Không thể quay lúc này. Vui lòng thử lại.');
+                    }
+
+                    const reward = Array.isArray(data.rewards) ? data.rewards[0] : null;
+                    const selectedIndex = Number(reward?.index);
+                    if (!reward || !Number.isInteger(selectedIndex) || selectedIndex < 0 || selectedIndex >= totalItems) {
+                        console.warn('Wheel spin returned an invalid reward index.', data);
+                        throw new Error('Kết quả quay không hợp lệ.');
+                    }
+
+                    await animateSpin(selectedIndex);
+
+                    const modalText = reward.content;
+                    showResult(modalText);
+                    applyBalances(data);
+                    addHistoryEntry(data.history_entry);
+                } catch (error) {
+                    console.warn('Wheel spin request failed.', error);
+                    showToast(error.message || 'Có lỗi xảy ra. Vui lòng thử lại sau.');
+                } finally {
+                    finishSpin();
+                }
+            }
+
+            spinBtn.addEventListener('click', () => spinWheel(false));
+            if (centerSpinBtn) centerSpinBtn.addEventListener('click', () => spinWheel(false));
+            if (trialBtn) trialBtn.addEventListener('click', () => spinWheel(true));
 
             function closeModal() {
-                const modal = document.getElementById('result-modal');
-                modal.classList.remove('active');
+                if (resultModal) resultModal.classList.remove('active');
             }
 
+            document.getElementById('modal-close')?.addEventListener('click', closeModal);
+            document.getElementById('continue-btn')?.addEventListener('click', closeModal);
+            resultModal?.addEventListener('click', event => {
+                if (event.target === resultModal) closeModal();
+            });
+            document.addEventListener('keydown', event => {
+                if (event.key === 'Escape') closeModal();
+            });
+
+            prepareWheel();
         });
     </script>
 @endpush

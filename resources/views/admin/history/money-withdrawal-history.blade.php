@@ -181,19 +181,9 @@
                             </tbody>
                         </table>
                     </div>
-@php
-                    // Find the paginator variable
-                    $paginator = null;
-                    foreach(get_defined_vars() as $var) {
-                        if (is_object($var) && method_exists($var, 'hasPages')) {
-                            $paginator = $var;
-                            break;
-                        }
-                    }
-                @endphp
-                @if($paginator && $paginator->hasPages())
+                @if($withdrawals->hasPages())
                     <div class="d-flex justify-content-end p-3 border-top">
-                        {{ $paginator->withQueryString()->links('pagination::bootstrap-5') }}
+                        {{ $withdrawals->withQueryString()->links('pagination::bootstrap-5') }}
                     </div>
                 @endif
 

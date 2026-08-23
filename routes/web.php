@@ -26,7 +26,12 @@ use Illuminate\Support\Facades\Route;
 */
 require __DIR__ . '/auth.php';
 require __DIR__ . '/admin.php';
-require __DIR__ . '/api.php';
+// KHÔNG require routes/api.php ở đây: RouteServiceProvider đã load file đó với prefix
+// "api", require thêm lần nữa sẽ đăng ký trùng tên route và làm `route:cache` thất bại.
+// Hai URL không có prefix bên dưới được giữ lại nguyên trạng để không phá link callback
+// đã cấu hình ở cổng thanh toán.
+Route::match(['GET', 'POST'], '/callback/card', [CardDepositController::class, 'handleCallback'])->name('callback.card');
+Route::post('/discount-codes/validate', [DiscountCodeController::class, 'validateCode']);
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/nhan-xet', [HomeController::class, 'reviews'])->name('reviews');
 Route::get('/cau-hoi-thuong-gap', [HomeController::class, 'faq'])->name('faq');
@@ -48,6 +53,7 @@ Route::middleware('auth')->group(function () {
        
         Route::get('/deposit/card', [ProfileController::class, 'depositCard'])->name('deposit-card');
         Route::get('/deposit/atm', [ProfileController::class, 'depositAtm'])->name('deposit-atm');
+        Route::get('/deposit/atm/check', [ProfileController::class, 'checkDepositAtm'])->name('deposit-atm.check');
         Route::get('/deposit/usdt', [ProfileController::class, 'depositUsdt'])->name('deposit-usdt');
         Route::post('/deposit/usdt', [ProfileController::class, 'processDepositUsdt']);
         Route::post('/deposit/card', [CardDepositController::class, 'processCardDeposit']);
@@ -108,7 +114,10 @@ Route::prefix('random')->name('random.')->group(function () {
 Route::prefix('lucky')->name('lucky.')->group(function () {
     Route::get('/', [LuckyCategoryController::class, 'showAll'])->name('show-all');
     Route::get('/wheel/{slug}', [LuckyCategoryController::class, 'index'])->name('index');
-    Route::post('/wheel/{slug}/spin', [LuckyCategoryController::class, 'spin'])->middleware('auth')->name('spin');
+    // Giới hạn tần suất để tránh spam quay bằng script (animation mất ~5s nên 30 lượt/phút là dư).
+    Route::post('/wheel/{slug}/spin', [LuckyCategoryController::class, 'spin'])
+        ->middleware(['auth', 'throttle:30,1'])
+        ->name('spin');
 });
 
 // Discount code routes

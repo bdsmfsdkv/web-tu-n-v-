@@ -12,6 +12,7 @@ class RandomCategoryAccount extends Model
         'account_name',
         'password',
         'price',
+        'min_spent',
         'status',
         'server',
         'buyer_id',

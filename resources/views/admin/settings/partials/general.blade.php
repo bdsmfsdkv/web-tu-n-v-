@@ -110,7 +110,7 @@
                                     @enderror
                                 </div>
                             </div>
-                            <div class="col-lg-3">
+                            <div class="col-lg-3 col-sm-6 col-12">
                                 <div class="mb-3">
                                     <label class="form-label">Logo chính trang web</label>
                                     <div class="image-upload" style="position: relative; border: 1px dashed #4680ff; background: rgba(70, 128, 255, 0.05); padding: 20px; border-radius: 8px; text-align: center;">
@@ -142,7 +142,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-lg-3">
+                            <div class="col-lg-3 col-sm-6 col-12">
                                 <div class="mb-3">
                                     <label class="form-label">Logo chân trang</label>
                                     <div class="image-upload" style="position: relative; border: 1px dashed #20c997; background: rgba(32, 201, 151, 0.05); padding: 20px; border-radius: 8px; text-align: center;">
@@ -174,7 +174,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-lg-3">
+                            <div class="col-lg-3 col-sm-6 col-12">
                                 <div class="mb-3">
                                     <label class="form-label">Favicon trang web <span class="text-muted small">(PNG hoặc ICO, tối đa 1MB)</span></label>
                                     <div class="image-upload" style="position: relative; border: 1px dashed #ff9f43; background: rgba(255, 159, 67, 0.05); padding: 20px; border-radius: 8px; text-align: center;">
@@ -206,7 +206,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-lg-3">
+                            <div class="col-lg-3 col-sm-6 col-12">
                                 <div class="mb-3">
                                     <label class="form-label">Ảnh/GIF nút 'Xem ngay' <span class="text-muted small">(để trống sẽ dùng nút mặc định)</span></label>
                                     <div class="image-upload" style="position: relative; border: 1px dashed #e11d48; background: rgba(225, 29, 72, 0.05); padding: 20px; border-radius: 8px; text-align: center;">
@@ -282,7 +282,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-lg-3">
+                            <div class="col-lg-3 col-sm-6 col-12">
                                 <div class="mb-3">
                                     <label class="form-label">Ảnh bìa trang web</label>
                                     <div class="image-upload" style="position: relative; border: 1px dashed #6f42c1; background: rgba(111, 66, 193, 0.05); padding: 20px; border-radius: 8px; text-align: center;">

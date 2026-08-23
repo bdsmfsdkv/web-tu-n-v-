@@ -1,4 +1,23 @@
-@import url("/css/ui-fixes-base.css?v=20260820-4");
+@import url("/css/ui-fixes-base.css?v=20260822-1");
+
+/* Logo brand sizing on desktop (large & crisp for wide logos like 500x110) */
+@media (min-width: 1200px) {
+    html body nav.navbar > .nav-container > a.nav-brand,
+    html body .navbar .nav-brand {
+        display: flex !important;
+        align-items: center !important;
+        flex: 0 0 auto !important;
+        max-width: none !important;
+    }
+
+    html body nav.navbar > .nav-container > a.nav-brand img,
+    html body .navbar .nav-brand img {
+        width: auto !important;
+        height: 40px !important;
+        max-height: 40px !important;
+        object-fit: contain !important;
+    }
+}
 
 /* =========================================================
    DESKTOP NAP TIEN — DUNG CUNG CO CHE VOI DANH MUC
@@ -25,13 +44,13 @@
 
     /* Nut Nap Tien dung dung hover visual cua cac muc navbar/Danh Muc. */
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown:hover > .nav-link-item {
-        color: var(--primary, #dc2626) !important;
-        background: rgba(220, 38, 38, .07) !important;
+        color: var(--menu-accent) !important;
+        background: var(--menu-accent-bg) !important;
     }
 
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown:hover > .nav-link-item .nav-item-icon,
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown:hover > .nav-link-item .nav-arrow {
-        color: var(--primary, #dc2626) !important;
+        color: var(--menu-accent) !important;
     }
 
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown:hover > .nav-link-item .nav-arrow {
@@ -86,7 +105,7 @@
 
     html body nav.navbar > .nav-container .nav-links > li.nav-dropdown .dropdown-link-card:hover {
         background: #f8fafc !important;
-        box-shadow: inset 0 0 0 1px rgba(220, 38, 38, .16) !important;
+        box-shadow: inset 0 0 0 1px var(--menu-accent-border) !important;
         transform: translateX(2px) !important;
     }
 }
@@ -97,12 +116,12 @@
 }
 
 [data-theme="dark"] body nav.navbar > .nav-container .nav-links > li.nav-dropdown:hover > .nav-link-item {
-    background: rgba(248, 113, 113, .1) !important;
+    background: var(--menu-accent-bg) !important;
 }
 
 [data-theme="dark"] body nav.navbar > .nav-container .nav-links > li.nav-dropdown .dropdown-link-card:hover {
     background: #252525 !important;
-    box-shadow: inset 0 0 0 1px rgba(248, 113, 113, .18) !important;
+    box-shadow: inset 0 0 0 1px var(--menu-accent-border) !important;
 }
 
 /* =========================================================
@@ -163,13 +182,13 @@ html body #avatarDropdown .dropdown-item .dropdown-item-icon {
 
 html body #avatarDropdown .dropdown-menu-links > .dropdown-item:hover,
 html body #avatarDropdown .dropdown-logout:hover {
-    color: #dc2626 !important;
-    background: #fff1f2 !important;
+    color: var(--menu-accent) !important;
+    background: var(--menu-accent-bg) !important;
 }
 
 html body #avatarDropdown .dropdown-menu-links > .dropdown-item:hover .dropdown-item-icon,
 html body #avatarDropdown .dropdown-logout:hover .dropdown-item-icon {
-    color: #dc2626 !important;
+    color: var(--menu-accent) !important;
 }
 
 html body #avatarDropdown form {
@@ -209,7 +228,7 @@ html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar {
     overflow: hidden !important;
     color: transparent !important;
     font-size: 0 !important;
-    background: var(--primary, #dc2626) !important;
+    background: var(--menu-accent) !important;
     border: 0 !important;
     border-radius: 50% !important;
     box-shadow: none !important;
@@ -236,8 +255,8 @@ html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar:hover,
 html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar:focus-visible,
 html body nav.navbar #avatarWrapper:hover #avatarBtn.nav-avatar {
     opacity: .9 !important;
-    background: var(--primary, #dc2626) !important;
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, .15) !important;
+    background: var(--menu-accent) !important;
+    box-shadow: 0 0 0 3px var(--menu-accent-glow) !important;
 }
 
 html body nav.navbar #avatarWrapper #avatarBtn.nav-avatar:hover::before,
@@ -320,14 +339,14 @@ html body nav.navbar #avatarWrapper #avatarDropdown.show {
 
 [data-theme="dark"] body #avatarDropdown .dropdown-menu-links > .dropdown-item:hover,
 [data-theme="dark"] body #avatarDropdown .dropdown-logout:hover {
-    color: #f87171 !important;
-    background: #2a1c1c !important;
+    color: var(--menu-accent) !important;
+    background: var(--menu-accent-bg) !important;
 }
 
 [data-theme="dark"] body nav.navbar #avatarWrapper #avatarBtn.nav-avatar,
 [data-theme="dark"] body nav.navbar #avatarWrapper #avatarBtn.nav-avatar:hover,
 [data-theme="dark"] body nav.navbar #avatarWrapper:hover #avatarBtn.nav-avatar {
-    background: var(--primary, #f87171) !important;
+    background: var(--menu-accent) !important;
 }
 
 [data-theme="dark"] body nav.navbar #avatarWrapper #avatarBtn.nav-avatar::before {
@@ -438,8 +457,8 @@ html body nav.navbar #avatarWrapper #avatarDropdown.show {
     }
 
     html body nav.navbar > .nav-container > .nav-links > li.nav-dropdown > ul.modern-dropdown-menu > li > a.dropdown-link-card:hover {
-        color: #dc2626 !important;
-        border-color: rgba(220,38,38,.24) !important;
+        color: var(--menu-accent) !important;
+        border-color: var(--menu-accent-border) !important;
         box-shadow: 0 5px 14px rgba(15,23,42,.06) !important;
         transform: translateY(-1px) !important;
     }
@@ -567,9 +586,9 @@ html body nav.navbar #avatarWrapper #avatarDropdown.show {
     }
 
     html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown > ul.modern-dropdown-menu > li > a.dropdown-link-card:hover {
-        color: #dc2626 !important;
-        background: #fff7f7 !important;
-        border-color: rgba(220, 38, 38, .24) !important;
+        color: var(--menu-accent) !important;
+        background: var(--menu-accent-bg) !important;
+        border-color: var(--menu-accent-border) !important;
         box-shadow: 0 5px 14px rgba(15, 23, 42, .06) !important;
         transform: translateX(2px) !important;
     }
@@ -733,9 +752,9 @@ html body nav.navbar #avatarWrapper #avatarDropdown.show {
     html body nav.navbar > .nav-container > ul#navLinks > li > a.nav-link-item.active,
     html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown:hover > a.nav-link-item,
     html body nav.navbar > .nav-container > ul#navLinks > li.nav-mega-dropdown:hover > a.nav-link-item {
-        color: var(--primary, #dc2626) !important;
-        background: rgba(220, 38, 38, .055) !important;
-        border-color: rgba(220, 38, 38, .11) !important;
+        color: var(--menu-accent) !important;
+        background: var(--menu-accent-bg) !important;
+        border-color: var(--menu-accent-border) !important;
         box-shadow: 0 3px 10px rgba(15, 23, 42, .035) !important;
         transform: translateY(-1px) !important;
     }
@@ -744,7 +763,7 @@ html body nav.navbar #avatarWrapper #avatarDropdown.show {
     html body nav.navbar > .nav-container > ul#navLinks > li > a.nav-link-item.active .nav-item-icon,
     html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown:hover > a.nav-link-item .nav-item-icon,
     html body nav.navbar > .nav-container > ul#navLinks > li.nav-mega-dropdown:hover > a.nav-link-item .nav-item-icon {
-        color: var(--primary, #dc2626) !important;
+        color: var(--menu-accent) !important;
     }
 
     html body nav.navbar > .nav-container > ul#navLinks .nav-badge-hot {
@@ -775,8 +794,8 @@ html body nav.navbar #avatarWrapper #avatarDropdown.show {
     [data-theme="dark"] body nav.navbar > .nav-container > ul#navLinks > li > a.nav-link-item.active,
     [data-theme="dark"] body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown:hover > a.nav-link-item,
     [data-theme="dark"] body nav.navbar > .nav-container > ul#navLinks > li.nav-mega-dropdown:hover > a.nav-link-item {
-        background: rgba(248, 113, 113, .08) !important;
-        border-color: rgba(248, 113, 113, .14) !important;
+        background: var(--menu-accent-bg) !important;
+        border-color: var(--menu-accent-border) !important;
         box-shadow: none !important;
     }
 }
@@ -848,8 +867,8 @@ html body nav.navbar #avatarWrapper #avatarDropdown.show {
     /* Keep the button visually active while the cursor is inside the dropdown. */
     html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown:has(> ul.modern-dropdown-menu:hover) > a.nav-link-item,
     html body nav.navbar > .nav-container > ul#navLinks > li.nav-dropdown.deposit-click-open > a.nav-link-item {
-        color: var(--primary, #dc2626) !important;
-        background: rgba(220, 38, 38, .055) !important;
-        border-color: rgba(220, 38, 38, .11) !important;
+        color: var(--menu-accent) !important;
+        background: var(--menu-accent-bg) !important;
+        border-color: var(--menu-accent-border) !important;
     }
 }

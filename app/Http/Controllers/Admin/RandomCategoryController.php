@@ -241,4 +241,12 @@ class RandomCategoryController extends Controller
                 ->with('error', 'Không thể xóa danh mục random. Lỗi: ' . $e->getMessage());
         }
     }
+
+    public function toggleActive(RandomCategory $category)
+    {
+        $category->update(['active' => !$category->active]);
+        cache()->forget('nav_random_categories');
+
+        return back()->with('success', $category->active ? 'Đã hiện danh mục trên web.' : 'Đã ẩn danh mục khỏi web.');
+    }
 }

@@ -2,7 +2,7 @@
     <div class="footer-wrapper container-fluid">
         <div class="row">
             <div class="col my-1">
-                <p class="m-0 fw-semibold">© Copyright {{ date('Y') }} ♥ by <a href="#" target="_blank">Bùi Văn Quyết</a></p>
+                <p class="m-0 fw-semibold">© Copyright {{ date('Y') }}</p>
             </div>
         </div>
     </div>
@@ -111,6 +111,31 @@
             alert.style.display = 'none';
         });
     });
+</script>
+
+<script>
+    // Mobile sidebar overlay toggle
+    (function() {
+        var overlay = document.getElementById('pc-sidebar-overlay');
+        var sidebar = document.querySelector('.pc-sidebar');
+        if (!overlay || !sidebar) return;
+
+        // Watch for sidebar open/close via class changes
+        var observer = new MutationObserver(function() {
+            if (sidebar.classList.contains('mob-sidebar-active')) {
+                overlay.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+            }
+        });
+        observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+
+        // Click overlay to close sidebar
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('mob-sidebar-active');
+            overlay.classList.remove('active');
+        });
+    })();
 </script>
 
 @stack('scripts')

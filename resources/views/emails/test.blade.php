@@ -57,9 +57,8 @@
 <body>
     <div class="container">
         <div class="header">
-            @if (config_get('site_logo'))
-                @php($logoPath = public_path(ltrim(parse_url(config_get('site_logo'), PHP_URL_PATH), '/')))
-                <img src="{{ is_file($logoPath) ? $message->embed($logoPath) : asset(config_get('site_logo')) }}" alt="{{ config_get('site_name') }}" class="logo">
+            @if ($logoUrl)
+                <img src="{{ $logoUrl }}" alt="{{ config_get('site_name') }}" width="150" style="display:block;max-width:150px;height:auto;margin:0 auto 10px;">
             @else
                 <strong>{{ config_get('site_name', config('app.name')) }}</strong>
             @endif

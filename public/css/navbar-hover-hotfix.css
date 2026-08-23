@@ -46,13 +46,13 @@ html body nav.navbar #navLinks > li > .nav-menu-trigger:active {
 }
 
 html body nav.navbar #navLinks > li > .nav-link-item.active {
-    color: #dc2626 !important;
-    background: rgba(220,38,38,.07) !important;
-    border-color: rgba(220,38,38,.22) !important;
+    color: var(--menu-accent) !important;
+    background: var(--menu-accent-bg) !important;
+    border-color: var(--menu-accent-border) !important;
 }
 
 html body nav.navbar #navLinks > li > .nav-link-item.active .nav-item-icon {
-    color: #dc2626 !important;
+    color: var(--menu-accent) !important;
 }
 
 html body nav.navbar #navLinks .mega-menu a,
@@ -66,13 +66,13 @@ html body nav.navbar #navLinks .modern-dropdown-menu a * {
 
 @media (hover: hover) and (pointer: fine) {
     html body nav.navbar #navLinks > li > .nav-link-item:hover {
-        color: #dc2626 !important;
-        background: rgba(220,38,38,.07) !important;
-        border-color: rgba(220,38,38,.22) !important;
+        color: var(--menu-accent) !important;
+        background: var(--menu-accent-bg) !important;
+        border-color: var(--menu-accent-border) !important;
     }
 
     html body nav.navbar #navLinks > li > .nav-link-item:hover .nav-item-icon {
-        color: #dc2626 !important;
+        color: var(--menu-accent) !important;
     }
 }
 
@@ -169,16 +169,16 @@ html body nav.navbar #navLinks .modern-dropdown-menu a * {
     html body nav.navbar #navLinks .nav-dropdown.menu-open > .nav-menu-trigger,
     html body nav.navbar #navLinks .nav-mega-dropdown.open > .nav-menu-trigger,
     html body nav.navbar #navLinks .nav-mega-dropdown.menu-open > .nav-menu-trigger {
-        color: #dc2626 !important;
-        background: #fff1f2 !important;
-        border-color: rgba(220,38,38,.22) !important;
+        color: var(--menu-accent) !important;
+        background: var(--menu-accent-bg) !important;
+        border-color: var(--menu-accent-border) !important;
     }
 
     html body nav.navbar #navLinks .nav-dropdown.open > .nav-menu-trigger .nav-item-icon,
     html body nav.navbar #navLinks .nav-dropdown.menu-open > .nav-menu-trigger .nav-item-icon,
     html body nav.navbar #navLinks .nav-mega-dropdown.open > .nav-menu-trigger .nav-item-icon,
     html body nav.navbar #navLinks .nav-mega-dropdown.menu-open > .nav-menu-trigger .nav-item-icon {
-        color: #dc2626 !important;
+        color: var(--menu-accent) !important;
     }
 
     html body nav.navbar #navLinks .nav-dropdown.open > .nav-menu-trigger .nav-arrow,
@@ -326,9 +326,9 @@ html body nav.navbar #navLinks .modern-dropdown-menu a * {
     }
 
     html body nav.navbar #navLinks > li.nav-mega-dropdown:not(:has(> .deposit-mega-menu)) .mega-menu-item:hover {
-        color: #dc2626 !important;
-        background: #fff7f7 !important;
-        border-color: rgba(220,38,38,.22) !important;
+        color: var(--menu-accent) !important;
+        background: var(--menu-accent-bg) !important;
+        border-color: var(--menu-accent-border) !important;
     }
 
     /* NAP TIEN: compact popup touches the visible button, so there is no dead gap. */
@@ -398,24 +398,24 @@ html body nav.navbar #navLinks .modern-dropdown-menu a * {
     }
 
     html body nav.navbar #navLinks .deposit-mega-menu .mega-menu-item:hover {
-        color: #dc2626 !important;
-        background: #fff7f7 !important;
-        border-color: rgba(220,38,38,.18) !important;
+        color: var(--menu-accent) !important;
+        background: var(--menu-accent-bg) !important;
+        border-color: var(--menu-accent-border) !important;
     }
 
     /* Keep dropdown trigger highlighted while its panel is being used. */
     html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .nav-menu-trigger:hover) > .nav-menu-trigger,
     html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .mega-menu:hover) > .nav-menu-trigger,
     html body nav.navbar #navLinks > li.nav-mega-dropdown.menu-open > .nav-menu-trigger {
-        color: #dc2626 !important;
-        background: rgba(220,38,38,.07) !important;
-        border-color: rgba(220,38,38,.22) !important;
+        color: var(--menu-accent) !important;
+        background: var(--menu-accent-bg) !important;
+        border-color: var(--menu-accent-border) !important;
     }
 
     html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .nav-menu-trigger:hover) > .nav-menu-trigger .nav-item-icon,
     html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .mega-menu:hover) > .nav-menu-trigger .nav-item-icon,
     html body nav.navbar #navLinks > li.nav-mega-dropdown.menu-open > .nav-menu-trigger .nav-item-icon {
-        color: #dc2626 !important;
+        color: var(--menu-accent) !important;
     }
 
     html body nav.navbar #navLinks > li.nav-mega-dropdown:has(> .nav-menu-trigger:hover) > .nav-menu-trigger .nav-arrow,
@@ -446,4 +446,159 @@ html body nav.navbar #navLinks .modern-dropdown-menu a * {
         transition-duration: .01ms !important;
         transition-delay: 0s !important;
     }
+}
+
+/* ---------- Unified menu visual system ---------- */
+html body nav.navbar {
+    --nav-text: #334155;
+    --nav-muted: #64748b;
+    --nav-active: var(--menu-accent);
+    --nav-active-bg: var(--menu-accent-bg);
+    --nav-border: #e5e7eb;
+    --nav-item-border: #edf0f4;
+}
+
+html body nav.navbar #navLinks > li > .nav-link-item,
+html body nav.navbar #navLinks > li > .nav-menu-trigger {
+    height: 38px !important;
+    min-height: 38px !important;
+    color: var(--nav-text) !important;
+    border: 1px solid transparent !important;
+    border-radius: 9px !important;
+    font-family: inherit !important;
+    font-size: .84rem !important;
+    font-weight: 650 !important;
+    line-height: 1 !important;
+}
+
+html body nav.navbar #navLinks .nav-item-icon,
+html body nav.navbar #navLinks .nav-arrow {
+    color: var(--nav-muted) !important;
+}
+
+html body nav.navbar #navLinks > li > .nav-link-item.active,
+html body nav.navbar #navLinks > li.menu-open > .nav-menu-trigger,
+html body nav.navbar #navLinks > li.open > .nav-menu-trigger {
+    color: var(--nav-active) !important;
+    background: var(--nav-active-bg) !important;
+    border-color: var(--menu-accent-border) !important;
+}
+
+html body nav.navbar #navLinks > li > .nav-link-item.active .nav-item-icon,
+html body nav.navbar #navLinks > li.menu-open > .nav-menu-trigger .nav-item-icon,
+html body nav.navbar #navLinks > li.menu-open > .nav-menu-trigger .nav-arrow,
+html body nav.navbar #navLinks > li.open > .nav-menu-trigger .nav-item-icon,
+html body nav.navbar #navLinks > li.open > .nav-menu-trigger .nav-arrow {
+    color: var(--nav-active) !important;
+}
+
+html body nav.navbar #navLinks .mega-menu-column,
+html body nav.navbar #navLinks .deposit-mega-menu,
+html body nav.navbar #navLinks .modern-dropdown-menu {
+    border-color: var(--nav-border) !important;
+}
+
+html body nav.navbar #navLinks .mega-col-title,
+html body nav.navbar #navLinks .dropdown-link-title {
+    color: #1f2937 !important;
+    font-size: .84rem !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+}
+
+html body nav.navbar #navLinks .mega-menu-item,
+html body nav.navbar #navLinks .dropdown-link-card {
+    min-height: 42px !important;
+    color: var(--nav-text) !important;
+    background: #fff !important;
+    border: 1px solid var(--nav-item-border) !important;
+    border-radius: 9px !important;
+    font-family: inherit !important;
+    font-size: .8rem !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+    box-shadow: none !important;
+}
+
+html body nav.navbar #navLinks .mega-menu-icon,
+html body nav.navbar #navLinks .mega-menu-icon-fallback {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    flex: 0 0 28px !important;
+    border-radius: 7px !important;
+}
+
+html body nav.navbar #navLinks .mega-col-count,
+html body nav.navbar #navLinks .dropdown-link-desc {
+    color: var(--nav-muted) !important;
+    font-weight: 600 !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    html body nav.navbar #navLinks > li > .nav-link-item:hover,
+    html body nav.navbar #navLinks > li > .nav-menu-trigger:hover,
+    html body nav.navbar #navLinks > li:has(> .mega-menu:hover) > .nav-menu-trigger {
+        color: var(--nav-active) !important;
+        background: var(--nav-active-bg) !important;
+        border-color: var(--menu-accent-border) !important;
+    }
+
+    html body nav.navbar #navLinks > li > .nav-link-item:hover .nav-item-icon,
+    html body nav.navbar #navLinks > li > .nav-menu-trigger:hover .nav-item-icon,
+    html body nav.navbar #navLinks > li > .nav-menu-trigger:hover .nav-arrow,
+    html body nav.navbar #navLinks > li:has(> .mega-menu:hover) > .nav-menu-trigger .nav-item-icon,
+    html body nav.navbar #navLinks > li:has(> .mega-menu:hover) > .nav-menu-trigger .nav-arrow {
+        color: var(--nav-active) !important;
+    }
+
+    html body nav.navbar #navLinks .mega-menu-item:hover,
+    html body nav.navbar #navLinks .dropdown-link-card:hover {
+        color: var(--nav-active) !important;
+        background: var(--nav-active-bg) !important;
+        border-color: var(--menu-accent-border) !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+}
+
+@media (max-width: 1199px) {
+    html body nav.navbar #navLinks > li > .nav-link-item,
+    html body nav.navbar #navLinks > li > .nav-menu-trigger {
+        height: 44px !important;
+        min-height: 44px !important;
+        padding: 0 12px !important;
+        font-size: .86rem !important;
+    }
+
+    html body nav.navbar #navLinks .mega-menu-column {
+        padding: 8px !important;
+        border: 1px solid var(--nav-border) !important;
+        border-radius: 9px !important;
+    }
+}
+
+[data-theme="dark"] body nav.navbar {
+    --nav-text: #e5e7eb;
+    --nav-muted: #a3a3a3;
+    --nav-active: var(--menu-accent);
+    --nav-active-bg: var(--menu-accent-bg);
+    --nav-border: #303030;
+    --nav-item-border: #303030;
+}
+
+[data-theme="dark"] body nav.navbar #navLinks .mega-col-title,
+[data-theme="dark"] body nav.navbar #navLinks .dropdown-link-title {
+    color: #f3f4f6 !important;
+}
+
+[data-theme="dark"] body nav.navbar #navLinks .mega-menu-item,
+[data-theme="dark"] body nav.navbar #navLinks .dropdown-link-card {
+    color: var(--nav-text) !important;
+    background: #1f1f1f !important;
+}
+
+html[data-theme="dark"] body nav.navbar #navLinks > li:not(.open):not(.menu-open):not(:has(> .mega-menu:hover)) > .nav-menu-trigger:not(.active):not(:hover):not(:focus-visible),
+body[data-theme="dark"] nav.navbar #navLinks > li:not(.open):not(.menu-open):not(:has(> .mega-menu:hover)) > .nav-menu-trigger:not(.active):not(:hover):not(:focus-visible) {
+    color: #e5e7eb !important;
 }

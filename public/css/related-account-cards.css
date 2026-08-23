@@ -1,0 +1,77 @@
+.related-accounts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.related-account-card {
+    overflow: hidden;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 10px;
+    background: var(--box-bg, #fff);
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.related-account-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, .1);
+}
+
+.related-account-image {
+    position: relative;
+    display: block;
+    aspect-ratio: 16 / 9;
+    background: #f1f5f9;
+}
+
+.related-account-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.related-account-code {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    padding: 3px 7px;
+    border-radius: 5px;
+    background: rgba(15, 23, 42, .78);
+    color: #fff;
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+.related-account-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+}
+
+.related-account-price {
+    color: var(--primary, #dc2626);
+    font-size: .95rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.related-account-link {
+    margin-left: auto;
+    color: var(--primary, #dc2626);
+    font-size: .78rem;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+@media (max-width: 480px) {
+    .related-accounts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .related-account-content { display: block; padding: 8px; }
+    .related-account-price { font-size: .82rem; }
+    .related-account-link { display: block; margin-top: 5px; font-size: .72rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .related-account-card { transition: none; }
+}

@@ -9,6 +9,7 @@ use App\Models\DiscountCode;
 use App\Models\GameAccount;
 use App\Models\GameService;
 use App\Models\LuckyWheel;
+use App\Models\LuckyWheelHistory;
 use App\Models\MoneyTransaction;
 use App\Models\MoneyWithdrawalHistory;
 use App\Models\Notification;
@@ -104,10 +105,12 @@ class DashboardController extends Controller
                 ->get();
 
             // Tổng hợp các giao dịch theo loại
+            // Tiền vé quay vòng quay đã được ghi thành giao dịch 'purchase' (reference_id LW-*),
+            // nên không trừ thêm LuckyWheelHistory::sum('total_cost') nữa để tránh tính hai lần.
             $transactionSummary = [
                 'total_deposit' => MoneyTransaction::where('type', 'deposit')->sum('amount'),
                 'total_withdraw' => MoneyTransaction::where('type', 'withdraw')->sum('amount'),
-                'total_purchase' => MoneyTransaction::where('type', 'purchase')->sum('amount') - \App\Models\LuckyWheelHistory::sum('total_cost'), // Thêm vòng quay
+                'total_purchase' => MoneyTransaction::where('type', 'purchase')->sum('amount'),
                 'total_refund' => MoneyTransaction::where('type', 'refund')->sum('amount'),
             ];
 
@@ -249,8 +252,10 @@ class DashboardController extends Controller
                 $accStock = GameAccount::where('status', 'available')->count()
                             + RandomCategoryAccount::where('status', 'available')->count();
                 
-                $wheelSpins = MoneyTransaction::where('type', 'subtract')->where('description', 'like', '%vòng quay%')->whereBetween('created_at', [$start, $end])->count();
-                $wheelRevenue = MoneyTransaction::where('type', 'subtract')->where('description', 'like', '%vòng quay%')->whereBetween('created_at', [$start, $end])->sum('amount');
+                // Lượt quay và doanh thu vòng quay lấy từ chính giao dịch trừ tiền vé quay (reference_id LW-*).
+                // Trước đây filter theo type 'subtract' vốn không tồn tại trong enum nên luôn ra 0.
+                $wheelSpins = LuckyWheelHistory::whereBetween('created_at', [$start, $end])->sum('spin_count');
+                $wheelRevenue = -LuckyWheelHistory::whereBetween('created_at', [$start, $end])->sum('total_cost');
                 $wheelsCount = LuckyWheel::count();
                 
                 $serviceCompleted = ServiceHistory::where('status', 'completed')->whereBetween('updated_at', [$start, $end])->count();

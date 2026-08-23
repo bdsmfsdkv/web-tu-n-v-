@@ -1,5 +1,15 @@
 @extends('layouts.user.app')
 @section('title', $title)
+
+@push('css')
+<style>
+    @media (max-width: 520px) {
+        section[id^="categories-"] .category-img { aspect-ratio: 4 / 3; }
+        section[id^="categories-"] .category-img img { object-fit: contain; }
+    }
+</style>
+@endpush
+
 @section('content')
 
 
@@ -39,10 +49,10 @@
                                 @if ($category->active)
                                     <a href="{{ $category->url ?? route('category.index', ['slug' => $category->slug]) }}" class="category-card" style="position: relative;">
                                         @if(isset($category->tag_image) && $category->tag_image)
-                                        <img src="{{ $category->tag_image }}" alt="Tag" style="position: absolute; top: 0; right: 0; max-width: 60px; z-index: 10;">
+                                        <img src="{{ $category->tag_image }}" alt="Tag" style="position: absolute; top: 0; right: 0; max-width: 60px; z-index: 10;" loading="lazy" decoding="async">
                                         @endif
                                         <div class="category-img">
-                                             <img src="{{ asset($category->thumbnail) }}" alt="{{ $category->name }}">
+                                             <img src="{{ asset($category->thumbnail) }}" alt="{{ $category->name }}" loading="lazy" decoding="async">
                                         </div>
                                         <div class="category-body" style="display: flex; flex-direction: column;">
                                             <div class="category-name">{{ $category->name }}</div>

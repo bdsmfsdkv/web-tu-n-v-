@@ -108,6 +108,13 @@
                                         </td>
                                         <td>{{ $service->created_at->format('d/m/Y') }}</td>
                                         <td>
+                                            <form method="POST" action="{{ route('admin.services.toggle-active', $service->id) }}" class="d-inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="btn btn-sm {{ $service->active ? 'btn-outline-danger' : 'btn-outline-success' }}" title="{{ $service->active ? 'Ẩn khỏi web' : 'Hiện trên web' }}">
+                                                    <i class="ti {{ $service->active ? 'ti-eye-off' : 'ti-eye' }}"></i>
+                                                </button>
+                                            </form>
                                             <a class="me-3" href="{{ route('admin.services.edit', $service->id) }}">
                                                 <i class="ti ti-edit fs-5 text-primary"></i>
                                             </a>

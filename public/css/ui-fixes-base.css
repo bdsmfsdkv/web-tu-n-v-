@@ -133,7 +133,7 @@ html body .navbar > .nav-container {
     box-sizing: border-box !important;
 }
 html body .navbar .nav-brand { position: static !important; display: flex !important; align-items: center !important; margin: 0 !important; padding: 0 !important; }
-html body .navbar .nav-brand img { width: auto !important; height: 34px !important; max-width: 135px !important; object-fit: contain !important; }
+html body .navbar .nav-brand img { width: auto !important; height: 40px !important; max-height: 40px !important; object-fit: contain !important; }
 html body .navbar .nav-links {
     position: static !important;
     display: flex !important;
@@ -181,7 +181,7 @@ html body #avatarDropdown {
 }
 html body #avatarDropdown .dropdown-user-card {
     padding: 17px !important;
-    background: radial-gradient(circle at 92% 8%,rgba(239,68,68,.13),transparent 35%),linear-gradient(145deg,#fff,#fff8f8) !important;
+    background: radial-gradient(circle at 92% 8%,var(--menu-accent-glow),transparent 35%),linear-gradient(145deg,#fff,#fff8f8) !important;
     border-radius: 18px 18px 0 0 !important;
 }
 html body #avatarDropdown .dropdown-user-header { display: flex !important; align-items: center !important; gap: 12px !important; }
@@ -195,10 +195,10 @@ html body #avatarDropdown .dropdown-user-avatar {
     color: #fff !important;
     font-size: 1.05rem !important;
     font-weight: 900 !important;
-    background: linear-gradient(135deg,#ef4444,#b91c1c) !important;
+    background: linear-gradient(135deg,var(--primary-light),var(--primary-dark)) !important;
     border: 3px solid #fff !important;
     border-radius: 15px !important;
-    box-shadow: 0 8px 20px rgba(220,38,38,.25) !important;
+    box-shadow: 0 8px 20px var(--menu-accent-glow) !important;
 }
 html body #avatarDropdown .dropdown-name { color: #111827 !important; font-size: .96rem !important; font-weight: 850 !important; }
 html body #avatarDropdown .dropdown-email { margin-top: 4px !important; color: #8b96a7 !important; font-size: .76rem !important; }
@@ -209,11 +209,11 @@ html body #avatarDropdown .dropdown-balance-box {
     margin-top: 14px !important;
     padding: 12px 13px !important;
     background: #fff !important;
-    border: 1px solid #fee2e2 !important;
+    border: 1px solid var(--menu-accent-border) !important;
     border-radius: 13px !important;
 }
 html body #avatarDropdown .dropdown-balance-label { grid-column: 1 / -1 !important; color: #64748b !important; font-size: .69rem !important; font-weight: 800 !important; text-transform: uppercase !important; }
-html body #avatarDropdown .dropdown-balance-val { color: #dc2626 !important; font-size: 1.22rem !important; font-weight: 900 !important; }
+html body #avatarDropdown .dropdown-balance-val { color: var(--menu-accent) !important; font-size: 1.22rem !important; font-weight: 900 !important; }
 html body #avatarDropdown .dropdown-btn-deposit {
     display: inline-flex !important;
     min-height: 36px !important;
@@ -226,7 +226,7 @@ html body #avatarDropdown .dropdown-btn-deposit {
     font-weight: 850 !important;
     text-decoration: none !important;
     white-space: nowrap !important;
-    background: linear-gradient(135deg,#ef4444,#dc2626) !important;
+    background: linear-gradient(135deg,var(--primary-light),var(--primary)) !important;
     border-radius: 9px !important;
 }
 
@@ -333,7 +333,7 @@ html body #avatarDropdown .profile-language-section .ant-header-lang-dropdown:ho
         gap: 7px !important;
     }
     html body .navbar .nav-brand { margin-right: auto !important; flex: 0 1 auto !important; }
-    html body .navbar .nav-brand img { height: 30px !important; max-width: 116px !important; }
+    html body .navbar .nav-brand img { height: 34px !important; max-width: 135px !important; }
     html body .navbar .nav-user { height: 56px !important; margin-left: auto !important; gap: 6px !important; }
     html body .navbar .nav-user-profile .nav-user-info { display: none !important; }
     html body .navbar .nav-avatar { width: 32px !important; height: 32px !important; min-width: 32px !important; }

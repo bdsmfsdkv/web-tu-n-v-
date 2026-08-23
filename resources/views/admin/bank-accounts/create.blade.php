@@ -2,24 +2,24 @@
 @section('title', $title)
 
 @section('content')
-    <div >
-        <div >
-            <div class="page-header">
-                <div class="page-block mb-3">
-    <div class="row align-items-center">
-        <div class="col-md-12">
-            <div class="page-header-title">
-                <h2 class="mb-0">Thêm tài khoản ngân hàng</h2>
-                <p class="text-muted">Tạo tài khoản ngân hàng mới</p>
+    <div>
+        <div>
+            <div class="page-header d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-3">
+                <div class="page-header-title">
+                    <h2 class="mb-0">Thêm tài khoản ngân hàng</h2>
+                    <p class="text-muted mb-0">Tạo tài khoản ngân hàng mới</p>
+                </div>
+                <div class="page-btn flex-shrink-0">
+                    <a href="{{ route('admin.bank-accounts.index') }}" class="btn btn-outline-secondary w-100 w-sm-auto">
+                        <i class="ti ti-arrow-left me-1"></i> Danh sách tài khoản
+                    </a>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
-            </div>
-            <div class="card-body">
+            <div class="card-body px-0 pt-0">
                 <div class="alert alert-notication-custom alert-dismissible fade show" role="alert">
-                    <strong>Hệ thống hiện tại đang sử dụng API qua Spay5s.com.</strong>
-                    <br>Vui lòng đăng ký tài khoản tại <a href="https://spay5s.com/" target="_blank" class="a_link">spay5s.com</a> để lấy Token tích hợp nạp tiền tự động cho các ngân hàng: Vietcombank, Vietinbank, MBBank, ACB, OCB.
+                    <strong>Hỗ trợ API tự động qua Spay5s.com hoặc SePay.vn.</strong>
+                    <br>- <strong>SPAY5S:</strong> Lấy Token tại <a href="https://spay5s.com/" target="_blank" class="a_link">spay5s.com</a> (Hỗ trợ Vietcombank, Vietinbank, MBBank, ACB, OCB).
+                    <br>- <strong>SePay:</strong> Lấy Token tại <a href="https://my.sepay.vn/" target="_blank" class="a_link">my.sepay.vn</a>. Có thể nhập token riêng tại đây hoặc dùng Token chung đã cài trong Cài đặt thanh toán.
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             </div>
@@ -162,17 +162,64 @@
                                     <textarea class="form-control" name="note" placeholder="Nhập ghi chú (nếu có)">{{ old('note') }}</textarea>
                                 </div>
                             </div>
+                            <!-- KHỐI CẤU HÌNH NGUỒN GIAO DỊCH & SEPAY -->
                             <div class="col-lg-12">
-                                <div class="mb-3">
-                                    <label class="form-label">Access Token (từ <a
-                                            href="https://spay5s.com/" target="_blank">spay5s.com</a>)</label>
-                                    <input type="text" class="form-control @error('access_token') is-invalid @enderror"
-                                        name="access_token" placeholder="Nhập Access Token từ SePay.vn"
-                                        value="{{ old('access_token') }}">
-                                    @error('access_token')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    <small class="form-text text-muted">Token này được cung cấp bởi spay5s.com để kết nối API tự động cộng tiền.</small>
+                                <div class="card border border-dashed shadow-sm mb-3">
+                                    <div class="card-header border-bottom bg-transparent py-2">
+                                        <h6 class="card-title mb-0 border-start border-primary border-3 ps-2">
+                                            <i class="ti ti-plug me-1"></i> Cấu hình kết nối API Giao dịch tự động
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-lg-6 col-12 mb-3">
+                                                <label class="form-label fw-bold">Nguồn giao dịch (Provider) <span class="text-danger">*</span></label>
+                                                <select name="provider" id="provider_select" class="form-select @error('provider') is-invalid @enderror">
+                                                    <option value="sepay" {{ old('provider', 'sepay') == 'sepay' ? 'selected' : '' }}>SePay API v2</option>
+                                                    <option value="spay5s" {{ old('provider', 'sepay') == 'spay5s' ? 'selected' : '' }}>SPAY5S</option>
+                                                </select>
+                                                @error('provider')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                                <small class="form-text text-muted">Chọn SePay để đồng bộ giao dịch ngân hàng qua SePay API v2.</small>
+                                            </div>
+
+                                            <div class="col-lg-6 col-12 mb-3" id="env_field_wrapper">
+                                                <label class="form-label fw-bold">Môi trường SePay</label>
+                                                <select name="sepay_env" id="sepay_env_select" class="form-select @error('sepay_env') is-invalid @enderror">
+                                                    <option value="production" {{ old('sepay_env', config_get('sepay_env', config('sepay.env', 'production'))) === 'production' ? 'selected' : '' }}>Production (Thực tế - userapi.sepay.vn)</option>
+                                                    <option value="sandbox" {{ old('sepay_env', config_get('sepay_env', config('sepay.env', 'production'))) === 'sandbox' ? 'selected' : '' }}>Sandbox (Thử nghiệm - userapi-sandbox.sepay.vn)</option>
+                                                </select>
+                                                @error('sepay_env')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                                <small class="form-text text-muted">Chọn môi trường tương ứng với token của tài khoản này.</small>
+                                            </div>
+
+                                            <div class="col-lg-12 mb-3">
+                                                <label class="form-label fw-bold" id="token_label">
+                                                    SePay API Token / Access Token
+                                                </label>
+                                                <div class="input-group">
+                                                    <input type="password" class="form-control @error('access_token') is-invalid @enderror"
+                                                        id="access_token_input"
+                                                        name="access_token"
+                                                        placeholder="Nhập API Token / Access Token từ my.sepay.vn"
+                                                        value="{{ old('access_token') }}"
+                                                        autocomplete="new-password">
+                                                    <button class="btn btn-outline-secondary" type="button" id="toggle_token_btn" title="Ẩn/Hiện token">
+                                                        <i class="ti ti-eye" id="toggle_token_icon"></i>
+                                                    </button>
+                                                </div>
+                                                @error('access_token')
+                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                @enderror
+                                                <small class="form-text text-muted" id="token_help_text">
+                                                    API Access Token cấp cho tài khoản này trên <a href="https://my.sepay.vn" target="_blank" class="text-primary fw-semibold">my.sepay.vn</a>.
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-lg-12">
@@ -220,3 +267,39 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            function updateProviderUI() {
+                const provider = $('#provider_select').val();
+                if (provider === 'sepay') {
+                    $('#token_label').text('SePay API Token / Access Token');
+                    $('#access_token_input').attr('placeholder', 'Nhập API Token / Access Token từ my.sepay.vn');
+                    $('#token_help_text').html('API Access Token cấp cho tài khoản này trên <a href="https://my.sepay.vn" target="_blank" class="text-primary fw-semibold">my.sepay.vn</a>.');
+                    $('#env_field_wrapper').show();
+                } else {
+                    $('#token_label').text('SPAY5S API Token');
+                    $('#access_token_input').attr('placeholder', 'Nhập API Token từ spay5s.com');
+                    $('#token_help_text').html('API Token cấp từ dịch vụ <a href="https://spay5s.com" target="_blank" class="text-primary fw-semibold">spay5s.com</a>.');
+                    $('#env_field_wrapper').hide();
+                }
+            }
+
+            $('#provider_select').on('change', updateProviderUI);
+            updateProviderUI();
+
+            $('#toggle_token_btn').on('click', function() {
+                const input = $('#access_token_input');
+                const icon = $('#toggle_token_icon');
+                if (input.attr('type') === 'password') {
+                    input.attr('type', 'text');
+                    icon.removeClass('ti-eye').addClass('ti-eye-off');
+                } else {
+                    input.attr('type', 'password');
+                    icon.removeClass('ti-eye-off').addClass('ti-eye-off');
+                }
+            });
+        });
+    </script>
+@endpush

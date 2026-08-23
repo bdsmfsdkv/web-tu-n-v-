@@ -58,6 +58,7 @@ class RandomCategoryAccountController extends Controller
                 'random_category_id' => 'required|exists:random_categories,id',
                 'accounts' => 'required|string',
                 'price' => 'required|numeric|min:0',
+                'min_spent' => 'nullable|numeric|min:0',
                 'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
                 'note' => 'nullable|string',
                 'note_buyer' => 'nullable|string',
@@ -106,6 +107,7 @@ class RandomCategoryAccountController extends Controller
                     'password' => $password,
                     'server' => 1, // Default value since it was removed from UI
                     'price' => $data['price'],
+                    'min_spent' => $data['min_spent'] ?? 0,
                     'status' => 'available',
                     'note' => $data['note'] ?? null,
                     'note_buyer' => $data['note_buyer'] ?? null,
@@ -155,6 +157,7 @@ class RandomCategoryAccountController extends Controller
                 'account_name' => 'nullable|string|max:100',
                 'password' => 'nullable|string|max:100',
                 'price' => 'required|numeric|min:0',
+                'min_spent' => 'nullable|numeric|min:0',
                 'note' => 'nullable|string',
                 'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
                 'remove_thumbnail' => 'nullable|boolean',
@@ -163,6 +166,7 @@ class RandomCategoryAccountController extends Controller
             DB::beginTransaction();
 
             $data = $request->except(['thumbnail', 'remove_thumbnail']);
+            $data['min_spent'] = $request->input('min_spent', 0);
 
             if ($request->hasFile('thumbnail')) {
                 // Delete old thumbnail if exists

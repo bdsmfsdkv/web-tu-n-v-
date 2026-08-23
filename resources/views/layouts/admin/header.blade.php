@@ -2,7 +2,7 @@
     <div class="header-wrapper">
         <!-- [Mobile Media Block] start -->
         <div class="me-auto pc-mob-drp">
-            <ul class="list-unstyled">
+            <ul class="list-unstyled d-flex align-items-center mb-0">
                 <!-- ======= Menu collapse Icon ===== -->
                 <li class="pc-h-item pc-sidebar-collapse">
                     <a href="#" class="pc-head-link ms-0" id="sidebar-hide">
@@ -22,10 +22,17 @@
                         </svg>
                     </a>
                 </li>
+                <!-- Mobile site name -->
+                <li class="pc-h-item d-lg-none">
+                    <a href="{{ route('admin.index') }}" class="text-decoration-none ms-2">
+                        <span class="fw-bold" style="font-size: 14px;">{{ config_get('site_name', 'Admin') }}</span>
+                    </a>
+                </li>
             </ul>
         </div>
         <!-- [Mobile Media Block end] -->
-     
+        <div class="ms-auto">
+            <ul class="list-unstyled mb-0 d-flex align-items-center">
                 <li class="dropdown pc-h-item header-user-profile">
                     <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
                         <img src="{{ asset('assets/img/profiles/avator1.jpg') }}" alt="user-image" class="user-avtar" />

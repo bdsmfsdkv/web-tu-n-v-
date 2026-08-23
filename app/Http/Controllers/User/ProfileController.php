@@ -19,7 +19,10 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\Hash;
 use App\Models\LuckyWheelHistory;
 use App\Models\WithdrawalHistory;
+use App\Models\RewardItem;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class ProfileController extends Controller
 {
@@ -87,7 +90,11 @@ class ProfileController extends Controller
     public function purchasedAccounts(Request $request)
     {
         $title = 'Tài khoản đã mua';
-        $transactions = GameAccount::where('buyer_id', Auth::id())->where('status', 'sold')->paginate(perPage: 10);
+        // with('category') tránh 10 query lazy-load do view đọc $transaction->category->name.
+        $transactions = GameAccount::with('category')
+            ->where('buyer_id', Auth::id())
+            ->where('status', 'sold')
+            ->paginate(perPage: 10);
         return view('user.profile.purchased-accounts', [
             'user' => $request->user(),
             'transactions' => $transactions,
@@ -159,6 +166,19 @@ class ProfileController extends Controller
             ->groupBy('order_batch_id', 'random_category_id', 'buyer_id')
             ->orderBy('purchase_time', 'desc')
             ->paginate(10);
+
+        // Trước đây mỗi dòng trên trang gọi randomOrderTransactionTotal() riêng, tức 10
+        // query SUM với LIKE '%...%' (không dùng được index). Giờ gộp thành 1 query.
+        $totals = $this->randomOrderTransactionTotals(
+            (int) Auth::id(),
+            $orders->getCollection()->pluck('order_batch_id')->all()
+        );
+
+        $orders->getCollection()->each(function ($order) use ($totals) {
+            if (isset($totals[$order->order_batch_id])) {
+                $order->total_price = $totals[$order->order_batch_id];
+            }
+        });
             
         return view('user.profile.purchased-random-accounts', [
             'user' => $request->user(),
@@ -189,12 +209,13 @@ class ProfileController extends Controller
         }
         
         $firstAcc = $accounts->first();
+        $transactionTotal = $this->randomOrderTransactionTotal(Auth::id(), $batchId);
         $order = (object)[
             'batch_id' => $batchId,
             'category' => $firstAcc->category,
             'purchase_time' => $firstAcc->updated_at,
             'quantity' => $accounts->count(),
-            'total_price' => $accounts->sum('price'),
+            'total_price' => $transactionTotal ?? $accounts->sum('price'),
             'accounts' => $accounts
         ];
         
@@ -204,6 +225,20 @@ class ProfileController extends Controller
             'order' => $order,
             'title' => $title
         ]);
+    }
+
+    private function randomOrderTransactionTotal(int $userId, string $batchId): ?float
+    {
+        if (str_starts_with($batchId, 'LEGACY-')) {
+            return null;
+        }
+
+        $total = MoneyTransaction::where('user_id', $userId)
+            ->where('type', 'purchase')
+            ->where('description', 'like', '%(Đơn: ' . $batchId . ')')
+            ->sum(DB::raw('ABS(amount)'));
+
+        return $total > 0 ? (float) $total : null;
     }
 
     public function depositCard(Request $request)
@@ -243,6 +278,47 @@ class ProfileController extends Controller
             'transactions' => $transactions,
             'bankAccounts' => $bankAccounts,
             'title' => $title
+        ]);
+    }
+
+    public function checkDepositAtm(Request $request)
+    {
+        $userId = Auth::id();
+        $since = $request->input('since');
+        
+        $query = BankDeposit::where('user_id', $userId)
+            ->orderBy('created_at', 'desc');
+
+        if ($since) {
+            try {
+                $query->where('created_at', '>=', Carbon::parse($since));
+            } catch (\Exception $e) {}
+        }
+
+        $latestDeposit = $query->first();
+
+        if ($latestDeposit) {
+            $user = User::find($userId) ?? Auth::user();
+            return response()->json([
+                'success' => true,
+                'found' => true,
+                'deposit' => [
+                    'id' => $latestDeposit->transaction_id,
+                    'amount' => $latestDeposit->amount,
+                    'amount_formatted' => number_format($latestDeposit->amount) . 'đ',
+                    'bank' => $latestDeposit->bank,
+                    'content' => $latestDeposit->content,
+                    'transaction_id' => $latestDeposit->transaction_id,
+                    'created_at' => $latestDeposit->created_at ? $latestDeposit->created_at->format('H:i:s d/m/Y') : '',
+                ],
+                'new_balance' => $user->balance,
+                'new_balance_formatted' => number_format($user->balance),
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'found' => false,
         ]);
     }
 
@@ -411,18 +487,29 @@ class ProfileController extends Controller
     /**
      * Show the gem withdrawal page.
      */
-    public function withdrawGem()
+    public function withdrawGem(Request $request)
     {
         $title = "Rút vật phẩm";
         $user = auth()->user();
-        $withdrawals = WithdrawalHistory::where('user_id', $user->id)
+        $withdrawals = WithdrawalHistory::with('rewardItem')->where('user_id', $user->id)
             ->where('type', 'gem')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
             
-        $rewardItems = \App\Models\RewardItem::where('active', 1)->orderBy('priority', 'asc')->get();
+        $rewardItems = RewardItem::where('active', 1)
+            ->withSum(['wheelHistories as won_amount' => fn ($query) => $query->where('user_id', $user->id)], 'reward_amount')
+            ->withSum(['withdrawals as withdrawn_amount' => fn ($query) => $query->where('user_id', $user->id)->whereIn('status', ['processing', 'success'])], 'amount')
+            ->orderBy('priority', 'asc')
+            ->get()
+            ->each(fn (RewardItem $item) => $item->available_amount = max(0, (int) $item->won_amount - (int) $item->withdrawn_amount));
 
-        return view('user.profile.withdraw-gem', compact('title', 'withdrawals', 'rewardItems'));
+        $gemBalance = (int) $user->gem;
+        $selectedRewardItemId = $request->integer('item');
+        if (!$rewardItems->contains('id', $selectedRewardItemId)) {
+            $selectedRewardItemId = null;
+        }
+
+        return view('user.profile.withdraw-gem', compact('title', 'withdrawals', 'rewardItems', 'gemBalance', 'selectedRewardItemId'));
     }
 
     /**
@@ -431,24 +518,50 @@ class ProfileController extends Controller
     public function processWithdrawGem(Request $request)
     {
         $request->validate([
-            'amount' => 'required|integer|min:10|max:10000',
+            'reward_item_id' => 'nullable|integer',
+            'amount' => 'required|integer|min:1',
             'character_name' => 'required|string|max:50',
             'server' => 'required|integer|min:1|max:13',
             'user_note' => 'nullable|string|max:255',
         ]);
 
-        $user = auth()->user();
-
-        if ($user->gem < $request->amount) {
-            return back()->with('error', 'Số ngọc không đủ để thực hiện giao dịch.')->withInput();
-        }
-
         try {
             DB::beginTransaction();
+            $user = auth()->user()->newQuery()->lockForUpdate()->findOrFail(auth()->id());
+            $rewardItem = null;
 
-            // Tạo yêu cầu rút ngọc
+            if ($request->filled('reward_item_id')) {
+                $rewardItem = RewardItem::whereKey($request->integer('reward_item_id'))
+                    ->where('active', 1)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                $wonAmount = LuckyWheelHistory::where('user_id', $user->id)
+                    ->where('reward_item_id', $rewardItem->id)
+                    ->sum('reward_amount');
+                $withdrawnAmount = WithdrawalHistory::where('user_id', $user->id)
+                    ->where('reward_item_id', $rewardItem->id)
+                    ->whereIn('status', ['processing', 'success'])
+                    ->sum('amount');
+                $availableAmount = max(0, $wonAmount - $withdrawnAmount);
+
+                if ($request->amount > $availableAmount) {
+                    DB::rollBack();
+                    return back()->with('error', 'Số lượng vật phẩm không đủ để thực hiện giao dịch.')->withInput();
+                }
+
+                if ($request->amount < $rewardItem->min_withdraw || ($rewardItem->max_withdraw > 0 && $request->amount > $rewardItem->max_withdraw)) {
+                    DB::rollBack();
+                    return back()->with('error', 'Số lượng rút không nằm trong giới hạn của vật phẩm.')->withInput();
+                }
+            } elseif ($request->amount > $user->gem) {
+                DB::rollBack();
+                return back()->with('error', 'Số dư CC không đủ để thực hiện giao dịch.')->withInput();
+            }
+
             WithdrawalHistory::create([
                 'user_id' => $user->id,
+                'reward_item_id' => $rewardItem?->id,
                 'amount' => $request->amount,
                 'type' => 'gem',
                 'character_name' => $request->character_name,
@@ -457,13 +570,14 @@ class ProfileController extends Controller
                 'status' => 'processing',
             ]);
 
-            // Trừ ngọc từ tài khoản người dùng
-            $user->gem -= $request->amount;
-            $user->save();
+            if ($rewardItem === null) {
+                $user->gem -= $request->amount;
+                $user->save();
+            }
 
             DB::commit();
 
-            return back()->with('success', 'Yêu cầu rút ngọc đã được gửi thành công.');
+            return back()->with('success', 'Yêu cầu rút vật phẩm đã được gửi thành công.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Có lỗi xảy ra. Vui lòng thử lại sau.');

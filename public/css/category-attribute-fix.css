@@ -16,15 +16,15 @@
     justify-content: center !important;
     width: 100% !important;
     min-width: 0 !important;
-    min-height: 76px !important;
+    min-height: 52px !important;
     margin: 0 !important;
-    padding: 9px 10px !important;
-    gap: 5px !important;
+    padding: 6px 8px !important;
+    gap: 2px !important;
     text-align: center !important;
     background: linear-gradient(145deg, #ffffff 0%, #f7f9ff 100%) !important;
     border: 1px solid #e6eaf2 !important;
-    border-radius: 10px !important;
-    box-shadow: 0 3px 10px rgba(15, 23, 42, .045) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, .035) !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
     transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease !important;
@@ -36,9 +36,9 @@
     min-width: 0 !important;
     margin: 0 !important;
     color: #64748b !important;
-    font-size: .76rem !important;
+    font-size: .62rem !important;
     font-weight: 700 !important;
-    line-height: 1.25 !important;
+    line-height: 1.15 !important;
     text-align: center !important;
     white-space: normal !important;
     overflow-wrap: anywhere !important;
@@ -51,9 +51,9 @@
     min-width: 0 !important;
     margin: 0 !important;
     color: #111827 !important;
-    font-size: .98rem !important;
+    font-size: .72rem !important;
     font-weight: 800 !important;
-    line-height: 1.3 !important;
+    line-height: 1.2 !important;
     text-align: center !important;
     white-space: normal !important;
     overflow: visible !important;
@@ -77,7 +77,22 @@
     }
 
     .account-grid .account-card > .account-info > .account-details-grid > .account-detail-tile {
-        min-height: 62px !important;
+        display: none !important;
+        min-height: 0 !important;
+        padding: 7px 6px !important;
+        gap: 2px !important;
+    }
+
+    .account-grid .account-card > .account-info > .account-details-grid > .account-detail-tile:nth-child(-n+2) {
+        display: flex !important;
+    }
+
+    .account-grid .account-card > .account-info > .account-details-grid > .account-detail-tile > .account-detail-label {
+        font-size: .62rem !important;
+    }
+
+    .account-grid .account-card > .account-info > .account-details-grid > .account-detail-tile > .account-detail-value {
+        font-size: .72rem !important;
     }
 }
 

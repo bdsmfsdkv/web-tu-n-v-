@@ -66,14 +66,16 @@
                         <a href="?period_a=this_month&period_b=last_month" data-comparison-link class="btn btn-xs {{ $comparison['period_a'] == 'this_month' && $comparison['period_b'] == 'last_month' ? 'btn-warning text-white' : 'btn-outline-secondary' }}">Tháng này / Tháng trước</a>
                     </div>
 
-                    @if($comparison['a']['revenue'] >= $comparison['b']['revenue'])
-                    <div class="alert alert-success border-start border-success border-4 py-2 px-3 mb-3" style="background-color: rgba(40, 167, 69, 0.1);">
-                        <span class="fw-semibold text-success">Doanh thu Kỳ A đang cao hơn hoặc bằng Kỳ B. Giữ phong độ nhé!</span>
-                    </div>
-                    @else
-                    <div class="alert alert-danger border-start border-danger border-4 py-2 px-3 mb-3" style="background-color: rgba(220, 53, 69, 0.1);">
-                        <span class="fw-semibold text-danger">Doanh thu Kỳ A đang thấp hơn Kỳ B. Cố lên nhé!</span>
-                    </div>
+                    @if(request()->has('period_a') || request()->has('period_b'))
+                        @if($comparison['a']['revenue'] >= $comparison['b']['revenue'])
+                        <div class="alert alert-success border-start border-success border-4 py-2 px-3 mb-3" style="background-color: rgba(40, 167, 69, 0.1);">
+                            <span class="fw-semibold text-success">Doanh thu Kỳ A đang cao hơn hoặc bằng Kỳ B. Giữ phong độ nhé!</span>
+                        </div>
+                        @else
+                        <div class="alert alert-danger border-start border-danger border-4 py-2 px-3 mb-3" style="background-color: rgba(220, 53, 69, 0.1);">
+                            <span class="fw-semibold text-danger">Doanh thu Kỳ A đang thấp hơn Kỳ B. Cố lên nhé!</span>
+                        </div>
+                        @endif
                     @endif
 
                     <div class="table-responsive">
@@ -124,28 +126,14 @@
                             </tbody>
                         </table>
                     </div>
-@php
-                    // Find the paginator variable
-                    $paginator = null;
-                    foreach(get_defined_vars() as $var) {
-                        if (is_object($var) && method_exists($var, 'hasPages')) {
-                            $paginator = $var;
-                            break;
-                        }
-                    }
-                @endphp
-                @if($paginator && $paginator->hasPages())
-                    <div class="d-flex justify-content-end p-3 border-top">
-                        {{ $paginator->withQueryString()->links('pagination::bootstrap-5') }}
-                    </div>
-                @endif
+
                 </div>
             </div>
 
             <!-- Summary Cards Row -->
             <div class="row g-3 mb-4">
                 <!-- Tài khoản game -->
-                <div class="col-md-3">
+                <div class="col-6 col-md-3">
                     <div class="card border border-dashed shadow-sm h-100">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -168,7 +156,7 @@
                     </div>
                 </div>
                 <!-- Vật phẩm & Vòng quay -->
-                <div class="col-md-3">
+                <div class="col-6 col-md-3">
                     <div class="card border border-dashed shadow-sm h-100">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -191,7 +179,7 @@
                     </div>
                 </div>
                 <!-- Dịch vụ cày thuê -->
-                <div class="col-md-3">
+                <div class="col-6 col-md-3">
                     <div class="card border border-dashed shadow-sm h-100">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -214,7 +202,7 @@
                     </div>
                 </div>
                 <!-- Nạp tiền chi tiết -->
-                <div class="col-md-3">
+                <div class="col-6 col-md-3">
                     <div class="card border border-dashed shadow-sm h-100">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -243,8 +231,8 @@
             </div>
 
                 <!-- Thống kê tài khoản -->
-                <div class="row">
-                    <div class="col-xl-3 col-md-6 mb-3">
+                <div class="row g-2">
+                    <div class="col-6 col-xl-3 col-md-6 mb-3">
                         <div class="card border border-dashed shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
@@ -262,7 +250,7 @@
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="col-6 col-xl-3 col-md-6 mb-3">
                         <div class="card border border-dashed shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
@@ -280,7 +268,7 @@
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="col-6 col-xl-3 col-md-6 mb-3">
                         <div class="card border border-dashed shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
@@ -298,7 +286,7 @@
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="col-6 col-xl-3 col-md-6 mb-3">
                         <div class="card border border-dashed shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
@@ -318,8 +306,8 @@
                 </div>
 
                 <!-- Thống kê dịch vụ và danh mục -->
-                <div class="row">
-                    <div class="col-xl-3 col-md-6 mb-3">
+                <div class="row g-2">
+                    <div class="col-6 col-xl-3 col-md-6 mb-3">
                         <div class="card border border-dashed shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
@@ -337,7 +325,7 @@
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="col-6 col-xl-3 col-md-6 mb-3">
                         <div class="card border border-dashed shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
@@ -355,7 +343,7 @@
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="col-6 col-xl-3 col-md-6 mb-3">
                         <div class="card border border-dashed shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
@@ -373,7 +361,7 @@
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="col-6 col-xl-3 col-md-6 mb-3">
                         <div class="card border border-dashed shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
@@ -393,8 +381,8 @@
                 </div>
 
                 <!-- Tổng hợp giao dịch -->
-                <div class="row">
-                    <div class="col-xl-4 col-md-6 mb-3">
+                <div class="row g-2">
+                    <div class="col-6 col-xl-4 col-md-6 mb-3">
                         <div class="card border border-dashed shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
@@ -411,7 +399,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-4 col-md-6 mb-3">
+                    <div class="col-6 col-xl-4 col-md-6 mb-3">
                         <div class="card border border-dashed shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
@@ -428,7 +416,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-4 col-md-6 mb-3">
+                    <div class="col-6 col-xl-4 col-md-6 mb-3">
                         <div class="card border border-dashed shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
@@ -445,7 +433,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-4 col-md-6 mb-3">
+                    <div class="col-6 col-xl-4 col-md-6 mb-3">
                         <div class="card border border-dashed shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
@@ -462,7 +450,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-4 col-md-6 mb-3">
+                    <div class="col-6 col-xl-4 col-md-6 mb-3">
                         <div class="card border border-dashed shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
@@ -479,7 +467,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-4 col-md-6 mb-3">
+                    <div class="col-6 col-xl-4 col-md-6 mb-3">
                         <div class="card border border-dashed shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
@@ -751,7 +739,7 @@
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <div id="sales_charts" style="min-height: 300px;"></div>
+                                <div id="sales_charts" style="min-height: 250px;"></div>
                                 <div class="table-responsive mt-4">
                                     <table class="table table-sm table-bordered table-hover text-center mb-0">
                                         <thead class="bg-light-subtle">
@@ -1023,7 +1011,7 @@
                     data: purchaseData
                 }],
                 chart: {
-                    height: 320,
+                    height: window.innerWidth < 576 ? 220 : 320,
                     type: 'area',
                     toolbar: {
                         show: false

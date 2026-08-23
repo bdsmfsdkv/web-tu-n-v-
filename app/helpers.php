@@ -6,14 +6,20 @@ function display_status($status)
 {
     $statusClasses = [
         'success' => 'success',
+        'completed' => 'success',
         'error' => 'error',
+        'cancelled' => 'error',
         'processing' => 'processing',
+        'pending' => 'processing',
     ];
 
     $statusText = [
         'success' => 'Thành công',
+        'completed' => 'Thành công',
         'error' => 'Thất bại',
+        'cancelled' => 'Đã hủy',
         'processing' => 'Đang xử lý',
+        'pending' => 'Chờ xử lý',
     ];
 
     $class = $statusClasses[$status] ?? 'unknown';
@@ -47,20 +53,26 @@ function display_status_admin($status)
 {
     $statusClasses = [
         'processing' => 'bg-info',
+        'pending' => 'bg-info',
         'success' => 'bg-success',
+        'completed' => 'bg-success',
         'error' => 'bg-danger',
+        'cancelled' => 'bg-danger',
     ];
 
     $statusText = [
         'processing' => 'Chờ xử lý',
+        'pending' => 'Chờ xử lý',
         'success' => 'Hoàn thành',
+        'completed' => 'Hoàn thành',
         'error' => 'Đã hủy',
+        'cancelled' => 'Đã hủy',
     ];
 
     $class = $statusClasses[$status] ?? 'secondary';
     $text = $statusText[$status] ?? 'Không xác định';
 
-    return "<span class=\"badges {$class}\">{$text}</span>";
+    return "<span class=\"badge {$class}\">{$text}</span>";
 }
 function display_hanh_tinh($planet)
 {
@@ -95,21 +107,7 @@ if (!function_exists('config_get')) {
      */
     function config_get($key, $default = null)
     {
-        $cacheKey = 'config_' . $key;
-
-        // Kiểm tra cache trước
-        if (Cache::has($cacheKey)) {
-            return Cache::get($cacheKey);
-        }
-
-        // Nếu không có trong cache, lấy từ database
-        $config = Config::where('key', $key)->first();
-        $value = $config ? $config->value : $default;
-
-        // Lưu vào cache để sử dụng sau
-        Cache::put($cacheKey, $value, now()->addDay());
-
-        return $value;
+        return \App\Helpers\ConfigHelper::get($key, $default);
     }
 }
 
@@ -123,13 +121,7 @@ if (!function_exists('config_set')) {
      */
     function config_set($key, $value)
     {
-        Config::updateOrCreate(
-            ['key' => $key],
-            ['value' => $value]
-        );
-
-        // Cập nhật cache
-        Cache::put('config_' . $key, $value, now()->addDay());
+        \App\Helpers\ConfigHelper::set($key, $value);
     }
 }
 
@@ -141,7 +133,7 @@ if (!function_exists('config_all')) {
      */
     function config_all()
     {
-        return Config::all();
+        return \App\Helpers\ConfigHelper::getAll();
     }
 }
 
@@ -154,20 +146,7 @@ if (!function_exists('config_get_group')) {
      */
     function config_get_group($prefix)
     {
-        // Thêm dấu chấm nếu không có
-        if (!empty($prefix) && !str_ends_with($prefix, '.')) {
-            $prefix .= '.';
-        }
-
-        $configs = Config::where('key', 'LIKE', $prefix . '%')->get();
-        $result = [];
-
-        foreach ($configs as $config) {
-            $key = str_replace($prefix, '', $config->key);
-            $result[$key] = $config->value;
-        }
-
-        return $result;
+        return \App\Helpers\ConfigHelper::getByPrefix($prefix);
     }
 }
 
@@ -179,7 +158,7 @@ if (!function_exists('config_clear_cache')) {
      */
     function config_clear_cache()
     {
-        Cache::flush();
+        \App\Helpers\ConfigHelper::clearCache();
     }
 }
 

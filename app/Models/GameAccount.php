@@ -41,4 +41,21 @@ class GameAccount extends Model
         $hashHex = substr(md5('order_' . $this->id), 0, 13 - strlen($timestampHex));
         return $timestampHex . $hashHex;
     }
+
+    protected static function booted()
+    {
+        // Bộ key thuộc tính động của trang danh mục được cache; xoá khi acc thay đổi
+        // để admin thêm/bớt thuộc tính là thấy ngay bộ filter mới.
+        $forgetDetailKeys = function (self $account) {
+            foreach (array_unique(array_filter([
+                $account->game_category_id,
+                $account->getOriginal('game_category_id'),
+            ])) as $categoryId) {
+                \Illuminate\Support\Facades\Cache::forget('category_detail_keys_' . $categoryId);
+            }
+        };
+
+        static::saved($forgetDetailKeys);
+        static::deleted($forgetDetailKeys);
+    }
 }

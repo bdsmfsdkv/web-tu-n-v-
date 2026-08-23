@@ -77,6 +77,9 @@ class ConfigController extends Controller
             'partner_website_card' => config_get('payment.card.partner_website', 'thesieure.com'),
             'bank_active' => config_get('payment.bank.active', true),
             'momo_active' => config_get('payment.momo.active', true),
+            'sepay_enabled' => config_get('sepay_enabled', config('sepay.enabled', false)),
+            'sepay_token' => config_get('sepay_token', config('sepay.token', '')),
+            'sepay_env' => config_get('sepay_env', config('sepay.env', 'sandbox')),
 
             // login
             'google_client_id' => config_get('login_social.google.client_id', ''),
@@ -416,6 +419,11 @@ class ConfigController extends Controller
             'discount_percent_card' => config_get('payment.card.discount_percent', '0'),
             'partner_website_card' => config_get('payment.card.partner_website', 'thesieure.com'),
 
+            // Cấu hình SePay API v2
+            'sepay_enabled' => config_get('sepay_enabled', config('sepay.enabled', false)),
+            'sepay_token' => config_get('sepay_token', config('sepay.token', '')),
+            'sepay_env' => config_get('sepay_env', config('sepay.env', 'sandbox')),
+
             // Cấu hình USDT (Binance, TRC20)
             'usdt_active' => config_get('payment.usdt.active', true),
             'spay5s_token' => config_get('spay5s_token', ''),
@@ -441,6 +449,9 @@ class ConfigController extends Controller
             'partner_id_card' => 'nullable|string|max:100',
             'partner_key_card' => 'nullable|string|max:100',
             'discount_percent_card' => 'nullable|integer|between:0,99',
+            'sepay_enabled' => 'nullable|boolean',
+            'sepay_token' => 'nullable|string|max:255',
+            'sepay_env' => 'nullable|string|in:sandbox,production',
             'usdt_active' => 'nullable|boolean',
             'spay5s_token' => 'nullable|string|max:255',
             'usdt_wallet_address' => 'nullable|string|max:255',
@@ -460,6 +471,11 @@ class ConfigController extends Controller
             config_set('payment.card.partner_key', $request->partner_key_card);
             config_set('payment.card.discount_percent', $request->discount_percent_card);
             config_set('payment.card.partner_website', $request->partner_website_card);
+
+            // Cấu hình SePay API v2
+            config_set('sepay_enabled', $request->has('sepay_enabled') ? 1 : 0);
+            config_set('sepay_token', $request->sepay_token);
+            config_set('sepay_env', $request->sepay_env ?? 'sandbox');
 
             // Nạp USDT
             config_set('payment.usdt.active', $request->has('usdt_active') ? 1 : 0);

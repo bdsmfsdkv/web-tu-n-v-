@@ -19,7 +19,7 @@ class ServiceConfigProvider extends ServiceProvider
             return;
         }
 
-        $settings = Cache::remember('runtime_service_settings', 3600, fn () => Config::pluck('value', 'key')->all());
+        $settings = \App\Helpers\ConfigHelper::allMap();
         $mailEncryption = $settings['mail_encryption'] ?? null;
         $mailPort = $settings['mail_port'] ?? config('mail.mailers.smtp.port');
 

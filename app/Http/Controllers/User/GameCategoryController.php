@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
+use App\Helpers\GamePresetHelper;
 use App\Models\Category;
 use App\Models\GameAccount;
 use App\Models\GameCategory;
@@ -10,9 +11,12 @@ use Illuminate\Http\Request;
 
 class GameCategoryController extends Controller
 {
+    /** Số acc mới nhất được quét để suy ra bộ key thuộc tính động của danh mục. */
+    private const DETAIL_KEY_SAMPLE_SIZE = 300;
+
     public function index(string $slug, Request $request)
     {
-        $category = GameCategory::where("slug", $slug)->firstOrFail();
+        $category = GameCategory::where("slug", $slug)->where('active', 1)->firstOrFail();
 
         // Get all accounts linked to this category
         $accounts = GameAccount::where('game_category_id', $category->id);
@@ -44,76 +48,77 @@ class GameCategoryController extends Controller
                 $accounts->where('status', $request->status);
             }
         }
-        $accounts = $accounts->orderBy('id', 'DESC')->get();
+
+        // Dynamic detail filters
+        $hasDetailFilters = $request->has('details') && is_array($request->details) && array_filter($request->details);
+        if ($hasDetailFilters) {
+            foreach ($request->details as $filterKey => $filterValue) {
+                if (empty($filterValue)) continue;
+                // ponytail: JSON column search via whereJsonContains/whereLike. Ceiling: standard MySQL 5.7+/MariaDB.
+                $accounts->where(function ($q) use ($filterKey, $filterValue) {
+                    $q->whereJsonContains('details', ['key' => $filterKey, 'value' => $filterValue])
+                      ->orWhere('details', 'LIKE', '%' . addcslashes($filterValue, '%_\\') . '%');
+                });
+            }
+        }
+
+        // DB pagination & dynamic keys extraction
+        $accounts = $accounts->orderBy('id', 'DESC')->paginate(12)->withQueryString();
+
+        $dynamicKeys = $this->dynamicDetailKeys($category->id);
 
         $flashSalePrice = \App\Models\FlashSale::getActivePrice('game', $category->id);
         if ($flashSalePrice !== null) {
-            $accounts->each(function($acc) use ($flashSalePrice) {
+            foreach ($accounts as $acc) {
                 $acc->price = $flashSalePrice;
-            });
-        }
-
-        // Collect dynamic keys
-        $dynamicKeys = [];
-        foreach ($accounts as $acc) {
-            $details = is_array($acc->details) ? $acc->details : json_decode($acc->details, true) ?? [];
-            foreach ($details as $detail) {
-                if (isset($detail['key']) && !in_array($detail['key'], $dynamicKeys)) {
-                    $dynamicKeys[] = $detail['key'];
-                }
             }
         }
 
         // Match game presets to pass to view for smart filters
-        $presetResolveFn = config('game_attributes.resolve_preset');
-        $matchedPresetKey = null;
-        if (is_callable($presetResolveFn)) {
-            $category->loadMissing('gameGroup');
-            $matchedPresetKey = $presetResolveFn($category->slug) 
-                ?? $presetResolveFn($category->platform) 
-                ?? ($category->gameGroup ? $presetResolveFn($category->gameGroup->slug) : null);
-        }
+        $category->loadMissing('gameGroup');
+        $matchedPresetKey = GamePresetHelper::resolve($category->slug)
+            ?? GamePresetHelper::resolve($category->platform)
+            ?? ($category->gameGroup ? GamePresetHelper::resolve($category->gameGroup->slug) : null);
         $presetConfig = $matchedPresetKey ? config("game_attributes.games.{$matchedPresetKey}") : null;
 
-        // Apply dynamic detail filters via Collection
-        if ($request->has('details') && is_array($request->details)) {
-            $accounts = $accounts->filter(function ($account) use ($request) {
-                $accDetails = is_array($account->details) ? $account->details : json_decode($account->details, true) ?? [];
-                
-                foreach ($request->details as $filterKey => $filterValue) {
-                    if (empty($filterValue)) continue;
-                    
-                    $foundMatch = false;
-                    foreach ($accDetails as $detail) {
-                        if (isset($detail['key']) && $detail['key'] === $filterKey) {
-                            // Case-insensitive partial match
-                            if (stripos((string)($detail['value'] ?? ''), (string)$filterValue) !== false) {
-                                $foundMatch = true;
-                                break;
-                            }
+        return view('user.category.show', compact('category', 'accounts', 'dynamicKeys', 'presetConfig'));
+    }
+
+    /**
+     * Danh sách key thuộc tính động để render filter.
+     *
+     * Trước đây hàm này pluck('details') trên toàn bộ query CHƯA phân trang, nên một
+     * danh mục có vài nghìn acc sẽ kéo hết cột JSON về PHP chỉ để lấy vài cái key.
+     * Giờ chỉ quét một mẫu giới hạn các acc mới nhất và cache lại kết quả.
+     */
+    private function dynamicDetailKeys(int $categoryId): array
+    {
+        return \Illuminate\Support\Facades\Cache::remember(
+            'category_detail_keys_' . $categoryId,
+            600,
+            function () use ($categoryId) {
+                $rows = GameAccount::where('game_category_id', $categoryId)
+                    ->orderBy('id', 'DESC')
+                    ->limit(self::DETAIL_KEY_SAMPLE_SIZE)
+                    ->pluck('details');
+
+                $keys = [];
+                foreach ($rows as $accountDetails) {
+                    $details = is_array($accountDetails) ? $accountDetails : json_decode((string) $accountDetails, true) ?? [];
+                    if (!is_array($details)) {
+                        continue;
+                    }
+
+                    foreach ($details as $detail) {
+                        if (is_array($detail) && isset($detail['key']) && !isset($keys[$detail['key']])) {
+                            $keys[$detail['key']] = true;
                         }
                     }
-                    if (!$foundMatch) {
-                        return false; // This account doesn't match this filter
-                    }
                 }
-                return true;
-            });
-        }
 
-        // Paginate the collection manually
-        $perPage = 12;
-        $page = \Illuminate\Pagination\Paginator::resolveCurrentPage() ?: 1;
-        $paginatedAccounts = new \Illuminate\Pagination\LengthAwarePaginator(
-            $accounts->forPage($page, $perPage),
-            $accounts->count(),
-            $perPage,
-            $page,
-            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(), 'query' => request()->query()]
+                return array_keys($keys);
+            }
         );
-        $accounts = $paginatedAccounts;
-
-        return view('user.category.show', compact('category', 'accounts', 'dynamicKeys', 'presetConfig'));
     }
 
     public function showAll()
@@ -122,31 +127,34 @@ class GameCategoryController extends Controller
         $gameGroups = \App\Models\GameGroup::where('active', 1)->orderBy('order', 'asc')->orderBy('id', 'asc')->get();
 
         // Get all categories with additional statistics
-        $categories = Category::with('gameGroup')->where('active', 1)->get();
+        $categories = GameCategory::with('gameGroup')
+            ->withCount([
+                'accounts as allAccount' => fn ($query) => $query->where('status', 'available'),
+                'accounts as soldCount' => fn ($query) => $query->where('status', 'sold'),
+            ])
+            ->withMin([
+                'accounts as price' => fn ($query) => $query->where('status', 'available'),
+            ], 'price')
+            ->where('active', 1)
+            ->get();
 
         foreach ($categories as $category) {
-            // Total accounts in this category
-            $category->allAccount = GameAccount::where('game_category_id', $category->id)->where('status', 'available')->count();
-
-            // Sold accounts in this category
-            $category->soldCount = GameAccount::where('game_category_id', $category->id)
-                ->where('status', 'sold')
-                ->count();
-            $category->price = GameAccount::where('game_category_id', $category->id)
-                ->where('status', 'available')
-                ->min('price') ?: 0;
+            $category->price = $category->price ?: 0;
             $category->url = route('category.index', ['slug' => $category->slug]);
         }
 
-        $randomCategories = RandomCategory::with('gameGroup')->where('active', 1)->get();
+        $randomCategories = RandomCategory::with('gameGroup')
+            ->withCount([
+                'accounts as allAccount' => fn ($query) => $query->where('status', 'available'),
+                'accounts as soldCount' => fn ($query) => $query->where('status', 'sold'),
+            ])
+            ->withMin([
+                'accounts as price' => fn ($query) => $query->where('status', 'available'),
+            ], 'price')
+            ->where('active', 1)
+            ->get();
         foreach ($randomCategories as $category) {
-            $category->soldCount = RandomCategoryAccount::where('random_category_id', $category->id)
-                ->where('status', 'sold')
-                ->count();
-            $category->allAccount = RandomCategoryAccount::where('random_category_id', $category->id)->where('status', 'available')->count();
-            $category->price = RandomCategoryAccount::where('random_category_id', $category->id)
-                ->where('status', 'available')
-                ->value('price') ?: 0;
+            $category->price = $category->price ?: 0;
             $category->url = route('random.index', ['slug' => $category->slug]);
         }
 
@@ -160,24 +168,31 @@ class GameCategoryController extends Controller
         $gameGroup = \App\Models\GameGroup::where('slug', $slug)->firstOrFail();
         $title = $gameGroup->name;
         
-        $categories = Category::where('game_group_id', $gameGroup->id)->where('active', 1)->get();
+        $categories = Category::withCount([
+                'accounts as allAccount' => fn ($q) => $q->where('status', 'available'),
+                'accounts as soldCount' => fn ($q) => $q->where('status', 'sold'),
+            ])
+            ->withMin(['accounts as price' => fn ($q) => $q->where('status', 'available')], 'price')
+            ->where('game_group_id', $gameGroup->id)
+            ->where('active', 1)
+            ->get();
 
         foreach ($categories as $category) {
-            $category->allAccount = GameAccount::where('game_category_id', $category->id)->where('status', 'available')->count();
-            $category->soldCount = GameAccount::where('game_category_id', $category->id)->where('status', 'sold')->count();
-            $category->price = GameAccount::where('game_category_id', $category->id)
-                ->where('status', 'available')
-                ->min('price') ?: 0;
+            $category->price = $category->price ?: 0;
             $category->url = route('category.index', ['slug' => $category->slug]);
         }
 
-        $randomCategories = RandomCategory::where('game_group_id', $gameGroup->id)->where('active', 1)->get();
+        $randomCategories = RandomCategory::withCount([
+                'accounts as allAccount' => fn ($q) => $q->where('status', 'available'),
+                'accounts as soldCount' => fn ($q) => $q->where('status', 'sold'),
+            ])
+            ->withMin(['accounts as price' => fn ($q) => $q->where('status', 'available')], 'price')
+            ->where('game_group_id', $gameGroup->id)
+            ->where('active', 1)
+            ->get();
+
         foreach ($randomCategories as $category) {
-            $category->soldCount = RandomCategoryAccount::where('random_category_id', $category->id)->where('status', 'sold')->count();
-            $category->allAccount = RandomCategoryAccount::where('random_category_id', $category->id)->where('status', 'available')->count();
-            $category->price = RandomCategoryAccount::where('random_category_id', $category->id)
-                ->where('status', 'available')
-                ->value('price') ?: 0;
+            $category->price = $category->price ?: 0;
             $category->url = route('random.index', ['slug' => $category->slug]);
         }
 

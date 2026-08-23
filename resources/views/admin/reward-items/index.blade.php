@@ -8,7 +8,7 @@
                     <div class="col-md-12">
                         <div class="page-header-title">
                             <h2 class="mb-0">Kho Thưởng</h2>
-                            <p class="text-muted">Quản lý vật phẩm thưởng cho tất cả các loại game</p>
+                            <p class="text-muted">Mỗi vật phẩm chỉ thuộc một vòng quay</p>
                         
                 
             </div>
@@ -46,6 +46,14 @@
                         <div class="col-md-3">
                             <input type="text" name="search" class="form-control form-control-sm" placeholder="Tìm kiếm tên, game, mã..." value="{{ request('search') }}">
                         </div>
+                        <div class="col-md-3">
+                            <select name="lucky_wheel_id" class="form-select form-select-sm">
+                                <option value="">-- Tất cả vòng quay --</option>
+                                @foreach($luckyWheels as $wheel)
+                                    <option value="{{ $wheel->id }}" {{ request('lucky_wheel_id') == $wheel->id ? 'selected' : '' }}>{{ $wheel->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         <div class="col-md-3 d-flex gap-2 ms-auto">
                             <button type="submit" class="btn btn-sm btn-primary w-100">
                                 <i class="ti ti-search me-1"></i> Tìm kiếm
@@ -63,6 +71,7 @@
                             <tr>
                                 <th class="text-uppercase small">#</th>
                                 <th class="text-uppercase small text-center">Icon</th>
+                                <th class="text-uppercase small">Vòng quay</th>
                                 <th class="text-uppercase small">Game</th>
                                 <th class="text-uppercase small">Tên vật phẩm</th>
                                 <th class="text-uppercase small">Đơn vị</th>
@@ -85,6 +94,13 @@
                                             <div class="bg-light rounded d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
                                                 <i class="ti ti-photo text-muted"></i>
                                             </div>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($item->luckyWheel)
+                                            <span class="fw-medium">{{ $item->luckyWheel->name }}</span>
+                                        @else
+                                            <span class="badge bg-danger">Chưa gán</span>
                                         @endif
                                     </td>
                                     <td>

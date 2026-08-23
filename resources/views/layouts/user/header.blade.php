@@ -4,10 +4,10 @@
 </div>
 
 @php
-    $navCategories = \App\Models\Category::where('active', 1)->get();
-    $navRandomCategories = \App\Models\RandomCategory::where('active', 1)->get();
-    $navLuckyWheels = \App\Models\LuckyWheel::where('active', 1)->orderByDesc('updated_at')->get();
-    $navServices = \App\Models\GameService::where('active', 1)->get();
+    $navCategories = cache()->remember('nav_categories', 300, fn() => \App\Models\Category::where('active', 1)->get());
+    $navRandomCategories = cache()->remember('nav_random_categories', 300, fn() => \App\Models\RandomCategory::where('active', 1)->get());
+    $navLuckyWheels = cache()->remember('nav_lucky_wheels', 300, fn() => \App\Models\LuckyWheel::where('active', 1)->orderByDesc('updated_at')->get());
+    $navServices = cache()->remember('nav_services', 300, fn() => \App\Models\GameService::where('active', 1)->get());
 @endphp
 
 <style>
@@ -96,9 +96,7 @@
 
     .nav-brand img {
         display: block;
-        height: 34px !important;
-        width: auto !important;
-        max-width: 135px;
+        height: 40px !important; max-height: 40px !important; width: auto !important;
         object-fit: contain;
     }
 
@@ -145,8 +143,8 @@
 
     .nav-links .nav-link-item:hover,
     .nav-links .nav-link-item.active {
-        color: var(--primary, #dc2626) !important;
-        background: rgba(220, 38, 38, .07) !important;
+        color: var(--menu-accent) !important;
+        background: var(--menu-accent-bg) !important;
     }
 
     .nav-item-icon {
@@ -159,7 +157,7 @@
 
     .nav-links .nav-link-item:hover .nav-item-icon,
     .nav-links .nav-link-item.active .nav-item-icon {
-        color: var(--primary, #dc2626);
+        color: var(--menu-accent);
     }
 
     .nav-arrow {
@@ -190,7 +188,7 @@
     [data-theme="dark"] .nav-links .nav-link-item { color: #e5e7eb !important; }
     [data-theme="dark"] .nav-item-icon { color: #a3a3a3; }
     [data-theme="dark"] .nav-links .nav-link-item:hover,
-    [data-theme="dark"] .nav-links .nav-link-item.active { background: rgba(248, 113, 113, .1) !important; }
+    [data-theme="dark"] .nav-links .nav-link-item.active { background: var(--menu-accent-bg) !important; }
 
     /* Mobile-only elements MUST stay hidden on desktop */
     .nav-offcanvas-header,
@@ -242,7 +240,7 @@
         border-radius: 8px;
     }
 
-    .bg-card-icon { background: #fef2f2; color: #dc2626; }
+    .bg-card-icon { background: var(--menu-accent-bg); color: var(--menu-accent); }
     .bg-atm-icon { background: #eff6ff; color: #2563eb; }
     .bg-usdt-icon { background: #ecfdf5; color: #059669; }
     .dropdown-link-title { font-size: .84rem; font-weight: 700; color: #111827; }
@@ -350,8 +348,8 @@
     }
 
     .mega-menu-item:hover {
-        color: var(--primary, #dc2626) !important;
-        border-color: rgba(220, 38, 38, .28) !important;
+        color: var(--menu-accent) !important;
+        border-color: var(--menu-accent-border) !important;
         background: #fff !important;
     }
 
@@ -445,17 +443,17 @@
     }
 
     .btn-nav-login {
-        color: var(--primary, #dc2626) !important;
+        color: var(--menu-accent) !important;
         background: transparent;
-        border: 1px solid rgba(220, 38, 38, .28);
+        border: 1px solid var(--menu-accent-border);
     }
 
-    .btn-nav-login:hover { background: rgba(220, 38, 38, .06); }
+    .btn-nav-login:hover { background: var(--menu-accent-bg); }
 
     .btn-nav-register {
         color: #fff !important;
-        background: var(--primary, #dc2626);
-        border: 1px solid var(--primary, #dc2626);
+        background: var(--menu-accent);
+        border: 1px solid var(--menu-accent);
     }
 
     .btn-nav-register:hover { filter: brightness(.94); color: #fff !important; }
@@ -504,7 +502,7 @@
         }
 
         .nav-brand { margin-right: auto; }
-        .nav-brand img { height: 30px !important; max-width: 118px; }
+        .nav-brand img { height: 34px !important; max-width: 135px; }
 
         .nav-links {
             display: none !important;
@@ -562,14 +560,14 @@
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            background: var(--primary, #dc2626);
+            background: var(--menu-accent);
             color: #fff;
             font-size: .85rem;
             font-weight: 800;
         }
         .mobile-drawer-info { min-width: 0; }
         .mobile-drawer-name { font-size: .84rem; font-weight: 800; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .mobile-drawer-balance { margin-top: 2px; font-size: .72rem; color: var(--primary, #dc2626); font-weight: 700; }
+        .mobile-drawer-balance { margin-top: 2px; font-size: .72rem; color: var(--menu-accent); font-weight: 700; }
 
         .nav-close {
             width: 32px;
@@ -610,7 +608,7 @@
             text-decoration: none !important;
         }
 
-        .btn-mobile-login { color: #fff !important; background: var(--primary, #dc2626); }
+        .btn-mobile-login { color: #fff !important; background: var(--menu-accent); }
         .btn-mobile-reg { color: #374151 !important; background: #f3f4f6; border: 1px solid #e5e7eb; }
 
         .modern-dropdown-menu,
@@ -693,7 +691,7 @@
     <div class="nav-container">
         <a href="/" class="nav-brand" aria-label="Trang chủ">
             @if(config_get('site_logo'))
-                <img src="{{ asset(config_get('site_logo')) }}" alt="{{ config_get('site_name') }}">
+                <img src="{{ asset(config_get('site_logo')) }}" alt="{{ config_get('site_name') }}" style="height:40px; width:auto; object-fit:contain;">
             @else
                 <span class="brand-text">{{ config_get('site_name', 'ShopGame') }}</span>
             @endif
@@ -706,13 +704,13 @@
                         <div class="mobile-drawer-avatar">{{ strtoupper(substr(Auth::user()->username, 0, 1)) }}</div>
                         <div class="mobile-drawer-info">
                             <div class="mobile-drawer-name">{{ Auth::user()->username }}</div>
-                            <div class="mobile-drawer-balance">{{ number_format(Auth::user()->balance) }}đ</div>
+                            <div class="mobile-drawer-balance"><span data-user-balance>{{ number_format(Auth::user()->balance) }}</span>đ</div>
                         </div>
                     </div>
                 @else
                     <a href="/" class="nav-brand">
                         @if(config_get('site_logo'))
-                            <img src="{{ asset(config_get('site_logo')) }}" alt="{{ config_get('site_name') }}">
+                            <img src="{{ asset(config_get('site_logo')) }}" alt="{{ config_get('site_name') }}" style="height:40px; width:auto; object-fit:contain;">
                         @else
                             <span class="brand-text">{{ config_get('site_name', 'ShopGame') }}</span>
                         @endif
@@ -755,7 +753,7 @@
                         <div class="mega-menu-grid">
                             <div class="mega-menu-column">
                                 <div class="mega-menu-col-header">
-                                    <span class="mega-col-icon" style="background:rgba(220,38,38,.1);color:#dc2626;"><i class="fa-solid fa-gamepad"></i></span>
+                                    <span class="mega-col-icon" style="background:var(--menu-accent-bg);color:var(--menu-accent);"><i class="fa-solid fa-gamepad"></i></span>
                                     <span class="mega-col-title">Tài Khoản Game</span>
                                     <span class="mega-col-count">{{ $navCategories->count() }}</span>
                                 </div>
@@ -902,7 +900,7 @@
                     <div class="nav-user-profile" onclick="toggleAvatarMenu()" title="{{ Auth::user()->username }}">
                         <div class="nav-user-info">
                             <div class="nav-username">{{ Auth::user()->username }}</div>
-                            <div class="nav-user-balance">{{ number_format(Auth::user()->balance) }}đ</div>
+                            <div class="nav-user-balance"><span data-user-balance>{{ number_format(Auth::user()->balance) }}</span>đ</div>
                         </div>
                         <button type="button" class="nav-avatar" id="avatarBtn" aria-label="Tài khoản">
                             {{ strtoupper(substr(Auth::user()->username, 0, 1)) }}
@@ -920,7 +918,7 @@
                             </div>
                             <div class="dropdown-balance-box">
                                 <div class="dropdown-balance-label">Số dư hiện tại</div>
-                                <div class="dropdown-balance-val">{{ number_format(Auth::user()->balance) }} <span class="dropdown-balance-cur">đ</span></div>
+                                <div class="dropdown-balance-val"><span data-user-balance>{{ number_format(Auth::user()->balance) }}</span> <span class="dropdown-balance-cur">đ</span></div>
                                 <a href="{{ route('profile.deposit-card') }}" class="dropdown-btn-deposit"><i class="fa-solid fa-plus"></i> Nạp Ngay</a>
                             </div>
                         </div>
@@ -930,7 +928,7 @@
                             <a href="/profile" class="dropdown-item"><span class="dropdown-item-icon"><span class="iconify" data-icon="ant-design:user-outlined"></span></span><span>Thông Tin Tài Khoản</span></a>
                             <a href="{{ route('profile.deposit-card') }}" class="dropdown-item"><span class="dropdown-item-icon"><span class="iconify" data-icon="ant-design:wallet-outlined"></span></span><span>Nạp Tiền Vào Ví</span></a>
                             <a href="{{ route('profile.transaction-history') }}" class="dropdown-item"><span class="dropdown-item-icon"><span class="iconify" data-icon="ant-design:history-outlined"></span></span><span>Lịch Sử Giao Dịch</span></a>
-                            <a href="{{ route('profile.purchased-accounts') }}" class="dropdown-item"><span class="dropdown-item-icon"><span class="iconify" data-icon="ant-design:shopping-bag-outlined"></span></span><span>Tài Khoản Đã Mua</span></a>
+                            <a href="{{ route('profile.purchased-accounts') }}" class="dropdown-item"><span class="dropdown-item-icon"><span class="iconify" data-icon="ant-design:shopping-outlined"></span></span><span>Tài Khoản Đã Mua</span></a>
                             <a href="{{ route('profile.affiliate') }}" class="dropdown-item"><span class="dropdown-item-icon"><span class="iconify" data-icon="ant-design:share-alt-outlined"></span></span><span>Tiếp Thị Liên Kết</span></a>
                             @if(Auth::user()->role == 'admin')
                                 <a href="{{ route('admin.index') }}" class="dropdown-item dropdown-admin"><span class="dropdown-item-icon"><span class="iconify" data-icon="ant-design:dashboard-outlined"></span></span><span>Quản Trị Admin</span></a>

@@ -61,6 +61,10 @@
             gap: 24px;
         }
 
+        .affiliate-left-panel {
+            min-width: 0;
+        }
+
         @media (min-width: 992px) {
             .affiliate-layout {
                 grid-template-columns: 2fr 1fr;
@@ -73,6 +77,8 @@
             border: 1px solid var(--border-subtle, #e5e7eb);
             padding: 30px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            max-width: 100%;
+            overflow: hidden;
         }
 
         .stats-grid {
@@ -195,6 +201,87 @@
             border-bottom: 1px solid var(--border-subtle, #e5e7eb);
             color: var(--text-main, #1f2937);
             font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .section-subheading {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            color: var(--text-main, #1f2937);
+        }
+
+        @media (max-width: 768px) {
+            .affiliate-container {
+                padding: 16px 0;
+            }
+
+            .affiliate-card,
+            .notes-card {
+                padding: 16px;
+                border-radius: 16px;
+            }
+
+            .affiliate-header {
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+
+            .affiliate-header-text h2 {
+                font-size: 1.15rem;
+            }
+
+            .affiliate-header-text p {
+                font-size: 0.7rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+
+            .stat-box {
+                padding: 14px;
+            }
+
+            .link-box {
+                padding: 16px;
+                margin-bottom: 20px;
+            }
+
+            .link-input-group {
+                flex-direction: column;
+            }
+
+            .link-input-group input {
+                height: 42px;
+                font-size: 0.85rem;
+            }
+
+            .link-input-group button {
+                height: 42px;
+                padding: 0 16px;
+                justify-content: center;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .history-table th,
+            .history-table td {
+                padding: 10px 12px;
+                font-size: 0.82rem;
+            }
+
+            .notes-title {
+                font-size: 1rem;
+            }
+
+            .notes-list li {
+                font-size: 0.85rem;
+                margin-bottom: 10px;
+            }
         }
 
         .notes-card {
@@ -276,7 +363,8 @@
 
                     <div class="affiliate-layout">
                         <!-- Left Panel: Stats and Link -->
-                        <div class="affiliate-card">
+                        <div class="affiliate-left-panel">
+                            <div class="affiliate-card">
                             <div class="stats-grid">
                                 <div class="stat-box">
                                     <div class="stat-icon blue">
@@ -306,7 +394,7 @@
                                 </div>
                             </div>
 
-                            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 15px; color: #f8fafc;"><i class="fas fa-history me-2"></i> Lịch sử nhận hoa hồng</h3>
+                            <h3 class="section-subheading"><i class="fas fa-history me-2"></i> Lịch sử nhận hoa hồng</h3>
                             <div style="overflow-x: auto;">
                                 <table class="history-table">
                                     <thead>
@@ -338,6 +426,7 @@
                                     {{ $affiliateHistories->links('user.pagination.custom') }}
                                 </div>
                             @endif
+                            </div>
                         </div>
 
                         <!-- Right Panel: Rules -->

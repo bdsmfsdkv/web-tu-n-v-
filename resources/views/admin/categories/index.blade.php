@@ -86,6 +86,13 @@
                                         </td>
                                         <td>{{ $category->created_at->format('d/m/Y') }}</td>
                                         <td>
+                                            <form method="POST" action="{{ route('admin.categories.toggle-active', $category->id) }}" class="d-inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="btn btn-sm {{ $category->active ? 'btn-outline-danger' : 'btn-outline-success' }}" title="{{ $category->active ? 'Ẩn khỏi web' : 'Hiện trên web' }}">
+                                                    <i class="ti {{ $category->active ? 'ti-eye-off' : 'ti-eye' }}"></i>
+                                                </button>
+                                            </form>
                                             <a class="me-3" href="{{ route('admin.categories.edit', $category->id) }}">
                                                 <i class="ti ti-edit fs-5 text-primary"></i>
                                             </a>

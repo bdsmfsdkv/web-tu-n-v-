@@ -35,8 +35,14 @@
 
     <link rel="dns-prefetch" href="//cdnjs.cloudflare.com" />
     <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net" />
+    <link rel="dns-prefetch" href="//code.jquery.com" />
+    <link rel="dns-prefetch" href="//code.iconify.design" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/antd@4.24.16/dist/antd.min.css" rel="stylesheet">
@@ -47,8 +53,8 @@
     <link href="{{ asset('css/legacy-compat.css') }}?v={{ filemtime(public_path('css/legacy-compat.css')) }}" rel="stylesheet">
     <link href="{{ asset('css/ui-fixes.css') }}?v={{ filemtime(public_path('css/ui-fixes.css')) }}" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <script defer src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script defer src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
     <script>
@@ -146,12 +152,23 @@
         .goog-te-gadget { font-size: 0px !important; }
         .skiptranslate { display: none !important; }
 
+        /* Chống giật chữ khi đang dịch */
+        html.gt-translating body {
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+        html.gt-translated body {
+            visibility: visible !important;
+            opacity: 1 !important;
+            transition: opacity 0.15s ease-in-out !important;
+        }
+
         /* Guest mobile header: keep Login/Register beside theme, never inside hamburger. */
         @media (max-width: 1199px) {
             html body nav.navbar > .nav-container > .nav-brand img {
-                height: 34px !important;
+                height: 38px !important;
                 width: auto !important;
-                max-width: 125px !important;
+                max-width: 150px !important;
                 object-fit: contain !important;
             }
 
@@ -202,8 +219,8 @@
                 gap: 4px !important;
             }
             html body nav.navbar > .nav-container > .nav-brand img {
-                max-width: 72px !important;
-                height: 28px !important;
+                max-width: 86px !important;
+                height: 32px !important;
             }
             html body nav.navbar > .nav-container > .nav-user { gap: 4px !important; }
             html body nav.navbar > .nav-container > .nav-user > .nav-guest-actions { gap: 3px !important; }
@@ -271,6 +288,38 @@
             }, 'google_translate_element');
         }
 
+        function ensureGoogleTranslateLoaded(callback) {
+            if (window.google && window.google.translate) {
+                if (callback) callback();
+                return;
+            }
+            if (window.__gtScriptLoading) {
+                if (callback) {
+                    var checkInterval = setInterval(function () {
+                        if (window.google && window.google.translate) {
+                            clearInterval(checkInterval);
+                            callback();
+                        }
+                    }, 50);
+                }
+                return;
+            }
+            window.__gtScriptLoading = true;
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+            script.async = true;
+            document.head.appendChild(script);
+            if (callback) {
+                var checkInterval = setInterval(function () {
+                    if (window.google && window.google.translate) {
+                        clearInterval(checkInterval);
+                        callback();
+                    }
+                }, 50);
+            }
+        }
+
         function setLanguage(lang) {
             localStorage.setItem('sunihost_lang', lang);
             updateLangUI(lang);
@@ -319,6 +368,25 @@
             const cookieVal = '/vi/' + savedLang;
             const currentCookie = getCookie('googtrans');
 
+            if (savedLang !== 'vi') {
+                ensureGoogleTranslateLoaded();
+                document.documentElement.classList.add('gt-translating');
+                var reveal = function () {
+                    document.documentElement.classList.remove('gt-translating');
+                    document.documentElement.classList.add('gt-translated');
+                };
+                var observer = new MutationObserver(function (mutations, obs) {
+                    if (document.documentElement.classList.contains('translated-ltr') ||
+                        document.documentElement.classList.contains('translated-rtl') ||
+                        document.body && document.body.classList.contains('translated-ltr')) {
+                        obs.disconnect();
+                        reveal();
+                    }
+                });
+                observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+                setTimeout(reveal, 1200);
+            }
+
             if (savedLang !== 'vi' && currentCookie !== cookieVal) {
                 const domain = window.location.hostname.replace('www.', '');
                 document.cookie = "googtrans=" + cookieVal + "; path=/; domain=" + domain;
@@ -338,8 +406,12 @@
 
             const dropdown = document.querySelector('.ant-header-lang-dropdown');
             if (dropdown) {
+                dropdown.addEventListener('mouseenter', function () {
+                    ensureGoogleTranslateLoaded();
+                });
                 dropdown.addEventListener('click', function (e) {
                     e.stopPropagation();
+                    ensureGoogleTranslateLoaded();
                     dropdown.classList.toggle('active');
                 });
 
@@ -349,6 +421,4 @@
             }
         });
     </script>
-
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>

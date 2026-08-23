@@ -43,6 +43,16 @@ class RandomAccountController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            $user = Auth::user();
+
+            if ($account->min_spent > 0 && ($user->total_spent ?? 0) < $account->min_spent) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tài khoản này hiện không khả dụng.'
+                ]);
+            }
+
             $flashSalePrice = \App\Models\FlashSale::getActivePrice('random', $account->random_category_id);
             if ($flashSalePrice !== null) {
                 $account->price = $flashSalePrice;

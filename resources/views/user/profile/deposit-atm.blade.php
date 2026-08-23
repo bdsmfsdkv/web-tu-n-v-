@@ -7,9 +7,9 @@
     <section class="profile-section">
         <div class="container">
             <div class="profile-container">
-                <div class="profile-header">
-                    <h1 class="profile-title">NẠP TIỀN QUA NGÂN HÀNG</h1>
-                </div>
+                    <div class="profile-header">
+                        <h1 class="profile-title"><i class="fa-solid fa-building-columns me-2"></i> NẠP TIỀN QUA NGÂN HÀNG</h1>
+                    </div>
 
                 <div class="profile-content">
                     @include('layouts.user.sidebar')
@@ -118,11 +118,12 @@
                                     [data-theme="dark"] .bank-opt { border-color: #333; background: #262626; }
                                     [data-theme="dark"] .bank-opt:hover { border-color: #404040; background: #333; }
                                     [data-theme="dark"] .bank-opt.active { border-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+                                    [data-theme="dark"] .bank-opt-img { background: #1e1e1e; border-color: #333; }
                                     [data-theme="dark"] .bank-opt-name { color: #f8fafc; }
                                     [data-theme="dark"] .bank-opt-owner { color: #94a3b8; }
                                     [data-theme="dark"] .amount-input-group label { color: #f8fafc; }
                                     [data-theme="dark"] .amount-input { background: #262626; border-color: #333; color: #f8fafc; }
-                                    [data-theme="dark"] .amount-input:focus { border-color: #ef4444; }
+                                    [data-theme="dark"] .amount-input:focus { border-color: #ef4444; background: #1f1f1f; }
                                     [data-theme="dark"] .btn-quick { background: #262626; border-color: #333; color: #cbd5e1; }
                                     [data-theme="dark"] .btn-quick:hover, [data-theme="dark"] .btn-quick.active { border-color: #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.1); }
                                     [data-theme="dark"] .btn-submit:disabled { background: #404040; color: #6b7280; }
@@ -132,6 +133,11 @@
                                     [data-theme="dark"] .info-row-qr span.val { color: #f8fafc; }
                                     [data-theme="dark"] .info-row-qr span.val .copy-btn { background: #334155; color: #f8fafc; }
                                     [data-theme="dark"] .info-row-qr span.val .copy-btn:hover { background: #475569; }
+                                    [data-theme="dark"] .profile-info-card { color: #e2e8f0; }
+                                    [data-theme="dark"] .balance-info { color: #e2e8f0; }
+                                    [data-theme="dark"] .history-header { color: #f8fafc; }
+                                    [data-theme="dark"] .history-table { color: #e2e8f0; }
+                                    [data-theme="dark"] .history-table td { color: #cbd5e1; }
                                 </style>
 
                                 <div class="deposit-grid">
@@ -262,9 +268,241 @@
                                             <button id="btn-back" class="btn-submit" style="margin-top: 24px; background: #64748b;">
                                                 <i class="fa-solid fa-arrow-left"></i> Tạo hoá đơn khác
                                             </button>
+
+                                            <!-- Waiting status animation -->
+                                            <div class="deposit-waiting-box" id="deposit-waiting-box" style="margin-top: 18px; padding: 14px; background: #eff6ff; border: 1px dashed #3b82f6; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; color: #1d4ed8; font-size: 0.9rem;">
+                                                <span class="waiting-spinner"></span>
+                                                <span>Đang đợi nhận tiền từ ngân hàng... Hệ thống sẽ tự động cập nhật ngay khi tiền vào.</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Modal thông báo nạp thành công xịn sò -->
+                                <div id="deposit-success-modal" class="deposit-success-modal" style="display: none;">
+                                    <div class="dsm-backdrop"></div>
+                                    <div class="dsm-dialog">
+                                        <div class="dsm-badge-icon">
+                                            <div class="dsm-icon-ring"></div>
+                                            <i class="fa-solid fa-check"></i>
+                                        </div>
+                                        <h3 class="dsm-title">NẠP TIỀN THÀNH CÔNG!</h3>
+                                        <p class="dsm-subtitle">Giao dịch của bạn đã được ghi nhận và cộng tiền vào tài khoản</p>
+                                        
+                                        <div class="dsm-amount-card">
+                                            <div class="dsm-amount-label">Số tiền cộng vào tài khoản</div>
+                                            <div class="dsm-amount-value" id="dsm-amount">+0 đ</div>
+                                        </div>
+
+                                        <div class="dsm-details">
+                                            <div class="dsm-row">
+                                                <span>Ngân hàng</span>
+                                                <strong id="dsm-bank">MBBank</strong>
+                                            </div>
+                                            <div class="dsm-row">
+                                                <span>Mã giao dịch</span>
+                                                <strong id="dsm-txid">---</strong>
+                                            </div>
+                                            <div class="dsm-row">
+                                                <span>Số dư mới</span>
+                                                <strong id="dsm-balance" style="color: #10b981;">0 đ</strong>
+                                            </div>
+                                            <div class="dsm-row">
+                                                <span>Thời gian</span>
+                                                <span id="dsm-time" style="color: #64748b;">Vừa xong</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="dsm-actions">
+                                            <button type="button" class="dsm-btn dsm-btn-primary" id="dsm-btn-close">
+                                                <i class="fa-solid fa-gamepad"></i> Trải nghiệm dịch vụ ngay
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <style>
+                                    /* Waiting spinner */
+                                    .waiting-spinner {
+                                        width: 18px;
+                                        height: 18px;
+                                        border: 2px solid #3b82f6;
+                                        border-top-color: transparent;
+                                        border-radius: 50%;
+                                        display: inline-block;
+                                        animation: spin 0.8s linear infinite;
+                                    }
+                                    @keyframes spin {
+                                        to { transform: rotate(360deg); }
+                                    }
+
+                                    /* Modal Popup Success */
+                                    .deposit-success-modal {
+                                        position: fixed;
+                                        inset: 0;
+                                        z-index: 999999;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        padding: 16px;
+                                    }
+                                    .dsm-backdrop {
+                                        position: absolute;
+                                        inset: 0;
+                                        background: rgba(15, 23, 42, 0.75);
+                                        backdrop-filter: blur(6px);
+                                        -webkit-backdrop-filter: blur(6px);
+                                        animation: fadeIn 0.3s ease;
+                                    }
+                                    .dsm-dialog {
+                                        position: relative;
+                                        width: 100%;
+                                        max-width: 440px;
+                                        background: #ffffff;
+                                        border-radius: 20px;
+                                        padding: 32px 24px 24px;
+                                        text-align: center;
+                                        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+                                        animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                                        border: 1px solid rgba(255, 255, 255, 0.2);
+                                    }
+                                    [data-theme="dark"] .dsm-dialog {
+                                        background: #1e293b;
+                                        color: #f8fafc;
+                                        border-color: #334155;
+                                    }
+                                    .dsm-badge-icon {
+                                        width: 72px;
+                                        height: 72px;
+                                        margin: -60px auto 16px;
+                                        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                                        border-radius: 50%;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        color: #fff;
+                                        font-size: 32px;
+                                        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+                                        position: relative;
+                                    }
+                                    .dsm-icon-ring {
+                                        position: absolute;
+                                        inset: -6px;
+                                        border-radius: 50%;
+                                        border: 2px dashed #10b981;
+                                        animation: spin 8s linear infinite;
+                                    }
+                                    .dsm-title {
+                                        font-size: 1.35rem;
+                                        font-weight: 800;
+                                        color: #10b981;
+                                        margin-bottom: 6px;
+                                        letter-spacing: 0.5px;
+                                    }
+                                    .dsm-subtitle {
+                                        font-size: 0.85rem;
+                                        color: #64748b;
+                                        margin-bottom: 20px;
+                                    }
+                                    [data-theme="dark"] .dsm-subtitle {
+                                        color: #94a3b8;
+                                    }
+                                    .dsm-amount-card {
+                                        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+                                        border: 1px solid #bbf7d0;
+                                        border-radius: 14px;
+                                        padding: 14px;
+                                        margin-bottom: 18px;
+                                    }
+                                    [data-theme="dark"] .dsm-amount-card {
+                                        background: rgba(16, 185, 129, 0.1);
+                                        border-color: rgba(16, 185, 129, 0.25);
+                                    }
+                                    .dsm-amount-label {
+                                        font-size: 0.78rem;
+                                        text-transform: uppercase;
+                                        color: #059669;
+                                        font-weight: 700;
+                                        letter-spacing: 0.5px;
+                                        margin-bottom: 4px;
+                                    }
+                                    [data-theme="dark"] .dsm-amount-label {
+                                        color: #34d399;
+                                    }
+                                    .dsm-amount-value {
+                                        font-size: 1.8rem;
+                                        font-weight: 800;
+                                        color: #047857;
+                                    }
+                                    [data-theme="dark"] .dsm-amount-value {
+                                        color: #10b981;
+                                    }
+                                    .dsm-details {
+                                        background: #f8fafc;
+                                        border-radius: 12px;
+                                        padding: 12px 16px;
+                                        margin-bottom: 20px;
+                                        display: flex;
+                                        flex-direction: column;
+                                        gap: 10px;
+                                        font-size: 0.88rem;
+                                        text-align: left;
+                                    }
+                                    [data-theme="dark"] .dsm-details {
+                                        background: #0f172a;
+                                    }
+                                    .dsm-row {
+                                        display: flex;
+                                        justify-content: space-between;
+                                        align-items: center;
+                                        color: #475569;
+                                    }
+                                    [data-theme="dark"] .dsm-row {
+                                        color: #cbd5e1;
+                                    }
+                                    .dsm-row strong {
+                                        color: #0f172a;
+                                    }
+                                    [data-theme="dark"] .dsm-row strong {
+                                        color: #f1f5f9;
+                                    }
+                                    .dsm-actions {
+                                        display: flex;
+                                        gap: 10px;
+                                    }
+                                    .dsm-btn {
+                                        flex: 1;
+                                        padding: 12px 18px;
+                                        border-radius: 10px;
+                                        font-weight: 700;
+                                        font-size: 0.95rem;
+                                        cursor: pointer;
+                                        border: none;
+                                        transition: all 0.2s ease;
+                                        display: inline-flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        gap: 8px;
+                                    }
+                                    .dsm-btn-primary {
+                                        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                                        color: #ffffff;
+                                        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+                                    }
+                                    .dsm-btn-primary:hover {
+                                        opacity: 0.92;
+                                        transform: translateY(-1px);
+                                    }
+
+                                    @keyframes fadeIn {
+                                        from { opacity: 0; }
+                                        to { opacity: 1; }
+                                    }
+                                    @keyframes popIn {
+                                        0% { opacity: 0; transform: scale(0.8); }
+                                        100% { opacity: 1; transform: scale(1); }
+                                    }
+                                </style>
 
                                 <div class="deposit-history">
                                     <div class="history-header">LỊCH SỬ NẠP TIỀN</div>
@@ -313,6 +551,7 @@
 
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 // Clipboard.js init
@@ -345,6 +584,8 @@
                 
                 let selectedBank = null;
                 const userId = "{{ Auth::user()->id ?? '' }}";
+                let pollInterval = null;
+                let lastSeenDepositId = {{ isset($transactions) && count($transactions) > 0 ? ($transactions->first()->id ?? 0) : 0 }};
                 
                 function checkSubmit() {
                     const amount = parseInt(inputAmount.value);
@@ -383,6 +624,93 @@
                     checkSubmit();
                 });
 
+                function triggerConfetti() {
+                    if (typeof confetti === 'function') {
+                        confetti({
+                            particleCount: 80,
+                            spread: 70,
+                            origin: { y: 0.6 }
+                        });
+                        setTimeout(function() {
+                            confetti({
+                                particleCount: 50,
+                                angle: 60,
+                                spread: 55,
+                                origin: { x: 0 }
+                            });
+                            confetti({
+                                particleCount: 50,
+                                angle: 120,
+                                spread: 55,
+                                origin: { x: 1 }
+                            });
+                        }, 250);
+                    }
+                }
+
+                function playSuccessSound() {
+                    try {
+                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+                        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1); // A5
+                        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + 0.5);
+                    } catch (e) {}
+                }
+
+                function showDepositSuccess(deposit, newBalanceFormatted) {
+                    document.getElementById('dsm-amount').textContent = '+' + deposit.amount_formatted;
+                    document.getElementById('dsm-bank').textContent = deposit.bank || 'Ngân hàng';
+                    document.getElementById('dsm-txid').textContent = deposit.transaction_id || '---';
+                    document.getElementById('dsm-balance').textContent = (newBalanceFormatted || '0') + ' đ';
+                    document.getElementById('dsm-time').textContent = deposit.created_at || 'Vừa xong';
+
+                    document.getElementById('deposit-success-modal').style.display = 'flex';
+                    playSuccessSound();
+                    triggerConfetti();
+
+                    // Update UI balance values
+                    document.querySelectorAll('[data-user-balance]').forEach(el => {
+                        el.textContent = newBalanceFormatted;
+                    });
+                    const pageBalanceVal = document.querySelector('.balance-value');
+                    if (pageBalanceVal) {
+                        pageBalanceVal.textContent = newBalanceFormatted + ' VND';
+                    }
+
+                    if (typeof FuiToast !== 'undefined') {
+                        FuiToast.success('Nạp thành công +' + deposit.amount_formatted);
+                    }
+                }
+
+                function startPolling() {
+                    if (pollInterval) clearInterval(pollInterval);
+                    pollInterval = setInterval(function() {
+                        fetch('{{ route('profile.deposit-atm.check') }}?after_id=' + lastSeenDepositId, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(res => res.json())
+                        .then(res => {
+                            if (res.success && res.found && res.deposit) {
+                                lastSeenDepositId = res.deposit.id;
+                                clearInterval(pollInterval);
+                                showDepositSuccess(res.deposit, res.new_balance_formatted);
+                            }
+                        })
+                        .catch(() => {});
+                    }, 3000);
+                }
+
                 btnSubmit.addEventListener('click', function() {
                     const amount = inputAmount.value;
                     const content = selectedBank.prefix + userId;
@@ -401,14 +729,22 @@
                     
                     stepForm.style.display = 'none';
                     stepQr.style.display = 'block';
+
+                    startPolling();
                 });
                 
                 if (btnBack) {
                     btnBack.addEventListener('click', function() {
+                        if (pollInterval) clearInterval(pollInterval);
                         stepQr.style.display = 'none';
                         stepForm.style.display = 'block';
                     });
                 }
+
+                document.getElementById('dsm-btn-close')?.addEventListener('click', function() {
+                    document.getElementById('deposit-success-modal').style.display = 'none';
+                    window.location.reload();
+                });
 
                 // Close alert buttons
                 const alertCloseButtons = document.querySelectorAll('.service__alert-close');

@@ -130,7 +130,7 @@
                                         <div class="image-uploads mt-2">
                                             @if($luckyWheel->thumbnail)
                                                 <div class="existing-thumb-wrapper d-inline-block" style="position: relative; display: inline-block;">
-                                                    <img src="{{ asset($luckyWheel->thumbnail) }}" alt="img" style="max-height: 80px; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
+                                                    <img src="{{ Str::startsWith($luckyWheel->thumbnail, ['http://', 'https://']) ? $luckyWheel->thumbnail : asset($luckyWheel->thumbnail) }}" alt="img" style="max-height: 80px; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
                                                     <button type="button"
                                                         class="btn btn-danger remove-existing-thumb"
                                                         title="Xoá ảnh này"
@@ -143,11 +143,25 @@
                                                 <i class="ti ti-photo-plus text-primary" style="font-size: 40px;"></i>
                                                 <h5 class="mt-2 mb-0 fw-semibold">Kéo thả hoặc click để tải ảnh lên</h5>
                                             @endif
-                                            <p class="text-muted small mt-1">Hỗ trợ JPG, PNG, GIF</p>
+                                            <p class="text-muted small mt-1">Hỗ trợ JPG, PNG, GIF, WebP · tối đa 64 MB</p>
                                         </div>
                                     </div>
                                     @error('thumbnail')
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Ảnh mũi tên vòng quay <span class="text-muted">(tùy chọn)</span></label>
+                                    <input type="file" name="pointer_image" class="form-control @error('pointer_image') is-invalid @enderror" accept="image/*" onchange="previewImage(this, 'preview-pointer')">
+                                    <small class="text-muted">Nên dùng PNG nền trong suốt, hình dọc. Bỏ trống để dùng mũi tên tạo bằng CSS.</small>
+                                    @if($luckyWheel->pointer_image)
+                                        <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="removePointerImage(this)">Xóa ảnh, dùng mũi tên CSS</button>
+                                    @endif
+                                    @error('pointer_image')
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -160,7 +174,7 @@
                                         <div class="image-uploads mt-2">
                                             @if($luckyWheel->wheel_image)
                                                 <div class="existing-wheel-wrapper d-inline-block" style="position: relative; display: inline-block;">
-                                                    <img src="{{ asset($luckyWheel->wheel_image) }}" alt="img" style="max-height: 80px; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
+                                                    <img src="{{ Str::startsWith($luckyWheel->wheel_image, ['http://', 'https://']) ? $luckyWheel->wheel_image : asset($luckyWheel->wheel_image) }}" alt="img" style="max-height: 80px; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
                                                     <button type="button"
                                                         class="btn btn-danger remove-existing-wheel"
                                                         title="Xoá ảnh này"
@@ -173,7 +187,7 @@
                                                 <i class="ti ti-loader text-success" style="font-size: 40px;"></i>
                                                 <h5 class="mt-2 mb-0 fw-semibold text-success">Kéo thả hoặc click để tải ảnh vòng quay lên</h5>
                                             @endif
-                                            <p class="text-muted small mt-1">Hỗ trợ JPG, PNG, GIF</p>
+                                            <p class="text-muted small mt-1">Hỗ trợ JPG, PNG, GIF, WebP · tối đa 64 MB</p>
                                         </div>
                                     </div>
                                     @error('wheel_image')
@@ -188,14 +202,21 @@
                                     <div class="text-center">
                                         <p class="mb-2 fw-semibold text-primary">Ảnh đại diện:</p>
                                         <div class="bg-white p-2 border rounded shadow-sm d-inline-block">
-                                            <img id="preview-thumbnail" src="{{ asset($luckyWheel->thumbnail) }}"
+                                            <img id="preview-thumbnail" src="{{ $luckyWheel->thumbnail ? (Str::startsWith($luckyWheel->thumbnail, ['http://', 'https://']) ? $luckyWheel->thumbnail : asset($luckyWheel->thumbnail)) : 'https://i.imgur.com/NpL6V6y.png' }}"
                                                 alt="Thumbnail Preview" style="max-width: 150px; max-height: 150px; object-fit: contain;">
+                                        </div>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="mb-2 fw-semibold text-danger">Mũi tên:</p>
+                                        <div class="bg-white p-2 border rounded shadow-sm d-inline-block">
+                                            <img id="preview-pointer" src="{{ $luckyWheel->pointer_image ? (Str::startsWith($luckyWheel->pointer_image, ['http://', 'https://']) ? $luckyWheel->pointer_image : asset($luckyWheel->pointer_image)) : '' }}" alt="Pointer Preview" style="{{ $luckyWheel->pointer_image ? '' : 'display:none;' }}max-width:80px;max-height:100px;object-fit:contain;">
+                                            <span id="pointer-default-preview" class="text-muted small" style="{{ $luckyWheel->pointer_image ? 'display:none;' : '' }}">Dùng mũi tên CSS mặc định</span>
                                         </div>
                                     </div>
                                     <div class="text-center">
                                         <p class="mb-2 fw-semibold text-success">Ảnh vòng quay:</p>
                                         <div class="bg-white p-2 border rounded shadow-sm d-inline-block">
-                                            <img id="preview-wheel" src="{{ asset($luckyWheel->wheel_image) }}" alt="Wheel Preview"
+                                            <img id="preview-wheel" src="{{ $luckyWheel->wheel_image ? (Str::startsWith($luckyWheel->wheel_image, ['http://', 'https://']) ? $luckyWheel->wheel_image : asset($luckyWheel->wheel_image)) : 'https://i.imgur.com/NpL6V6y.png' }}" alt="Wheel Preview"
                                                 style="max-width: 150px; max-height: 150px; object-fit: contain;">
                                         </div>
                                     </div>
@@ -229,15 +250,32 @@
                             <!-- Phần cấu hình phần thưởng -->
                             <div class="col-lg-12 mt-3">
                                 <h5 class="fw-bold mb-3 text-warning"><i class="ti ti-gift me-2"></i>Cấu hình phần thưởng (8 ô)</h5>
+                                <a href="{{ route('admin.reward-items.index') }}" target="_blank" class="btn btn-sm btn-outline-primary mb-3"><i class="ti ti-package me-1"></i>Quản lý kho thưởng</a>
+                                <div class="alert alert-primary py-2 small">
+                                    <strong>Quy tắc căn chỉnh ô vòng quay:</strong><br>
+                                    - Mũi tên cố định ở vị trí <strong>12 giờ (đỉnh vòng)</strong>.<br>
+                                    - <strong>Phần Thưởng #1 (index 0)</strong>: tương ứng ô nằm ngay vị trí <strong>12 giờ</strong> trên ảnh vòng quay gốc.<br>
+                                    - <strong>Phần Thưởng #2 -> #8 (index 1 -> 7)</strong>: lần lượt theo <strong>chiều kim đồng hồ</strong> trên ảnh vòng quay gốc (VD 8 ô: 12:00, 1:30, 3:00, 4:30, 6:00, 7:30, 9:00, 10:30).
+                                </div>
                                 <div class="alert alert-info py-2">
-                                    Tổng tỉ lệ trúng: <strong id="probabilityTotal">0%</strong> · Tổng tỉ lệ quay thử: <strong id="trialProbabilityTotal">0%</strong>. Cả hai phải bằng 100%.
+                                    Nhập tỉ lệ cao để phần thưởng dễ ra, tỉ lệ thấp để khó ra. Tổng tỉ lệ thật: <strong id="probabilityTotal">0%</strong> · Tổng tỉ lệ quay thử: <strong id="trialProbabilityTotal">0%</strong>. Cả hai phải bằng 100%.
+                                </div>
+                                <div class="alert alert-warning py-2 small">
+                                    <strong>Ước tính:</strong> 10% khoảng 1/10 lượt · 1% khoảng 1/100 lượt · 0,1% khoảng 1/1.000 lượt · 0,01% khoảng 1/10.000 lượt. Đây là xác suất ngẫu nhiên, không bảo đảm trúng đúng lượt đó.
                                 </div>
                                 <div class="row g-3">
                                     @for ($i = 0; $i < 8; $i++)
                                         <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                                             <div class="card border border-2 border-light shadow-sm h-100">
                                                 <div class="card-header bg-transparent border-bottom-0 pt-3 pb-0">
-                                                    <h6 class="fw-bold text-primary border-start border-3 border-warning ps-2 mb-0">Phần Thưởng #{{ $i + 1 }}</h6>
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <h6 class="fw-bold text-primary border-start border-3 border-warning ps-2 mb-0">Phần Thưởng #{{ $i + 1 }}</h6>
+                                                        <div class="form-check form-switch mb-0">
+                                                            <input type="hidden" name="config[{{ $i }}][active]" value="0">
+                                                            <input class="form-check-input reward-active" type="checkbox" name="config[{{ $i }}][active]" value="1" id="reward-active-{{ $i }}" {{ ($config[$i]['active'] ?? true) ? 'checked' : '' }}>
+                                                            <label class="form-check-label small" for="reward-active-{{ $i }}">Bật</label>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 <div class="card-body pt-2">
                                                     <div class="mb-3">
@@ -246,18 +284,21 @@
                                                     </div>
                                                     
                                                     <div class="mb-3">
-                                                        <label class="form-label small fw-semibold text-muted mb-1">Tỉ lệ trúng (%)</label>
-                                                        <input type="number" name="config[{{ $i }}][probability]" value="{{ isset($config[$i]['probability']) ? $config[$i]['probability'] : '' }}" class="form-control form-control-sm" min="0" max="100" step="0.1" required>
+                                                        <label class="form-label small fw-semibold text-muted mb-1">Tỉ lệ ra khi quay thật (%)</label>
+                                                        <input type="number" name="config[{{ $i }}][probability]" value="{{ isset($config[$i]['probability']) ? $config[$i]['probability'] : '' }}" class="form-control form-control-sm" min="0" max="100" step="0.01" required>
+                                                        <small class="probability-hint text-muted"></small>
                                                     </div>
 
                                                     <div class="mb-3">
                                                         <label class="form-label small fw-semibold text-muted mb-1">Tỉ lệ quay thử (%)</label>
-                                                        <input type="number" name="config[{{ $i }}][trial_probability]" value="{{ isset($config[$i]['trial_probability']) ? $config[$i]['trial_probability'] : '' }}" class="form-control form-control-sm" min="0" max="100" step="0.1">
+                                                        <input type="number" name="config[{{ $i }}][trial_probability]" value="{{ isset($config[$i]['trial_probability']) ? $config[$i]['trial_probability'] : '' }}" class="form-control form-control-sm" min="0" max="100" step="0.01" required>
                                                     </div>
 
                                                     <div class="mb-3">
                                                         <label class="form-label small fw-semibold text-muted mb-1">Loại phần thưởng</label>
-                                                        <select name="config[{{ $i }}][reward_type]" class="form-select form-select-sm" required>
+                                                        <select name="config[{{ $i }}][reward_type]" class="form-select form-select-sm reward-type" required>
+                                                            <option value="gem" {{ (($config[$i]['reward_type'] ?? '') == 'gem') ? 'selected' : '' }}>Cộng ngọc</option>
+                                                            <option value="gold" {{ (($config[$i]['reward_type'] ?? '') == 'gold') ? 'selected' : '' }}>Cộng vàng</option>
                                                             <option value="empty" {{ (isset($config[$i]['reward_type']) && $config[$i]['reward_type'] == 'empty') ? 'selected' : '' }}>Không trúng / Mất lượt</option>
                                                             <option value="money" {{ (isset($config[$i]['reward_type']) && $config[$i]['reward_type'] == 'money') ? 'selected' : '' }}>Cộng tiền shop (VNĐ)</option>
                                                             <option value="item" {{ (isset($config[$i]['reward_type']) && $config[$i]['reward_type'] == 'item') ? 'selected' : '' }}>Vật phẩm game</option>
@@ -265,16 +306,16 @@
                                                         </select>
                                                     </div>
 
-                                                    <div class="mb-3">
+                                                    <div class="mb-3 reward-item-field">
                                                         <label class="form-label small fw-semibold text-muted mb-1">Vật phẩm liên kết</label>
-                                                        <select name="config[{{ $i }}][reward_item_id]" class="form-select form-select-sm">
-                                                            <option value="">-- Chọn vật phẩm --</option>
-                                                            @foreach($rewardItems as $item)
-                                                                <option value="{{ $item->id }}" {{ (isset($config[$i]['reward_item_id']) && $config[$i]['reward_item_id'] == $item->id) ? 'selected' : '' }}>
-                                                                    {{ $item->name }} ({{ $item->game_name }})
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
+                                                <select name="config[{{ $i }}][reward_item_id]" class="form-select form-select-sm">
+                                                    <option value="">-- Không gán vật phẩm --</option>
+                                                    @foreach($rewardItems as $item)
+                                                        <option value="{{ $item->id }}" {{ (isset($config[$i]['reward_item_id']) && (string)$config[$i]['reward_item_id'] === (string)$item->id) ? 'selected' : '' }}>
+                                                            [{{ $item->game_name }}] {{ $item->name }} ({{ $item->unit }})
+                                                        </option>
+                                                    @endforeach
+                                                </select>
                                                     </div>
 
                                                     <div class="mb-2">
@@ -345,15 +386,46 @@
             if (previewWheel) previewWheel.src = 'https://i.imgur.com/NpL6V6y.png';
         }
 
+        function removePointerImage(button) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'remove_pointer_image';
+            input.value = '1';
+            button.closest('form').appendChild(input);
+            button.remove();
+            document.getElementById('preview-pointer').style.display = 'none';
+            document.getElementById('pointer-default-preview').style.display = '';
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const updateProbabilityTotals = function() {
-                const total = Array.from(document.querySelectorAll('[name$="[probability]"]')).reduce((sum, input) => sum + (Number(input.value) || 0), 0);
-                const trialTotal = Array.from(document.querySelectorAll('[name$="[trial_probability]"]')).reduce((sum, input) => sum + (Number(input.value) || 0), 0);
-                document.getElementById('probabilityTotal').textContent = total.toFixed(1).replace('.0', '') + '%';
-                document.getElementById('trialProbabilityTotal').textContent = trialTotal.toFixed(1).replace('.0', '') + '%';
+                const activeCards = Array.from(document.querySelectorAll('.reward-active:checked')).map(input => input.closest('.card'));
+                const total = activeCards.reduce((sum, card) => sum + (Number(card.querySelector('[name$="[probability]"]').value) || 0), 0);
+                const trialTotal = activeCards.reduce((sum, card) => sum + (Number(card.querySelector('[name$="[trial_probability]"]').value) || 0), 0);
+                const probabilityTotal = document.getElementById('probabilityTotal');
+                const trialProbabilityTotal = document.getElementById('trialProbabilityTotal');
+                probabilityTotal.textContent = total.toFixed(1).replace('.0', '') + '%';
+                trialProbabilityTotal.textContent = trialTotal.toFixed(1).replace('.0', '') + '%';
+                probabilityTotal.className = Math.abs(total - 100) < 0.001 ? 'text-success' : 'text-danger';
+                trialProbabilityTotal.className = Math.abs(trialTotal - 100) < 0.001 ? 'text-success' : 'text-danger';
+                document.querySelectorAll('[name$="[probability]"]').forEach(input => {
+                    const probability = Number(input.value);
+                    input.nextElementSibling.textContent = probability > 0 ? `Trung bình khoảng 1/${Math.round(100 / probability).toLocaleString('vi-VN')} lượt` : 'Không bao giờ ra';
+                });
             };
             document.querySelectorAll('[name$="[probability]"], [name$="[trial_probability]"]').forEach(input => input.addEventListener('input', updateProbabilityTotals));
+            document.querySelectorAll('.reward-active').forEach(input => input.addEventListener('change', updateProbabilityTotals));
             updateProbabilityTotals();
+
+            const updateRewardItemFields = () => document.querySelectorAll('.reward-type').forEach(select => {
+                const field = select.closest('.card-body').querySelector('.reward-item-field');
+                const itemSelect = field.querySelector('select');
+                const isItem = select.value === 'item';
+                field.classList.toggle('opacity-50', !isItem);
+                itemSelect.required = isItem;
+            });
+            document.querySelectorAll('.reward-type').forEach(select => select.addEventListener('change', updateRewardItemFields));
+            updateRewardItemFields();
 
             // Khởi tạo CKEditor cho mô tả
             let descriptionEditor;
@@ -390,25 +462,36 @@
             }
 
             // Xử lý xem trước hình ảnh
-            function previewImage(input, previewId) {
+            window.previewImage = function(input, previewId) {
                 if (input.files && input.files[0]) {
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        document.getElementById(previewId).src = e.target.result;
+                        const preview = document.getElementById(previewId);
+                        preview.src = e.target.result;
+                        preview.style.display = '';
+                        if (previewId === 'preview-pointer') {
+                            document.getElementById('pointer-default-preview').style.display = 'none';
+                        }
                     }
                     reader.readAsDataURL(input.files[0]);
                 }
-            }
+            };
 
             // Bắt sự kiện thay đổi ảnh đại diện
-            document.getElementById('thumbnail').addEventListener('change', function() {
-                previewImage(this, 'preview-thumbnail');
-            });
+            const thumbInput = document.getElementById('thumbnail');
+            if (thumbInput) {
+                thumbInput.addEventListener('change', function() {
+                    window.previewImage(this, 'preview-thumbnail');
+                });
+            }
 
             // Bắt sự kiện thay đổi ảnh vòng quay
-            document.getElementById('wheel_image').addEventListener('change', function() {
-                previewImage(this, 'preview-wheel');
-            });
+            const wheelImgInput = document.getElementById('wheel_image');
+            if (wheelImgInput) {
+                wheelImgInput.addEventListener('change', function() {
+                    window.previewImage(this, 'preview-wheel');
+                });
+            }
 
             // Xử lý form submit
             const editForm = document.getElementById('luckyWheelEditForm');

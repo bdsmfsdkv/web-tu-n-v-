@@ -31,4 +31,19 @@ class GameCategory extends Model
     {
         return $this->belongsTo(GameGroup::class, 'game_group_id');
     }
+
+    public function accounts()
+    {
+        return $this->hasMany(GameAccount::class, 'game_category_id');
+    }
+
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('home_catalog_data');
+        });
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('home_catalog_data');
+        });
+    }
 }

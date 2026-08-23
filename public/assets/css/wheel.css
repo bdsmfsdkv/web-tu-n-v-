@@ -155,6 +155,8 @@ body {
     border-radius: 50%;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    /* Cắt vùng vẽ lại khi vòng quay xoay, tránh repaint cả trang */
+    contain: paint;
 }
 
 .wheel-image {
@@ -162,6 +164,43 @@ body {
     height: 100%;
     object-fit: contain;
     transition: transform 5s cubic-bezier(0.2, 0.8, 0.3, 1);
+    backface-visibility: hidden;
+}
+
+.wheel-pointer {
+    position: absolute;
+    top: 4px;
+    left: 50%;
+    z-index: 12;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.wheel-pointer-image {
+    width: 64px;
+    height: 80px;
+    object-fit: contain;
+}
+
+.wheel-pointer-default {
+    width: 0;
+    height: 0;
+    border-left: 22px solid transparent;
+    border-right: 22px solid transparent;
+    border-top: 58px solid #ef4444;
+    filter: drop-shadow(0 4px 3px rgba(0, 0, 0, .35));
+}
+
+.wheel-pointer-default::before {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    top: -12px;
+    left: -12px;
+    border-radius: 50%;
+    background: #fbbf24;
+    border: 4px solid #fff;
 }
 
 .center-pointer-core {
@@ -268,6 +307,12 @@ body {
 
 .btn-blue:hover {
     background: var(--primary-hover);
+}
+
+.btn-blue:disabled,
+.btn-white:disabled {
+    cursor: wait;
+    opacity: .6;
 }
 
 /* Comment Section */
@@ -529,6 +574,17 @@ body {
     gap: 12px;
 }
 
+@keyframes historySlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.98);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
 .history-card {
     display: flex;
     align-items: center;
@@ -537,6 +593,23 @@ body {
     border: 1px solid var(--border-subtle);
     border-radius: 16px;
     background: var(--bg-card);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.history-card-new {
+    animation: historySlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    border-color: rgba(59, 130, 246, 0.4);
+}
+
+@keyframes balancePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); color: var(--primary); }
+    100% { transform: scale(1); }
+}
+
+.user-balance.balance-updated {
+    animation: balancePulse 0.45s ease-out;
+    display: inline-block;
 }
 
 .history-card-left {
@@ -594,7 +667,7 @@ body {
     z-index: 1000;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .result-modal.active {
@@ -611,7 +684,7 @@ body {
     width: 90%;
     position: relative;
     transform: scale(0.9);
-    transition: all 0.3s;
+    transition: transform 0.3s ease;
     border: 1px solid var(--border-subtle);
 }
 
@@ -661,4 +734,21 @@ body {
     background: var(--primary-light);
     border-radius: 12px;
     margin-bottom: 25px;
+}
+
+/* Tôn trọng thiết lập giảm chuyển động của hệ thống: vòng quay vẫn nhảy tới ô trúng,
+   chỉ bỏ phần chuyển động dài và hiệu ứng nhấp nháy. */
+@media (prefers-reduced-motion: reduce) {
+    .wheel-image {
+        transition: none;
+    }
+
+    .online-dot {
+        animation: none;
+    }
+
+    .result-modal,
+    .modal-content {
+        transition: none;
+    }
 }

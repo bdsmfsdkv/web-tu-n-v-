@@ -38,6 +38,15 @@
                         @method('PUT')
                         <div class="row">
                             <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Vòng quay <span class="text-danger">*</span></label>
+                                <select class="form-select" name="lucky_wheel_id" required>
+                                    <option value="">-- Chọn vòng quay --</option>
+                                    @foreach($luckyWheels as $wheel)
+                                        <option value="{{ $wheel->id }}" {{ old('lucky_wheel_id', $rewardItem->lucky_wheel_id) == $wheel->id ? 'selected' : '' }}>{{ $wheel->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Game <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" name="game_name" value="{{ old('game_name', $rewardItem->game_name) }}" required>
                             </div>

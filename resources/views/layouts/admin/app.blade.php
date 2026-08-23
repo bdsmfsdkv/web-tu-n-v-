@@ -7,6 +7,8 @@
     </div>
     
     <div class="main-wrapper">
+        <!-- Mobile sidebar overlay -->
+        <div class="pc-sidebar-overlay" id="pc-sidebar-overlay"></div>
         @include('layouts.admin.sidebar')
         @include('layouts.admin.header')
 

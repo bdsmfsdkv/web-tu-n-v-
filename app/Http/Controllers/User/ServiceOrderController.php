@@ -32,12 +32,15 @@ class ServiceOrderController extends Controller
                 ->withInput();
         }
 
-        // Lấy thông tin package
-        $package = ServicePackage::findOrFail($request->input('package_id'));
+        // Lấy đúng package của dịch vụ đang đặt
+        $package = ServicePackage::where('id', $request->input('package_id'))
+            ->where('game_service_id', $request->input('service_id'))
+            ->where('active', 1)
+            ->firstOrFail();
         $user = User::findOrFail(auth()->id());
 
         // Xử lý mã giảm giá
-        $finalPrice = $package->price;
+        $finalPrice = (int) $package->price;
         $discountAmount = 0;
 
         // Check for discount code if provided
@@ -46,16 +49,22 @@ class ServiceOrderController extends Controller
                 ->where('is_active', '1')
                 ->first();
 
-            if ($discountCode) {
+            if ($discountCode &&
+                $discountCode->isValid() &&
+                (!$discountCode->applicable_to || $discountCode->applicable_to === 'service') &&
+                (!$discountCode->item_ids || in_array($package->id, $discountCode->item_ids)) &&
+                (!$discountCode->min_purchase_amount || $package->price >= $discountCode->min_purchase_amount) &&
+                (!$discountCode->per_user_limit || $discountCode->usages()->where('user_id', $user->id)->count() < $discountCode->per_user_limit)
+            ) {
                 // Calculate discount
                 if ($discountCode->discount_type === 'percentage') {
-                    $discountAmount = ($package->price * $discountCode->discount_value) / 100;
+                    $discountAmount = (int) round(($package->price * $discountCode->discount_value) / 100);
                     // Apply max discount if set
                     if ($discountCode->max_discount_value && $discountAmount > $discountCode->max_discount_value) {
-                        $discountAmount = $discountCode->max_discount_value;
+                        $discountAmount = (int) round($discountCode->max_discount_value);
                     }
                 } else {
-                    $discountAmount = $discountCode->discount_value;
+                    $discountAmount = (int) round($discountCode->discount_value);
                 }
 
                 // Calculate final price
@@ -111,7 +120,7 @@ class ServiceOrderController extends Controller
             ]);
 
             // Apply discount code if provided
-            if ($request->filled('giftcode') && isset($discountCode)) {
+            if ($discountAmount > 0) {
                 // Update usage count directly in database
                 DB::table('discount_codes')
                     ->where('id', $discountCode->id)

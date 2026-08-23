@@ -49,7 +49,7 @@
                                 <img src="{{ !empty($account->thumbnail) ? asset($account->thumbnail) : (!empty($category->thumbnail) ? asset($category->thumbnail) : 'https://via.placeholder.com/300x180') }}" alt="Account Preview" class="account-img">
                             </a>
                             <div class="account-code">Mã số: {{ $account->id }}</div>
-                            <div class="account-price-top">ATM/VÍ ĐIỆN TỬ: {{ number_format($account->price) }} VND</div>
+                            <div class="account-price-top">ATM/VÍ ĐIỆN TỬ: {{ number_format($account->price) }} <span class="price-unit">VND</span></div>
                         </div>
 
                         <div class="account-info">

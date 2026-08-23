@@ -15,7 +15,7 @@ class ResourceWithdrawalController extends Controller
      */
     public function index(\Illuminate\Http\Request $request)
     {
-        $withdrawals = WithdrawalHistory::with('user')
+        $withdrawals = WithdrawalHistory::with(['user', 'rewardItem'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -63,10 +63,10 @@ class ResourceWithdrawalController extends Controller
             // Get user
             $user = User::findOrFail($withdrawal->user_id);
 
-            // Restore resources based on type
+            // Vật phẩm riêng được tính từ lịch sử, yêu cầu lỗi tự động không còn bị trừ.
             if ($withdrawal->type === 'gold') {
                 $user->gold += $withdrawal->amount;
-            } else { // gem
+            } elseif ($withdrawal->reward_item_id === null) {
                 $user->gem += $withdrawal->amount;
             }
 

@@ -49,6 +49,17 @@
                                     @enderror
                                 </div>
                             </div>
+                            <div class="col-lg-6 col-sm-6 col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Tài khoản VIP - Mức chi tiêu tối thiểu (VNĐ)</label>
+                                    <input type="number" name="min_spent" value="{{ old('min_spent', 0) }}" min="0" step="1000"
+                                        class="form-control @error('min_spent') is-invalid @enderror" placeholder="VD: 5000000 (0 = acc thường)">
+                                    <small class="text-muted">Chỉnh ngầm tỉ lệ: Chỉ user đã tiêu ≥ mức này trên web mới có thể quay/mua trúng.</small>
+                                    @error('min_spent')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
                             
                             <div class="col-12 mt-2 mb-3">
                                 <h6 class="fw-bold border-bottom pb-2">Danh sách tài khoản</h6>

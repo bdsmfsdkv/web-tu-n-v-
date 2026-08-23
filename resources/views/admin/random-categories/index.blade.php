@@ -98,7 +98,14 @@
                                                 class="badge {{ $category->active ? 'bg-lightgreen' : 'bg-lightred' }}">{{ $category->active ? 'Hoạt động' : 'Đã ẩn' }}</span>
                                         </td>
                                         <td>{{ $category->created_at->format('d/m/Y') }}</td>
-                                        <td class="text-center">
+                                         <td class="text-center">
+                                            <form method="POST" action="{{ route('admin.random-categories.toggle-active', $category->id) }}" class="d-inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="btn btn-sm {{ $category->active ? 'btn-outline-danger' : 'btn-outline-success' }}" title="{{ $category->active ? 'Ẩn khỏi web' : 'Hiện trên web' }}">
+                                                    <i class="ti {{ $category->active ? 'ti-eye-off' : 'ti-eye' }}"></i>
+                                                </button>
+                                            </form>
                                             <a class="action-set" href="javascript:void(0);" data-bs-toggle="dropdown"
                                                 aria-expanded="false">
                                                 <i class="fa fa-ellipsis-v" aria-hidden="true"></i>

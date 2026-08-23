@@ -314,25 +314,8 @@ return [
     |--------------------------------------------------------------------------
     | Helper function to find game preset key by category or game group
     |--------------------------------------------------------------------------
+    |
+    | Logic đã chuyển sang App\Helpers\GamePresetHelper::resolve() vì Closure trong
+    | file config làm `php artisan config:cache` không chạy được.
     */
-    'resolve_preset' => function ($identifier) {
-        $identifier = \Illuminate\Support\Str::slug($identifier);
-        $games = config('game_attributes.games', []);
-        
-        foreach ($games as $key => $game) {
-            if ($key === $identifier) {
-                return $key;
-            }
-            if (isset($game['aliases']) && in_array($identifier, $game['aliases'])) {
-                return $key;
-            }
-            // Substring match
-            foreach ($game['aliases'] as $alias) {
-                if (str_contains($identifier, $alias) || str_contains($alias, $identifier)) {
-                    return $key;
-                }
-            }
-        }
-        return null;
-    }
 ];

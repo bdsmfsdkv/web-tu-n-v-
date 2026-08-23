@@ -116,7 +116,7 @@
                     </ul>
                 </li>
 
-                <li class="pc-item pc-hasmenu {{ request()->is('admin/lucky-wheels*') || request()->is('admin/withdrawals/resources*') || request()->is('admin/reward-items*') ? 'active pc-trigger' : '' }}">
+                <li class="pc-item pc-hasmenu {{ request()->is('admin/lucky-wheels*') || request()->is('admin/reward-items*') ? 'active pc-trigger' : '' }}">
                     <a href="#" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-gift"></i></span>
                         <span class="pc-mtext">Minigame</span>
@@ -125,11 +125,22 @@
                     <ul class="pc-submenu" style="display: {{ request()->is('admin/lucky-wheels*') || request()->is('admin/withdrawals/resources*') || request()->is('admin/reward-items*') ? 'block' : 'none' }};">
                         <li class="pc-item"><a class="pc-link" href="{{ route('admin.reward-items.index') }}">Kho thưởng (Vật phẩm)</a></li>
                         <li class="pc-item"><a class="pc-link" href="{{ route('admin.lucky-wheels.index') }}">Danh sách Vòng Quay</a></li>
-                        <li class="pc-item"><a class="pc-link" href="{{ route('admin.withdrawals.resources.index') }}">Yêu cầu rút vật phẩm</a></li>
+                        <li class="pc-item"><a class="pc-link" href="{{ route('admin.lucky-wheels.history') }}">Lịch sử quay thưởng</a></li>
                     </ul>
                 </li>
                 
                 <li class="pc-item pc-caption"><label>Hệ thống</label></li>
+                <li class="pc-item pc-hasmenu {{ request()->is('admin/withdrawals*') ? 'active pc-trigger' : '' }}">
+                    <a href="#" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-wallet"></i></span>
+                        <span class="pc-mtext">Yêu cầu rút</span>
+                        <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+                    </a>
+                    <ul class="pc-submenu" style="display: {{ request()->is('admin/withdrawals*') ? 'block' : 'none' }};">
+                        <li class="pc-item"><a class="pc-link" href="{{ route('admin.withdrawals.index') }}">Rút tiền ATM/Ví</a></li>
+                        <li class="pc-item"><a class="pc-link" href="{{ route('admin.withdrawals.resources.index') }}">Rút vàng/ngọc</a></li>
+                    </ul>
+                </li>
 
                 <li class="pc-item {{ request()->routeIs('admin.discount-codes.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.discount-codes.index') }}" class="pc-link">

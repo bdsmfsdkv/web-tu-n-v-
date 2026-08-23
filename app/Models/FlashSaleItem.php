@@ -30,4 +30,16 @@ class FlashSaleItem extends Model
             return $this->belongsTo(RandomCategory::class, 'item_id');
         }
     }
+
+    protected static function booted()
+    {
+        // Item thay đổi cũng phải xoá cache flash sale của trang chủ và map giá trong request.
+        $forgetHomeCache = static function () {
+            FlashSale::flushActivePriceCache();
+            \Illuminate\Support\Facades\Cache::forget('home_flash_sales');
+        };
+
+        static::saved($forgetHomeCache);
+        static::deleted($forgetHomeCache);
+    }
 }

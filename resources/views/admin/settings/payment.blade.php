@@ -128,6 +128,62 @@
                         </div> <!-- end card-body -->
                         </div> <!-- end card -->
 
+                        <!-- CÀI ĐẶT SEPAY WEBHOOK & HỆ THỐNG -->
+                        <div class="card border border-light-subtle shadow-sm mb-4">
+                            <div class="card-header bg-light-subtle d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+                                <h5 class="card-title mb-0">
+                                    <i class="ti ti-building-bank text-primary me-2"></i>Cài đặt SePay Webhook & Môi trường chung
+                                </h5>
+                                <a href="{{ route('admin.bank-accounts.index') }}" class="btn btn-sm btn-outline-primary align-self-start align-self-sm-auto">
+                                    <i class="ti ti-settings me-1"></i> Quản lý tài khoản ngân hàng & Token
+                                </a>
+                            </div>
+                            <div class="card-body pb-0 payment-method-container" data-checkbox="sepay_enabled" data-container="sepay-container">
+                                <div class="alert alert-info">
+                                    <i class="ti ti-info-circle me-1"></i> <strong>Lưu ý:</strong> Cấu hình Token API và Nguồn giao dịch của từng ngân hàng đã được quản lý trực tiếp trong trang <a href="{{ route('admin.bank-accounts.index') }}" class="fw-bold text-decoration-underline">Chỉnh sửa tài khoản ngân hàng</a>.
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="mb-4 pb-2 border-bottom">
+                                            <div class="form-check form-switch mt-2">
+                                                <input class="form-check-input" type="checkbox" id="sepay_enabled" name="sepay_enabled" value="1" {{ old('sepay_enabled', $configs['sepay_enabled']) ? 'checked' : '' }}>
+                                                <label class="form-check-label fw-semibold" for="sepay_enabled">Kích hoạt tích hợp SePay (Webhook & Cron)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row sepay-container">
+                                    <div class="col-lg-8 col-sm-8 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">SePay Webhook API Key / Token xác thực <span class="text-danger">*</span></label>
+                                            <input type="password" name="sepay_token"
+                                                value="{{ old('sepay_token', $configs['sepay_token']) }}"
+                                                class="form-control @error('sepay_token') is-invalid @enderror"
+                                                placeholder="Nhập API Key để xác thực Webhook POST /api/webhook/sepay"
+                                                autocomplete="new-password">
+                                            @error('sepay_token')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                            <small class="text-muted">Dùng để xác thực an toàn khi SePay bắn Webhook về URL <code>/api/webhook/sepay</code> (Header <code>Authorization: Apikey &lt;TOKEN&gt;</code>).</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Môi trường SePay</label>
+                                            <select name="sepay_env" class="form-select @error('sepay_env') is-invalid @enderror">
+                                                <option value="production" {{ old('sepay_env', $configs['sepay_env']) === 'production' ? 'selected' : '' }}>Production (Thực tế)</option>
+                                                <option value="sandbox" {{ old('sepay_env', $configs['sepay_env']) === 'sandbox' ? 'selected' : '' }}>Sandbox (Thử nghiệm)</option>
+                                            </select>
+                                            @error('sepay_env')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> <!-- end card-body -->
+                        </div> <!-- end card -->
+
                         <!-- CÀI ĐẶT USDT -->
                         <div class="card border border-light-subtle shadow-sm mb-4">
                             <div class="card-header bg-light-subtle">

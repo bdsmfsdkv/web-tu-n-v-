@@ -12,6 +12,7 @@ class LuckyWheelHistory extends Model
     protected $fillable = [
         'user_id',
         'lucky_wheel_id',
+        'reward_item_id',
         'spin_count',
         'total_cost',
         'reward_type',
@@ -39,5 +40,10 @@ class LuckyWheelHistory extends Model
     public function luckyWheel()
     {
         return $this->belongsTo(LuckyWheel::class);
+    }
+
+    public function rewardItem()
+    {
+        return $this->belongsTo(RewardItem::class);
     }
 }

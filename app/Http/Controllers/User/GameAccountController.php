@@ -9,12 +9,14 @@ use App\Http\Controllers\DiscountCodeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class GameAccountController extends Controller
 {
     public function show($id)
     {
-        $account = GameAccount::findOrFail($id);
+        // with('category') tránh lazy-load: view detail dùng $account->category ở nhiều chỗ.
+        $account = GameAccount::with('category')->findOrFail($id);
 
         $images = is_array($account->images) ? $account->images : (json_decode($account->images, true) ?? []);
 
@@ -28,8 +30,12 @@ class GameAccountController extends Controller
             ->where('id', '!=', $account->id)
             ->where('status', 'available')
             ->orderBy('id', 'desc')
-            ->take(6)
+            ->take(4)
             ->get();
+
+        if ($flashSalePrice !== null) {
+            $relatedAccounts->each(fn ($related) => $related->price = $flashSalePrice);
+        }
 
         return view("user.account.detail", compact('account', 'images', 'relatedAccounts'));
     }
@@ -152,12 +158,18 @@ class GameAccountController extends Controller
                 'redirect_url' => route('profile.purchased-accounts')
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
+            Log::error('Game account purchase failed.', [
+                'account_id' => $id,
+                'user_id' => Auth::id(),
+                'exception' => $e,
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Có lỗi xảy ra khi mua tài khoản: ' . $e->getMessage()
-            ]);
+                'message' => 'Không thể mua tài khoản lúc này. Vui lòng thử lại sau.'
+            ], 500);
         }
     }
 }

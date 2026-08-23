@@ -221,6 +221,7 @@
     </button>
     
     <script src="https://cdn.jsdelivr.net/gh/lelinh014756/fui-toast-js@master/assets/js/toast@1.0.1/fuiToast.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <script src="{{ asset('js/app.js') }}?v={{ filemtime(public_path('js/app.js')) }}"></script>
     <script src="{{ asset('assets/js/discount-code.js') }}?v={{ filemtime(public_path('assets/js/discount-code.js')) }}"></script>
     <script>
@@ -231,17 +232,19 @@
           p.style.opacity = '0';
           setTimeout(function() {
             p.remove();
-          }, 300);
+          }, 200);
         }
       }
-      document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(hidePreloader, 100);
-      });
-      setTimeout(hidePreloader, 1000); // safety fallback
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hidePreloader);
+      } else {
+        hidePreloader();
+      }
     })();
   </script>
     <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"ff8b28eff4d24470ab279ba48041523b","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 
+    @unless(Auth::check() && Auth::user()->role === 'admin')
     <!-- Live Purchase Toast -->
     <div id="live-purchase-toast" class="live-purchase-toast">
         <button type="button" class="toast-close" onclick="document.getElementById('live-purchase-toast').classList.remove('show')" aria-label="Đóng">×</button>
@@ -456,6 +459,283 @@
             setTimeout(showFakePurchase, Math.floor(8000 + Math.random() * 7000));
         });
     </script>
+    @endunless
+
+    @auth
+    <!-- Global Realtime Deposit Notification for Logged-in User -->
+    @if(!request()->routeIs('profile.deposit-atm'))
+    <div id="global-deposit-modal" class="deposit-success-modal" style="display: none;">
+        <div class="dsm-backdrop"></div>
+        <div class="dsm-dialog">
+            <div class="dsm-badge-icon">
+                <div class="dsm-icon-ring"></div>
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h3 class="dsm-title">NẠP TIỀN THÀNH CÔNG!</h3>
+            <p class="dsm-subtitle">Giao dịch của bạn đã được ghi nhận và cộng tiền vào tài khoản</p>
+            
+            <div class="dsm-amount-card">
+                <div class="dsm-amount-label">Số tiền cộng vào tài khoản</div>
+                <div class="dsm-amount-value" id="global-dsm-amount">+0 đ</div>
+            </div>
+
+            <div class="dsm-details">
+                <div class="dsm-row">
+                    <span>Ngân hàng</span>
+                    <strong id="global-dsm-bank">MBBank</strong>
+                </div>
+                <div class="dsm-row">
+                    <span>Mã giao dịch</span>
+                    <strong id="global-dsm-txid">---</strong>
+                </div>
+                <div class="dsm-row">
+                    <span>Số dư mới</span>
+                    <strong id="global-dsm-balance" style="color: #10b981;">0 đ</strong>
+                </div>
+                <div class="dsm-row">
+                    <span>Thời gian</span>
+                    <span id="global-dsm-time" style="color: #64748b;">Vừa xong</span>
+                </div>
+            </div>
+
+            <div class="dsm-actions">
+                <button type="button" class="dsm-btn dsm-btn-primary" id="global-dsm-btn-close">
+                    <i class="fa-solid fa-gamepad"></i> Trải nghiệm dịch vụ ngay
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .deposit-success-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .dsm-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            animation: fadeIn 0.3s ease;
+        }
+        .dsm-dialog {
+            position: relative;
+            width: 100%;
+            max-width: 440px;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 32px 24px 24px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        [data-theme="dark"] .dsm-dialog {
+            background: #1e293b;
+            color: #f8fafc;
+            border-color: #334155;
+        }
+        .dsm-badge-icon {
+            width: 72px;
+            height: 72px;
+            margin: -60px auto 16px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 32px;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+            position: relative;
+        }
+        .dsm-icon-ring {
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            border: 2px dashed #10b981;
+            animation: spin 8s linear infinite;
+        }
+        .dsm-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #10b981;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+        .dsm-subtitle {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+        [data-theme="dark"] .dsm-subtitle {
+            color: #94a3b8;
+        }
+        .dsm-amount-card {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1px solid #bbf7d0;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 18px;
+        }
+        [data-theme="dark"] .dsm-amount-card {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.25);
+        }
+        .dsm-amount-label {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            color: #059669;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        [data-theme="dark"] .dsm-amount-label {
+            color: #34d399;
+        }
+        .dsm-amount-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #047857;
+        }
+        [data-theme="dark"] .dsm-amount-value {
+            color: #10b981;
+        }
+        .dsm-details {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 0.88rem;
+            text-align: left;
+        }
+        [data-theme="dark"] .dsm-details {
+            background: #0f172a;
+        }
+        .dsm-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #475569;
+        }
+        [data-theme="dark"] .dsm-row {
+            color: #cbd5e1;
+        }
+        .dsm-row strong {
+            color: #0f172a;
+        }
+        [data-theme="dark"] .dsm-row strong {
+            color: #f1f5f9;
+        }
+        .dsm-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .dsm-btn {
+            flex: 1;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .dsm-btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        .dsm-btn-primary:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let sessionInitTime = new Date().toISOString();
+            let checkTimer = setInterval(function() {
+                fetch('{{ route('profile.deposit-atm.check') }}?since=' + encodeURIComponent(sessionInitTime), {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success && res.found && res.deposit) {
+                        sessionInitTime = new Date().toISOString();
+                        clearInterval(checkTimer);
+                        
+                        document.getElementById('global-dsm-amount').textContent = '+' + res.deposit.amount_formatted;
+                        document.getElementById('global-dsm-bank').textContent = res.deposit.bank || 'Ngân hàng';
+                        document.getElementById('global-dsm-txid').textContent = res.deposit.transaction_id || '---';
+                        document.getElementById('global-dsm-balance').textContent = (res.new_balance_formatted || '0') + ' đ';
+                        document.getElementById('global-dsm-time').textContent = res.deposit.created_at || 'Vừa xong';
+
+                        document.getElementById('global-deposit-modal').style.display = 'flex';
+
+                        // Sounds + Confetti
+                        try {
+                            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+                            osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1);
+                            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
+                            osc.start();
+                            osc.stop(audioCtx.currentTime + 0.5);
+                        } catch (e) {}
+
+                        if (typeof confetti === 'function') {
+                            confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+                        }
+
+                        document.querySelectorAll('[data-user-balance]').forEach(el => {
+                            el.textContent = res.new_balance_formatted;
+                        });
+                    }
+                })
+                .catch(() => {});
+            }, 6000);
+
+            document.getElementById('global-dsm-btn-close')?.addEventListener('click', function() {
+                document.getElementById('global-deposit-modal').style.display = 'none';
+            });
+        });
+    </script>
+    @endif
+    @endauth
     
     @stack('scripts')
 </body>

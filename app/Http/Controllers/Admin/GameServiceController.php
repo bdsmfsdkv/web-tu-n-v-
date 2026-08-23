@@ -162,4 +162,13 @@ class GameServiceController extends Controller
             ]);
         }
     }
+
+    public function toggleActive($id)
+    {
+        $service = GameService::findOrFail($id);
+        $service->update(['active' => !$service->active]);
+        cache()->forget('nav_services');
+
+        return back()->with('success', $service->active ? 'Đã hiện dịch vụ trên web.' : 'Đã ẩn dịch vụ khỏi web.');
+    }
 }

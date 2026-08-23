@@ -3,7 +3,7 @@
 @section('title', $category->name)
 
 @push('css')
-    <link href="/css/category-attribute-fix.css?v=20260820-1" rel="stylesheet">
+    <link href="/css/category-attribute-fix.css?v={{ filemtime(public_path('css/category-attribute-fix.css')) }}" rel="stylesheet">
 @endpush
 
 @section('content')
@@ -74,10 +74,10 @@
                     <div class="account-card">
                         <div class="account-media">
                             <a href="{{ route('account.show', ['id' => $account->id]) }}">
-                                <img src="{{ $account->thumb }}" alt="Account Preview" class="account-img">
+                                <img src="{{ $account->thumb }}" alt="Account Preview" class="account-img" loading="lazy" decoding="async">
                             </a>
                             <div class="account-code">Mã số: {{ $account->id }}</div>
-                            <div class="account-price-top">ATM/VÍ ĐIỆN TỬ: {{ number_format($account->price) }} VND</div>
+                            <div class="account-price-top">ATM/VÍ ĐIỆN TỬ: {{ number_format($account->price) }} <span class="price-unit">VND</span></div>
                         </div>
 
                         <div class="account-info">

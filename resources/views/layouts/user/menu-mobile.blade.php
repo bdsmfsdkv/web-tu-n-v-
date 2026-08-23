@@ -69,7 +69,7 @@
                     </li>
                     <li>
                         <a href="{{ route('profile.deposit-card') }}" class="mobile-overlay-menu__link">
-                            <i class="fas fa-wallet"></i> Số dư: {{ number_format(Auth::user()->balance) }}đ
+                            <i class="fas fa-wallet"></i> Số dư: <span data-user-balance>{{ number_format(Auth::user()->balance) }}</span>đ
                         </a>
                     </li>
                     <li>

@@ -138,8 +138,8 @@
     width: 100%;
     margin: 0;
     color: #64748b;
-    font-size: 1.25rem;
-    line-height: 1.3;
+    font-size: 0.65rem;
+    line-height: 1.2;
     font-weight: 600;
     letter-spacing: 0.01em;
     text-align: center;
@@ -150,8 +150,8 @@
     max-width: 100%;
     margin: 0;
     color: #0f172a;
-    font-size: 1.7rem;
-    line-height: 1.35;
+    font-size: 0.75rem;
+    line-height: 1.25;
     font-weight: 750;
     letter-spacing: -0.01em;
     text-align: center;
@@ -435,11 +435,11 @@
     }
 
     .account-detail-label {
-        font-size: 1.2rem;
+        font-size: 0.72rem;
     }
 
     .account-detail-value {
-        font-size: 1.55rem;
+        font-size: 0.88rem;
     }
 
     .account-filter__button {
@@ -467,7 +467,7 @@
     }
 
     .account-detail-value {
-        font-size: 1.5rem;
+        font-size: 0.82rem;
     }
 
     .account-filter__actions {

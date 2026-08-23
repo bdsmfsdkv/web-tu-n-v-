@@ -96,6 +96,13 @@
                                         <td><span class="text-muted small">{{ $wheel->created_at->format('d/m/Y H:i') }}</span></td>
                                         <td class="text-end">
                                             <div class="btn-group">
+                                                <form method="POST" action="{{ route('admin.lucky-wheels.toggle-active', $wheel->id) }}" class="d-inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="btn btn-sm {{ $wheel->active ? 'btn-light-danger text-danger' : 'btn-light-success text-success' }}" title="{{ $wheel->active ? 'Ẩn khỏi web' : 'Hiện trên web' }}">
+                                                        <i class="ti {{ $wheel->active ? 'ti-eye-off' : 'ti-eye' }}"></i>
+                                                    </button>
+                                                </form>
                                                 <a class="btn btn-sm btn-light-primary text-primary" href="{{ route('admin.lucky-wheels.edit', $wheel->id) }}"
                                                     title="Chỉnh sửa">
                                                     <i class="ti ti-edit"></i>

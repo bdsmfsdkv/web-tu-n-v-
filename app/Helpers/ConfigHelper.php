@@ -8,6 +8,29 @@ use Illuminate\Support\Facades\Cache;
 class ConfigHelper
 {
     /**
+     * @var array|null
+     */
+    protected static ?array $runtimeCache = null;
+
+    /**
+     * Nạp toàn bộ config vào memory
+     *
+     * @return array
+     */
+    public static function allMap(): array
+    {
+        if (static::$runtimeCache !== null) {
+            return static::$runtimeCache;
+        }
+
+        static::$runtimeCache = Cache::remember('runtime_app_configs', 86400, function () {
+            return Config::pluck('value', 'key')->all();
+        });
+
+        return static::$runtimeCache;
+    }
+
+    /**
      * Lấy giá trị cấu hình theo khóa
      *
      * @param string $key
@@ -16,21 +39,12 @@ class ConfigHelper
      */
     public static function get($key, $default = null)
     {
-        $cacheKey = 'config_' . $key;
-
-        // Kiểm tra cache trước
-        if (Cache::has($cacheKey)) {
-            return Cache::get($cacheKey);
+        $all = static::allMap();
+        if (array_key_exists($key, $all)) {
+            return $all[$key];
         }
 
-        // Nếu không có trong cache, lấy từ database
-        $config = Config::where('key', $key)->first();
-        $value = $config ? $config->value : $default;
-
-        // Lưu vào cache để sử dụng sau
-        Cache::put($cacheKey, $value, now()->addDay());
-
-        return $value;
+        return $default;
     }
 
     /**
@@ -47,8 +61,7 @@ class ConfigHelper
             ['value' => $value]
         );
 
-        // Cập nhật cache
-        Cache::put('config_' . $key, $value, now()->addDay());
+        static::clearCache();
     }
 
     /**
@@ -58,7 +71,9 @@ class ConfigHelper
      */
     public static function clearCache()
     {
-        Cache::flush();
+        static::$runtimeCache = null;
+        Cache::forget('runtime_app_configs');
+        Cache::forget('runtime_service_settings');
     }
 
     /**
@@ -69,12 +84,18 @@ class ConfigHelper
      */
     public static function getByPrefix($prefix)
     {
-        $configs = Config::where('key', 'LIKE', $prefix . '%')->get();
+        if (!empty($prefix) && !str_ends_with($prefix, '.')) {
+            $prefix .= '.';
+        }
+
+        $all = static::allMap();
         $result = [];
 
-        foreach ($configs as $config) {
-            $key = str_replace($prefix, '', $config->key);
-            $result[$key] = $config->value;
+        foreach ($all as $key => $value) {
+            if (str_starts_with($key, $prefix)) {
+                $subKey = substr($key, strlen($prefix));
+                $result[$subKey] = $value;
+            }
         }
 
         return $result;
@@ -90,3 +111,4 @@ class ConfigHelper
         return Config::all();
     }
 }
+

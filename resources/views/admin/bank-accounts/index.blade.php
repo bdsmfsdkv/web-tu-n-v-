@@ -1,28 +1,20 @@
 @extends('layouts.admin.app')
 @section('title', $title)
 @section('content')
-    <div >
-        <div >
-            <div class="page-header">
-                <div class="page-block mb-3">
-    <div class="row align-items-center">
-        <div class="col-md-12">
-            <div class="page-header-title">
-                <h2 class="mb-0">Quản lý tài khoản ngân hàng</h2>
-                <p class="text-muted">Xem và quản lý các tài khoản ngân hàng</p>
-            
-                
-            </div>
-        </div></div>
-</div>
-                <div class="page-btn">
-                    <a href="{{ route('admin.bank-accounts.create') }}" class="btn btn-success">
+    <div>
+        <div>
+            <div class="page-header d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-3">
+                <div class="page-header-title">
+                    <h2 class="mb-0">Quản lý tài khoản ngân hàng</h2>
+                    <p class="text-muted mb-0">Xem và quản lý các tài khoản ngân hàng</p>
+                </div>
+                <div class="page-btn flex-shrink-0">
+                    <a href="{{ route('admin.bank-accounts.create') }}" class="btn btn-success w-100 w-sm-auto">
                         <i class="ti ti-plus me-1"></i>
                         Thêm tài khoản mới
                     </a>
                 </div>
             </div>
-
 
             @if (session('success'))
                 <x-alert-admin type="success" :message="session('success')" />
@@ -32,10 +24,10 @@
                 <x-alert-admin type="danger" :message="session('error')" />
             @endif
 
-            <div class="card-body px-0 py-0">
+            <div class="card overflow-hidden shadow-sm border border-dashed mb-4">
                 <form class="p-3 bg-auto-subtle border-bottom filter-form" method="GET">
                     <div class="row align-items-center g-2">
-                        <div class="col-md-2">
+                        <div class="col-12 col-sm-6 col-md-2">
                             <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()">
                                 <option value="">--Hiển thị--</option>
                                 <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
@@ -44,52 +36,26 @@
                                 <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
                             </select>
                         </div>
-                        <div class="col-md-3">
-                            <input type="text" name="search" class="form-control form-control-sm" placeholder="Tìm kiếm..." value="{{ request('search') }}">
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <input type="text" name="search" class="form-control form-control-sm" placeholder="Tìm kiếm tài khoản..." value="{{ request('search') }}">
                         </div>
-                        <div class="col-md-3 d-flex gap-2 ms-auto">
-                            <button type="submit" class="btn btn-sm btn-primary w-100">
+                        <div class="col-12 col-md-4 d-flex gap-2 ms-auto">
+                            <button type="submit" class="btn btn-sm btn-primary flex-fill">
                                 <i class="ti ti-search me-1"></i> Tìm kiếm
                             </button>
-                            <a href="?" class="btn btn-sm btn-light-danger w-100">
+                            <a href="?" class="btn btn-sm btn-light-danger flex-fill text-center">
                                 <i class="ti ti-trash me-1"></i> Bỏ lọc
                             </a>
                         </div>
                     </div>
                 </form>
-                <div class="alert alert-notication-custom alert-dismissible fade show" role="alert">
-                    <strong>Hệ thống hiện tại đang sử dụng API qua Spay5s.com.</strong>
-                    <br>Vui lòng đăng ký tài khoản tại <a href="https://spay5s.com/" target="_blank" class="a_link">spay5s.com</a> để lấy Token tích hợp nạp tiền tự động cho các ngân hàng: Vietcombank, Vietinbank, MBBank, ACB, OCB.
+                <div class="alert alert-notication-custom alert-dismissible fade show m-3 mb-0" role="alert">
+                    <strong>Hệ thống hiện tại đang sử dụng API qua Spay5s.com hoặc SePay.vn.</strong>
+                    <br>Vui lòng đăng ký tài khoản tại <a href="https://spay5s.com/" target="_blank" class="a_link">spay5s.com</a> hoặc <a href="https://my.sepay.vn/" target="_blank" class="a_link">sepay.vn</a> để lấy Token tích hợp nạp tiền tự động.
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-            </div>
 
-            <div class="card overflow-hidden shadow-sm border border-dashed">
-                <div class="card-body px-0 py-0">
-                <form class="p-3 bg-auto-subtle border-bottom filter-form" method="GET">
-                    <div class="row align-items-center g-2">
-                        <div class="col-md-2">
-                            <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()">
-                                <option value="">--Hiển thị--</option>
-                                <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
-                                <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
-                                <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
-                                <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <input type="text" name="search" class="form-control form-control-sm" placeholder="Tìm kiếm..." value="{{ request('search') }}">
-                        </div>
-                        <div class="col-md-3 d-flex gap-2 ms-auto">
-                            <button type="submit" class="btn btn-sm btn-primary w-100">
-                                <i class="ti ti-search me-1"></i> Tìm kiếm
-                            </button>
-                            <a href="?" class="btn btn-sm btn-light-danger w-100">
-                                <i class="ti ti-trash me-1"></i> Bỏ lọc
-                            </a>
-                        </div>
-                    </div>
-                </form>
+                <div class="card-body px-0 py-0 mt-3">
                     <div class="table-responsive table-border-style">
                         <table class="table table-hover table-borderless align-middle mb-0 text-nowrap w-100">
                             <thead class="bg-light-subtle text-muted">
@@ -97,30 +63,42 @@
                                     <th class="text-uppercase small">ID</th>
                                     <th class="text-uppercase small">Ngân hàng</th>
                                     <th class="text-uppercase small">Số tài khoản</th>
-                                    <th class="text-uppercase small">Chi nhánh</th>
-                                    <th class="text-uppercase small">Cú pháp nạp tiền</th>
-                                    <th class="text-uppercase small">Access Token</th>
-                                    <th class="text-uppercase small">Trạng thái</th>
-                                    <th class="text-uppercase small">Tự động xác nhận</th>
-                                    <th class="text-end">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($bankAccounts as $key => $account)
-                                    <tr>
-                                        <td>{{ $key + 1 }}</td>
-                                        <td>
-                                            @if($account->image)
-                                                <img src="{{ asset($account->image) }}" alt="{{ $account->bank_name }}" style="width: 30px; height: 30px; object-fit: contain; margin-right: 8px; border-radius: 4px; border: 1px solid #eee;">
-                                            @endif
-                                            {{ $account->bank_name }}
-                                        </td>
-                                        <td>{{ $account->account_number }}</td>
-                                        <td>{{ $account->branch ?? 'Không có' }}</td>
-                                        <td>{{ $account->prefix }}</td>
-                                        <td title="{{ $account->access_token }}">
-                                            {{ Str::limit($account->access_token, 15, '...') }}
-                                        </td>
+                                     <th class="text-uppercase small">Chi nhánh</th>
+                                     <th class="text-uppercase small">Cú pháp nạp tiền</th>
+                                     <th class="text-uppercase small">Nguồn (Provider)</th>
+                                     <th class="text-uppercase small">Access Token</th>
+                                     <th class="text-uppercase small">Trạng thái</th>
+                                     <th class="text-uppercase small">Tự động xác nhận</th>
+                                     <th class="text-end">Thao tác</th>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                 @forelse($bankAccounts as $key => $account)
+                                     <tr>
+                                         <td>{{ $key + 1 }}</td>
+                                         <td>
+                                             @if($account->image)
+                                                 <img src="{{ asset($account->image) }}" alt="{{ $account->bank_name }}" style="width: 30px; height: 30px; object-fit: contain; margin-right: 8px; border-radius: 4px; border: 1px solid #eee;">
+                                             @endif
+                                             {{ $account->bank_name }}
+                                         </td>
+                                         <td>{{ $account->account_number }}</td>
+                                         <td>{{ $account->branch ?? 'Không có' }}</td>
+                                         <td>{{ $account->prefix }}</td>
+                                         <td>
+                                             @if ($account->usesSepay())
+                                                 <span class="badge bg-primary">SePay API v2</span>
+                                             @else
+                                                 <span class="badge bg-secondary">SPAY5S</span>
+                                             @endif
+                                         </td>
+                                         <td>
+                                             @if ($account->access_token)
+                                                 <code class="text-muted" title="{{ Str::mask($account->access_token, '*', 4, -4) }}">{{ Str::limit($account->access_token, 8, '***') }}</code>
+                                             @else
+                                                 <span class="text-muted small"><em>(Chưa cài)</em></span>
+                                             @endif
+                                         </td>
                                         <td>
                                             @if ($account->is_active)
                                                 <span class="badge bg-success">Hoạt động</span>

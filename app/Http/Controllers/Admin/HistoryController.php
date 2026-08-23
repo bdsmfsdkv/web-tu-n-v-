@@ -19,7 +19,7 @@ class HistoryController extends Controller
     public function transactions(\Illuminate\Http\Request $request)
     {
         $title = 'Lịch sử giao dịch tiền';
-        $transactions = MoneyTransaction::adminFilter($request)->with('user')->orderBy('created_at', 'desc')->paginate($request->input('per_page', 20));
+        $transactions = MoneyTransaction::adminFilter($request)->with('user')->orderBy('created_at', 'desc')->paginate($request->input('per_page', 20))->withQueryString();
 
         return view('admin.history.transactions', compact('title', 'transactions'));
     }
@@ -34,7 +34,8 @@ class HistoryController extends Controller
             ->where('status', 'sold')
             ->whereNotNull('buyer_id')
             ->orderBy('updated_at', 'desc')
-            ->paginate($request->input('per_page', 20));
+            ->paginate($request->input('per_page', 20))
+            ->withQueryString();
 
         return view('admin.history.accounts', compact('title', 'accounts'));
     }
@@ -49,7 +50,8 @@ class HistoryController extends Controller
             ->where('status', 'sold')
             ->whereNotNull('buyer_id')
             ->orderBy('updated_at', 'desc')
-            ->paginate($request->input('per_page', 20));
+            ->paginate($request->input('per_page', 20))
+            ->withQueryString();
 
         return view('admin.history.random-accounts', compact('title', 'purchases'));
     }
@@ -60,9 +62,10 @@ class HistoryController extends Controller
     public function services(\Illuminate\Http\Request $request)
     {
         $title = 'Lịch sử đặt dịch vụ';
-        $services = ServiceHistory::with(['user', 'gameService', 'servicePackage'])
+        $services = ServiceHistory::adminFilter($request)->with(['user', 'gameService', 'servicePackage'])
             ->orderBy('created_at', 'desc')
-            ->paginate($request->input('per_page', 20));
+            ->paginate($request->input('per_page', 20))
+            ->withQueryString();
 
         return view('admin.history.services', compact('title', 'services'));
     }
@@ -73,7 +76,7 @@ class HistoryController extends Controller
     public function bankDeposits(\Illuminate\Http\Request $request)
     {
         $title = 'Lịch sử nạp tiền qua ngân hàng';
-        $deposits = BankDeposit::with(['user', 'bankAccount'])->orderBy('created_at', 'desc')->paginate($request->input('per_page', 20));
+        $deposits = BankDeposit::adminFilter($request)->with(['user', 'bankAccount'])->orderBy('created_at', 'desc')->paginate($request->input('per_page', 20))->withQueryString();
 
         return view('admin.history.bank-deposits', compact('title', 'deposits'));
     }
@@ -84,7 +87,7 @@ class HistoryController extends Controller
     public function cardDeposits(\Illuminate\Http\Request $request)
     {
         $title = 'Lịch sử nạp thẻ cào';
-        $deposits = CardDeposit::adminFilter($request)->with('user')->orderBy('created_at', 'desc')->paginate($request->input('per_page', 20));
+        $deposits = CardDeposit::adminFilter($request)->with('user')->orderBy('created_at', 'desc')->paginate($request->input('per_page', 20))->withQueryString();
 
         return view('admin.history.card-deposits', compact('title', 'deposits'));
     }
@@ -95,7 +98,7 @@ class HistoryController extends Controller
     public function discountUsages(\Illuminate\Http\Request $request)
     {
         $title = 'Lịch sử sử dụng mã giảm giá';
-        $usages = DiscountCodeUsage::adminFilter($request)->with(['user', 'discountCode'])->orderBy('created_at', 'desc')->paginate($request->input('per_page', 20));
+        $usages = DiscountCodeUsage::adminFilter($request)->with(['user', 'discountCode'])->orderBy('created_at', 'desc')->paginate($request->input('per_page', 20))->withQueryString();
 
         return view('admin.history.discount-usages', compact('title', 'usages'));
     }

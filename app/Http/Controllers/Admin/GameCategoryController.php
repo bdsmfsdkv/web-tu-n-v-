@@ -209,4 +209,12 @@ class GameCategoryController extends Controller
             ], 500);
         }
     }
+
+    public function toggleActive(GameCategory $category)
+    {
+        $category->update(['active' => !$category->active]);
+        cache()->forget('nav_categories');
+
+        return back()->with('success', $category->active ? 'Đã hiện danh mục trên web.' : 'Đã ẩn danh mục khỏi web.');
+    }
 }

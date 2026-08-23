@@ -36,4 +36,14 @@ class RandomCategory extends Model
     {
         return $this->belongsTo(GameGroup::class, 'game_group_id');
     }
+
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('home_catalog_data');
+        });
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('home_catalog_data');
+        });
+    }
 }

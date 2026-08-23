@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\LuckyWheel;
 use App\Models\LuckyWheelHistory;
+use App\Models\RewardItem;
 use App\Helpers\UploadHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 
 class LuckyWheelController extends Controller
 {
@@ -34,21 +36,9 @@ class LuckyWheelController extends Controller
     public function create()
     {
         $title = 'Thêm vòng quay may mắn';
+        $rewardItems = RewardItem::where('active', 1)->orderBy('game_name')->orderBy('priority')->get();
 
-        $rewardItems = \App\Models\RewardItem::where('active', 1)->orderBy('priority', 'asc')->get();
-
-        $defaultConfig = [
-            ['content' => '19999 Kim Cương', 'probability' => 0.5, 'trial_probability' => 1.5, 'reward_type' => 'item', 'reward_item_id' => '', 'amount' => '19999'],
-            ['content' => '999 Kim Cương', 'probability' => 15, 'trial_probability' => 20, 'reward_type' => 'item', 'reward_item_id' => '', 'amount' => '999'],
-            ['content' => '15555 Kim Cương', 'probability' => 0.5, 'trial_probability' => 1.5, 'reward_type' => 'item', 'reward_item_id' => '', 'amount' => '15555'],
-            ['content' => '19 Kim Cương', 'probability' => 29, 'trial_probability' => 20, 'reward_type' => 'item', 'reward_item_id' => '', 'amount' => '19'],
-            ['content' => '9999 Kim Cương', 'probability' => 1, 'trial_probability' => 5, 'reward_type' => 'item', 'reward_item_id' => '', 'amount' => '9999'],
-            ['content' => 'Mất lượt', 'probability' => 30, 'trial_probability' => 10, 'reward_type' => 'empty', 'reward_item_id' => '', 'amount' => ''],
-            ['content' => '20000 VNĐ', 'probability' => 4, 'trial_probability' => 20, 'reward_type' => 'money', 'reward_item_id' => '', 'amount' => '20000'],
-            ['content' => 'Nick VIP', 'probability' => 20, 'trial_probability' => 22, 'reward_type' => 'random_account', 'reward_item_id' => '', 'amount' => '1']
-        ];
-
-        return view('admin.lucky-wheels.create', compact('title', 'rewardItems', 'defaultConfig'));
+        return view('admin.lucky-wheels.create', compact('title', 'rewardItems'));
     }
 
     /**
@@ -56,21 +46,25 @@ class LuckyWheelController extends Controller
      */
     public function store(Request $request)
     {
+        $this->logUploadErrors($request);
+
         $request->validate([
             'name' => 'required|string|max:255',
             'price_per_spin' => 'required|numeric|min:1000',
-            'thumbnail' => 'nullable|image',
-            'wheel_image' => 'nullable|image',
+            'thumbnail' => 'nullable|image|max:65536',
+            'wheel_image' => 'nullable|image|max:65536',
+            'pointer_image' => 'nullable|image|max:2048',
             'description' => 'nullable|string',
             'rules' => 'nullable|string',
             'active' => 'nullable|boolean',
             'config' => 'required|array|size:8',
-            'config.*.reward_type' => 'required|in:item,empty,money,random_account',
+            'config.*.reward_type' => 'required|in:gem,gold,item,empty,money,random_account',
+            'config.*.active' => 'nullable|boolean',
             'config.*.content' => 'required|string|max:255',
             'config.*.amount' => ['nullable', 'regex:/^\d+(?::\d+)?$/'],
-            'config.*.reward_item_id' => 'nullable|exists:reward_items,id',
+            'config.*.reward_item_id' => ['nullable', 'integer', 'exists:reward_items,id'],
             'config.*.probability' => 'required|numeric|min:0|max:100',
-            'config.*.trial_probability' => 'nullable|numeric|min:0|max:100',
+            'config.*.trial_probability' => 'required|numeric|min:0|max:100',
         ]);
 
         $config = $this->validatedConfig($request);
@@ -97,11 +91,21 @@ class LuckyWheelController extends Controller
                 $luckyWheel->wheel_image = '';
             }
 
+            if ($request->hasFile('pointer_image')) {
+                $luckyWheel->pointer_image = UploadHelper::upload($request->file('pointer_image'), self::UPLOAD_DIR . '/pointers');
+            }
+
             $luckyWheel->description = $request->description;
             $luckyWheel->rules = $request->rules;
             $luckyWheel->active = $request->boolean('active');
             $luckyWheel->config = $config;
             $luckyWheel->save();
+
+            $rewardItemIds = collect($config)->pluck('reward_item_id')->filter()->unique();
+            if ($rewardItemIds->isNotEmpty()) {
+                RewardItem::whereIn('id', $rewardItemIds)
+                    ->update(['lucky_wheel_id' => $luckyWheel->id]);
+            }
 
             DB::commit();
 
@@ -121,18 +125,33 @@ class LuckyWheelController extends Controller
     {
         $title = 'Chỉnh sửa vòng quay may mắn';
 
-        $config = is_array($luckyWheel->config) ? $luckyWheel->config : [];
+        $config = array_map(static function (array $reward): array {
+            $reward['reward_type'] = $reward['reward_type'] ?? $reward['type'] ?? 'empty';
+            $reward['active'] = array_key_exists('active', $reward) ? (bool) $reward['active'] : true;
+            $reward['trial_probability'] = $reward['trial_probability'] ?? $reward['probability'] ?? 0;
+            $reward['reward_item_id'] = $reward['reward_item_id'] ?? null;
+
+            return $reward;
+        }, is_array($luckyWheel->config) ? $luckyWheel->config : []);
         if (count($config) < 8) {
             for ($i = count($config); $i < 8; $i++) {
                 $config[] = [
+                    'content' => '',
+                    'reward_type' => 'empty',
+                    'active' => true,
                     'reward_item_id' => null,
-                    'probability' => 0
+                    'amount' => null,
+                    'probability' => 0,
+                    'trial_probability' => 0,
                 ];
             }
         }
         $config = old('config', $config);
 
-        $rewardItems = \App\Models\RewardItem::where('active', 1)->orderBy('priority', 'asc')->get();
+        $rewardItems = RewardItem::where('active', 1)
+            ->orderBy('game_name')
+            ->orderBy('priority')
+            ->get();
 
         return view('admin.lucky-wheels.edit', compact('luckyWheel', 'title', 'config', 'rewardItems'));
     }
@@ -142,23 +161,28 @@ class LuckyWheelController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $this->logUploadErrors($request);
+
         $request->validate([
             'name' => 'required|string|max:255',
             'price_per_spin' => 'required|numeric|min:1000',
-            'thumbnail' => 'nullable|image',
+            'thumbnail' => 'nullable|image|max:65536',
             'remove_thumbnail' => 'nullable|boolean',
-            'wheel_image' => 'nullable|image',
+            'wheel_image' => 'nullable|image|max:65536',
             'remove_wheel_image' => 'nullable|boolean',
+            'pointer_image' => 'nullable|image|max:2048',
+            'remove_pointer_image' => 'nullable|boolean',
             'description' => 'nullable|string',
             'rules' => 'nullable|string',
             'active' => 'nullable|boolean',
             'config' => 'required|array|size:8',
-            'config.*.reward_type' => 'required|in:item,empty,money,random_account',
+            'config.*.reward_type' => 'required|in:gem,gold,item,empty,money,random_account',
+            'config.*.active' => 'nullable|boolean',
             'config.*.content' => 'required|string|max:255',
             'config.*.amount' => ['nullable', 'regex:/^\d+(?::\d+)?$/'],
-            'config.*.reward_item_id' => 'nullable|exists:reward_items,id',
+            'config.*.reward_item_id' => ['nullable', 'integer', 'exists:reward_items,id'],
             'config.*.probability' => 'required|numeric|min:0|max:100',
-            'config.*.trial_probability' => 'nullable|numeric|min:0|max:100',
+            'config.*.trial_probability' => 'required|numeric|min:0|max:100',
         ]);
 
         $config = $this->validatedConfig($request);
@@ -199,11 +223,41 @@ class LuckyWheelController extends Controller
                 $luckyWheel->wheel_image = null;
             }
 
+            if ($request->hasFile('pointer_image')) {
+                if ($luckyWheel->pointer_image) {
+                    UploadHelper::deleteByUrl($luckyWheel->pointer_image);
+                }
+                $luckyWheel->pointer_image = UploadHelper::upload($request->file('pointer_image'), self::UPLOAD_DIR . '/pointers');
+            } elseif ($request->boolean('remove_pointer_image')) {
+                if ($luckyWheel->pointer_image) {
+                    UploadHelper::deleteByUrl($luckyWheel->pointer_image);
+                }
+                $luckyWheel->pointer_image = null;
+            }
+
             $luckyWheel->description = $request->description;
             $luckyWheel->rules = $request->rules;
             $luckyWheel->active = $request->boolean('active');
             $luckyWheel->config = $config;
             $luckyWheel->save();
+
+            $rewardItemIds = collect($config)->pluck('reward_item_id')->filter()->unique();
+            $availableItems = RewardItem::whereIn('id', $rewardItemIds)->pluck('id');
+
+            if ($availableItems->count() !== $rewardItemIds->count()) {
+                throw ValidationException::withMessages([
+                    'config' => 'Có vật phẩm không tồn tại.',
+                ]);
+            }
+
+            RewardItem::where('lucky_wheel_id', $luckyWheel->id)
+                ->when($rewardItemIds->isNotEmpty(), fn ($query) => $query->whereNotIn('id', $rewardItemIds))
+                ->update(['lucky_wheel_id' => null]);
+
+            if ($rewardItemIds->isNotEmpty()) {
+                RewardItem::whereIn('id', $rewardItemIds)
+                    ->update(['lucky_wheel_id' => $luckyWheel->id]);
+            }
 
             DB::commit();
 
@@ -219,8 +273,9 @@ class LuckyWheelController extends Controller
     private function validatedConfig(Request $request): array
     {
         $config = $request->input('config');
-        $totalProbability = array_sum(array_column($config, 'probability'));
-        $totalTrialProbability = array_sum(array_column($config, 'trial_probability'));
+        $activeConfig = array_filter($config, static fn (array $reward): bool => !array_key_exists('active', $reward) || (bool) $reward['active']);
+        $totalProbability = array_sum(array_column($activeConfig, 'probability'));
+        $totalTrialProbability = array_sum(array_column($activeConfig, 'trial_probability'));
 
         if (abs($totalProbability - 100) > 0.001) {
             throw ValidationException::withMessages(['config' => 'Tổng tỉ lệ trúng phải bằng 100%.']);
@@ -231,21 +286,47 @@ class LuckyWheelController extends Controller
         }
 
         foreach ($config as $index => $reward) {
-            if ($reward['reward_type'] !== 'empty' && empty($reward['amount'])) {
+            $isActive = !array_key_exists('active', $reward) || (bool) $reward['active'];
+            if ($isActive && $reward['reward_type'] !== 'empty' && empty($reward['amount'])) {
                 throw ValidationException::withMessages([
                     "config.$index.amount" => 'Phần thưởng #' . ($index + 1) . ' phải có số lượng nhận.',
+                ]);
+            }
+
+            if ($isActive && $reward['reward_type'] === 'item' && empty($reward['reward_item_id'])) {
+                throw ValidationException::withMessages([
+                    "config.$index.reward_item_id" => 'Phần thưởng #' . ($index + 1) . ' phải chọn vật phẩm liên kết.',
                 ]);
             }
         }
 
         return array_map(static function (array $reward): array {
+            $reward['active'] = array_key_exists('active', $reward) ? (bool) $reward['active'] : true;
             $reward['probability'] = (float) $reward['probability'];
             $reward['trial_probability'] = (float) $reward['trial_probability'];
-            $reward['reward_item_id'] = $reward['reward_item_id'] ?: null;
+            $reward['reward_item_id'] = $reward['reward_type'] === 'item' && !empty($reward['reward_item_id'])
+                ? (int) $reward['reward_item_id']
+                : null;
             $reward['amount'] = $reward['amount'] ?: null;
 
             return $reward;
         }, $config);
+    }
+
+    private function logUploadErrors(Request $request): void
+    {
+        foreach (['thumbnail', 'wheel_image', 'pointer_image'] as $field) {
+            $file = $request->file($field);
+            if ($file && !$file->isValid()) {
+                Log::warning('Lucky wheel upload failed before validation.', [
+                    'field' => $field,
+                    'error_code' => $file->getError(),
+                    'error_message' => $file->getErrorMessage(),
+                    'client_name' => $file->getClientOriginalName(),
+                    'client_size' => $file->getSize(),
+                ]);
+            }
+        }
     }
 
     /**
@@ -262,6 +343,9 @@ class LuckyWheelController extends Controller
             }
             if ($luckyWheel->wheel_image) {
                 UploadHelper::deleteByUrl($luckyWheel->wheel_image);
+            }
+            if ($luckyWheel->pointer_image) {
+                UploadHelper::deleteByUrl($luckyWheel->pointer_image);
             }
 
             // Delete lucky wheel
@@ -296,5 +380,13 @@ class LuckyWheelController extends Controller
             ->paginate(20);
 
         return view('admin.lucky-wheels.history', compact('title', 'history'));
+    }
+
+    public function toggleActive(LuckyWheel $luckyWheel)
+    {
+        $luckyWheel->update(['active' => !$luckyWheel->active]);
+        cache()->forget('nav_lucky_wheels');
+
+        return back()->with('success', $luckyWheel->active ? 'Đã hiện vòng quay trên web.' : 'Đã ẩn vòng quay khỏi web.');
     }
 }

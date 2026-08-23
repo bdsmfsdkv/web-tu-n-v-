@@ -10,6 +10,7 @@ class RewardItem extends Model
     use HasFactory;
     
     protected $fillable = [
+        'lucky_wheel_id',
         'icon',
         'game_name',
         'name',
@@ -20,4 +21,19 @@ class RewardItem extends Model
         'priority',
         'active',
     ];
+
+    public function luckyWheel()
+    {
+        return $this->belongsTo(LuckyWheel::class);
+    }
+
+    public function wheelHistories()
+    {
+        return $this->hasMany(LuckyWheelHistory::class);
+    }
+
+    public function withdrawals()
+    {
+        return $this->hasMany(WithdrawalHistory::class);
+    }
 }

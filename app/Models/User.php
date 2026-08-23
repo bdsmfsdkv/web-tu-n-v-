@@ -41,6 +41,14 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    public function getTotalSpentAttribute(): int
+    {
+        // ponytail: tổng tiền đã tiêu từ bảng money_transactions. Nâng cấp lưu cột cached nếu traffic lớn.
+        return (int) abs(MoneyTransaction::where('user_id', $this->id)
+            ->where('amount', '<', 0)
+            ->sum('amount'));
+    }
+
     /**
      * Gửi email đặt lại mật khẩu.
      * Nếu SMTP lỗi thì ném lại exception để controller báo đúng cho người dùng,

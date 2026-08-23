@@ -35,6 +35,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
         Route::post('/store', [GameCategoryController::class, 'store'])->name('store');
         Route::get('/edit/{category}', [GameCategoryController::class, 'edit'])->name('edit');
         Route::put('/update/{category}', [GameCategoryController::class, 'update'])->name('update');
+        Route::patch('/{category}/toggle-active', [GameCategoryController::class, 'toggleActive'])->name('toggle-active');
         Route::delete('/delete/{category}', [GameCategoryController::class, 'destroy'])->name('destroy');
     });
 
@@ -54,6 +55,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
         Route::post('/store', [RandomCategoryController::class, 'store'])->name('store');
         Route::get('/edit/{category}', [RandomCategoryController::class, 'edit'])->name('edit');
         Route::put('/update/{category}', [RandomCategoryController::class, 'update'])->name('update');
+        Route::patch('/{category}/toggle-active', [RandomCategoryController::class, 'toggleActive'])->name('toggle-active');
         Route::delete('/delete/{category}', [RandomCategoryController::class, 'destroy'])->name('destroy');
     });
 
@@ -98,6 +100,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
         Route::post('/store', [GameServiceController::class, 'store'])->name('store');
         Route::get('/edit/{service}', [GameServiceController::class, 'edit'])->name('edit');
         Route::put('/update/{service}', [GameServiceController::class, 'update'])->name('update');
+        Route::patch('/{service}/toggle-active', [GameServiceController::class, 'toggleActive'])->name('toggle-active');
         Route::delete('/delete/{service}', [GameServiceController::class, 'destroy'])->name('destroy');
     });
 
@@ -120,6 +123,9 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
         Route::get('/edit/{bankAccount}', [BankAccountController::class, 'edit'])->name('edit');
         Route::put('/update/{bankAccount}', [BankAccountController::class, 'update'])->name('update');
         Route::delete('/delete/{bankAccount}', [BankAccountController::class, 'destroy'])->name('destroy');
+        Route::post('/check-config/{bankAccount}', [BankAccountController::class, 'checkConfig'])->name('check-config');
+        Route::post('/test-auth/{bankAccount}', [BankAccountController::class, 'testAuth'])->name('test-auth');
+        Route::get('/webhook-logs/{bankAccount}', [BankAccountController::class, 'webhookLogs'])->name('webhook-logs');
     });
 
     // Quản lý tài khoản USDT
@@ -169,6 +175,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
         Route::post('/store', [LuckyWheelController::class, 'store'])->name('store');
         Route::get('/edit/{luckyWheel}', [LuckyWheelController::class, 'edit'])->name('edit');
         Route::put('/update/{luckyWheel}', [LuckyWheelController::class, 'update'])->name('update');
+        Route::patch('/{luckyWheel}/toggle-active', [LuckyWheelController::class, 'toggleActive'])->name('toggle-active');
         Route::delete('/delete/{luckyWheel}', [LuckyWheelController::class, 'destroy'])->name('destroy');
         Route::get('/history', [LuckyWheelController::class, 'history'])->name('history');
     });

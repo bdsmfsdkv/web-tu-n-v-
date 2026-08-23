@@ -4,6 +4,7 @@ use App\Http\Controllers\Controller;
 
 use App\Models\Category;
 use App\Models\GameAccount;
+use App\Models\GameGroup;
 use App\Models\GameService;
 use App\Models\LuckyWheel;
 use App\Models\ServiceHistory;
@@ -11,103 +12,124 @@ use App\Models\RandomCategory;
 use App\Models\RandomCategoryAccount;
 use App\Models\MoneyTransaction;
 use App\Models\Notification;
+use App\Models\PurchaseHistory;
+use App\Models\FlashSale;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
-    //
     public function index()
     {
-        $gameGroups = \App\Models\GameGroup::where('active', 1)->orderBy('order', 'asc')->orderBy('id', 'asc')->get();
-        // Danh mục bán acc game
-        $categories = Category::with('gameGroup')->where('active', 1)->orderBy('updated_at', 'desc')->get();
-        foreach ($categories as $category) {
-            $category->soldCount = GameAccount::where('game_category_id', $category->id)
-                ->where('status', 'sold')
-                ->count();
-            $category->allAccount = GameAccount::where('game_category_id', $category->id)
-                ->where('status', 'available')
-                ->count();
-            $category->price = GameAccount::where('game_category_id', $category->id)
-                ->where('status', 'available')
-                ->min('price') ?: 0;
-            $category->url = route('category.index', ['slug' => $category->slug]);
-        }
+        // Cache dữ liệu danh mục & dịch vụ & vòng quay 120s
+        $catalogData = Cache::remember('home_catalog_data', 120, function () {
+            $gameGroups = GameGroup::where('active', 1)->orderBy('order', 'asc')->orderBy('id', 'asc')->get();
 
-        // Random categories
-        $services = GameService::where('active', '1')->orderBy('updated_at', 'desc')->get();
-        foreach ($services as $service) {
-            $service->orderCount = ServiceHistory::where('game_service_id', $service->id)->count();
-        }
+            // Danh mục bán acc game
+            $accountStats = GameAccount::selectRaw("game_category_id, SUM(status = 'sold') AS sold_count, SUM(status = 'available') AS available_count, MIN(CASE WHEN status = 'available' THEN price END) AS min_price")
+                ->groupBy('game_category_id');
+            $categories = Category::with('gameGroup')
+                ->leftJoinSub($accountStats, 'account_stats', fn ($join) => $join->on('game_categories.id', '=', 'account_stats.game_category_id'))
+                ->select('game_categories.*', DB::raw('COALESCE(account_stats.sold_count, 0) AS soldCount'), DB::raw('COALESCE(account_stats.available_count, 0) AS allAccount'), DB::raw('COALESCE(account_stats.min_price, 0) AS price'))
+                ->where('game_categories.active', 1)
+                ->orderBy('game_categories.updated_at', 'desc')
+                ->get();
+            $categories->each(fn ($category) => $category->url = route('category.index', ['slug' => $category->slug]));
 
-        $randomCategories = RandomCategory::with('gameGroup')->where('active', 1)->orderBy('updated_at', 'desc')->get();
-        foreach ($randomCategories as $category) {
-            $category->soldCount = RandomCategoryAccount::where('random_category_id', $category->id)
-                ->where('status', 'sold')
-                ->count();
-            $category->allAccount = RandomCategoryAccount::where('random_category_id', $category->id)
-                ->where('status', 'available')
-                ->count();
-            $category->price = RandomCategoryAccount::where('random_category_id', $category->id)
-                ->where('status', 'available')
-                ->value('price') ?: 0;
-            $category->url = route('random.index', ['slug' => $category->slug]);
-        }
+            // Dịch vụ cày thuê
+            $serviceStats = ServiceHistory::selectRaw('game_service_id, COUNT(*) AS order_count')->groupBy('game_service_id');
+            $services = GameService::leftJoinSub($serviceStats, 'service_stats', fn ($join) => $join->on('game_services.id', '=', 'service_stats.game_service_id'))
+                ->select('game_services.*', DB::raw('COALESCE(service_stats.order_count, 0) AS orderCount'))
+                ->where('game_services.active', '1')
+                ->orderBy('game_services.updated_at', 'desc')
+                ->get();
 
-        $categories = $categories->concat($randomCategories);
+            // Random categories
+            $randomAccountStats = RandomCategoryAccount::selectRaw("random_category_id, SUM(status = 'sold') AS sold_count, SUM(status = 'available') AS available_count, MIN(CASE WHEN status = 'available' THEN price END) AS min_price")
+                ->groupBy('random_category_id');
+            $randomCategories = RandomCategory::with('gameGroup')
+                ->leftJoinSub($randomAccountStats, 'random_account_stats', fn ($join) => $join->on('random_categories.id', '=', 'random_account_stats.random_category_id'))
+                ->select('random_categories.*', DB::raw('COALESCE(random_account_stats.sold_count, 0) AS soldCount'), DB::raw('COALESCE(random_account_stats.available_count, 0) AS allAccount'), DB::raw('COALESCE(random_account_stats.min_price, 0) AS price'))
+                ->where('random_categories.active', 1)
+                ->orderBy('random_categories.updated_at', 'desc')
+                ->get();
+            $randomCategories->each(fn ($category) => $category->url = route('random.index', ['slug' => $category->slug]));
 
-        // Vòng quay may mắn
-        $LuckWheel = LuckyWheel::where('active', 1)->orderBy('updated_at', 'desc')->get();
-        foreach ($LuckWheel as $wheel) {
-            $wheel->soldCount = $wheel->histories->count();
-        }
+            $categories = $categories->concat($randomCategories);
 
-        // Lấy 20 giao dịch gần đây
-        $recentTransactions = MoneyTransaction::with('user')
-            ->orderBy('created_at', 'desc')
-            ->limit(20)
-            ->get();
+            // Vòng quay may mắn
+            $LuckWheel = LuckyWheel::withCount('histories')->where('active', 1)->orderBy('updated_at', 'desc')->get();
+            foreach ($LuckWheel as $wheel) {
+                $wheel->soldCount = $wheel->histories_count;
+            }
 
-        // Lấy top 3 người nạp tiền nhiều nhất trong tháng hiện tại
-        $currentMonth = Carbon::now()->month;
-        $currentYear = Carbon::now()->year;
+            return compact('gameGroups', 'categories', 'services', 'LuckWheel');
+        });
 
-        $topDepositors = MoneyTransaction::select('user_id', DB::raw('SUM(amount) as total_amount'))
-            ->where('type', 'deposit')
-            ->whereMonth('created_at', $currentMonth)
-            ->whereYear('created_at', $currentYear)
-            ->groupBy('user_id')
-            ->orderBy('total_amount', 'desc')
-            ->limit(3)
-            ->get();
+        $gameGroups = $catalogData['gameGroups'];
+        $categories = $catalogData['categories'];
+        $services = $catalogData['services'];
+        $LuckWheel = $catalogData['LuckWheel'];
 
-        // Lấy thông tin người dùng cho top depositors
-        foreach ($topDepositors as $depositor) {
-            $depositor->user = \App\Models\User::find($depositor->user_id);
-        }
+        // Lấy 20 giao dịch gần đây (Cache 30s)
+        $recentTransactions = Cache::remember('home_recent_transactions', 30, function () {
+            return MoneyTransaction::with('user')
+                ->whereHas('user', fn ($query) => $query->where('role', '!=', 'admin'))
+                ->orderBy('created_at', 'desc')
+                ->limit(20)
+                ->get();
+        });
 
-        $notifications = Notification::orderBy('created_at', 'desc')->get();
+        // Lấy top 3 người nạp tiền nhiều nhất trong tháng hiện tại (dùng index created_at qua whereBetween)
+        $topDepositors = Cache::remember('home_top_depositors', 120, function () {
+            $startOfMonth = Carbon::now()->startOfMonth();
+            $endOfMonth = Carbon::now()->endOfMonth();
 
-        // Lấy danh sách khách hàng mới mua account để làm đánh giá ảo
-        $recentPurchases = \App\Models\PurchaseHistory::with('user')
-            ->orderBy('created_at', 'desc')
-            ->limit(8)
-            ->get();
+            return MoneyTransaction::with('user')
+                ->select('user_id', DB::raw('SUM(amount) as total_amount'))
+                ->whereHas('user', fn ($query) => $query->where('role', '!=', 'admin'))
+                ->where('type', 'deposit')
+                ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                ->groupBy('user_id')
+                ->orderBy('total_amount', 'desc')
+                ->limit(3)
+                ->get();
+        });
 
-        $activeFlashSale = \App\Models\FlashSale::with(['items.category'])
-            ->where('status', 1)
-            ->where('end_time', '>', now())
-            ->where('start_time', '<=', now())
-            ->orderBy('end_time', 'asc')
-            ->first();
+        $notifications = Cache::remember('home_notifications', 300, function () {
+            // Sắp theo id giảm dần: khớp với thứ tự marquee trên trang chủ trước đây.
+            return Notification::orderBy('id', 'desc')->get();
+        });
 
-        // Lấy danh sách các chiến dịch trong ngày hoặc sắp tới để làm Timeline
-        $timelineCampaigns = \App\Models\FlashSale::where('status', 1)
-            ->where('end_time', '>', now()->subHours(24)) // Lấy cả những cái vừa diễn ra gần đây
-            ->orderBy('start_time', 'asc')
-            ->limit(6)
-            ->get();
+        // Lấy danh sách khách hàng mới mua account để làm đánh giá ảo (Cache 60s)
+        $recentPurchases = Cache::remember('home_recent_purchases', 60, function () {
+            return PurchaseHistory::with('user')
+                ->orderBy('created_at', 'desc')
+                ->limit(8)
+                ->get();
+        });
+
+        // Hai query flash sale này trước đây chạy ở mọi lần vào trang chủ. Cache 60s là
+        // đủ chính xác vì countdown được tính lại bằng JS từ end_time.
+        $flashSaleData = Cache::remember('home_flash_sales', 60, function () {
+            return [
+                'active' => FlashSale::with(['items.category'])
+                    ->where('status', 1)
+                    ->where('end_time', '>', now())
+                    ->where('start_time', '<=', now())
+                    ->orderBy('end_time', 'asc')
+                    ->first(),
+                'timeline' => FlashSale::where('status', 1)
+                    ->where('end_time', '>', now()->subHours(24))
+                    ->orderBy('start_time', 'asc')
+                    ->limit(6)
+                    ->get(),
+            ];
+        });
+
+        $activeFlashSale = $flashSaleData['active'];
+        $timelineCampaigns = $flashSaleData['timeline'];
 
         $flashSales = collect();
         if ($activeFlashSale) {
@@ -140,7 +162,7 @@ class HomeController extends Controller
 
     public function reviews()
     {
-        $purchases = \App\Models\PurchaseHistory::with('user')
+        $purchases = PurchaseHistory::with('user')
             ->orderBy('created_at', 'desc')
             ->paginate(24);
             
@@ -166,3 +188,4 @@ class HomeController extends Controller
         return view('user.page', compact('title', 'content'));
     }
 }
+

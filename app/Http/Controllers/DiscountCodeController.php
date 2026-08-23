@@ -81,8 +81,7 @@ class DiscountCodeController extends Controller
 
         // For item-specific discount codes, check if the code applies to this item
         if ($discountCode->item_ids) {
-            $itemIds = json_decode($discountCode->item_ids, true);
-            if (!in_array($itemId, $itemIds)) {
+            if (!in_array($itemId, $discountCode->item_ids)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Mã giảm giá không áp dụng cho mục này'
@@ -190,14 +189,14 @@ class DiscountCodeController extends Controller
     private function calculateDiscountedPrice($originalPrice, $discountCode)
     {
         if ($discountCode->discount_type === 'percentage') {
-            $discount = $originalPrice * ($discountCode->discount_value / 100);
+            $discount = round($originalPrice * ($discountCode->discount_value / 100));
             // If there's a maximum discount value, apply it
             if ($discountCode->max_discount_value && $discount > $discountCode->max_discount_value) {
-                $discount = $discountCode->max_discount_value;
+                $discount = round($discountCode->max_discount_value);
             }
-            return $originalPrice - $discount;
+            return max(0, $originalPrice - $discount);
         } else { // fixed_amount
-            return max(0, $originalPrice - $discountCode->discount_value);
+            return max(0, $originalPrice - round($discountCode->discount_value));
         }
     }
 

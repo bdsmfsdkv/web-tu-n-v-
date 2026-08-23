@@ -33,7 +33,7 @@ class UserController extends Controller
         }
 
         $perPage = $request->input('per_page', 20);
-        $users = $query->orderBy('id', 'DESC')->paginate($perPage);
+        $users = $query->orderBy('id', 'DESC')->paginate($perPage)->withQueryString();
         
         return view('admin.users.index', compact('title', 'users'));
     }

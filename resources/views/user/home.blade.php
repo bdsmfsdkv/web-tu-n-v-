@@ -85,7 +85,9 @@
     </div>
 </section>
 @php
-    $marqueeNotifications = \App\Models\Notification::orderBy('id', 'desc')->get();
+    // Dùng lại $notifications đã được HomeController cache 300s, thay vì query lại
+    // Notification trong view ở mỗi lần render trang chủ.
+    $marqueeNotifications = $notifications;
 @endphp
 @if($marqueeNotifications->count() > 0)
 <div class="container custom-marquee-container" style="margin-top: 20px; margin-bottom: 20px;">
@@ -408,7 +410,7 @@
                 @foreach($flashSales as $fs)
                     <a href="{{ $fs->is_random ? route('random.index', ['slug' => $fs->slug]) : route('category.index', ['slug' => $fs->slug]) }}" class="fs-card" style="text-decoration: none; display: block;">
                         <div class="fs-card-img">
-                            <img src="{{ asset($fs->thumbnail) }}" onerror="this.src='https://via.placeholder.com/200x120?text=Flash+Sale'" alt="{{ $fs->name }}">
+                            <img loading="lazy" decoding="async" src="{{ asset($fs->thumbnail) }}" onerror="this.src='https://via.placeholder.com/200x120?text=Flash+Sale'" alt="{{ $fs->name }}">
                             @if($fs->flash_sale_old_price > 0 && $fs->flash_sale_new_price > 0 && $fs->flash_sale_old_price > $fs->flash_sale_new_price)
                                 @php
                                     $discountPercent = round((($fs->flash_sale_old_price - $fs->flash_sale_new_price) / $fs->flash_sale_old_price) * 100);
@@ -484,11 +486,11 @@
                 @foreach ($group as $category)
                     <a href="{{ $category->url ?? route('category.index', ['slug' => $category->slug]) }}" class="category-card" style="position: relative;">
                         @if($category->tag_image)
-                        <img src="{{ asset($category->tag_image) }}" alt="Tag" style="position: absolute; top: 0; right: 0; max-width: 60px; z-index: 10;">
+                        <img loading="lazy" decoding="async" src="{{ asset($category->tag_image) }}" alt="Tag" style="position: absolute; top: 0; right: 0; max-width: 60px; z-index: 10;">
                         @endif
                         <div class="category-img" style="display: flex; align-items: center; justify-content: center; background: rgba(220, 38, 38, 0.05); color: var(--primary); border: 1px solid rgba(220, 38, 38, 0.1);">
                             @if($category->thumbnail)
-                            <img src="{{ asset($category->thumbnail) }}" alt="{{ $category->name }}">
+                            <img loading="lazy" decoding="async" src="{{ asset($category->thumbnail) }}" alt="{{ $category->name }}">
                             @else
                             <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 1024 1024" data-icon="ant-design:appstore-outlined" style="font-size:2.5rem;" class="iconify iconify--ant-design"><path fill="currentColor" d="M464 144H160c-8.8 0-16 7.2-16 16v304c0 8.8 7.2 16 16 16h304c8.8 0 16-7.2 16-16V160c0-8.8-7.2-16-16-16m-52 268H212V212h200zm452-268H560c-8.8 0-16 7.2-16 16v304c0 8.8 7.2 16 16 16h304c8.8 0 16-7.2 16-16V160c0-8.8-7.2-16-16-16m-52 268H612V212h200zM464 544H160c-8.8 0-16 7.2-16 16v304c0 8.8 7.2 16 16 16h304c8.8 0 16-7.2 16-16V560c0-8.8-7.2-16-16-16m-52 268H212V612h200zm452-268H560c-8.8 0-16 7.2-16 16v304c0 8.8 7.2 16 16 16h304c8.8 0 16-7.2 16-16V560c0-8.8-7.2-16-16-16m-52 268H612V612h200z"></path></svg>
                             @endif
@@ -502,7 +504,7 @@
                             </div>
                             <div class="category-cta-wrapper">
                                 @if(config_get('site_view_all_image'))
-                                    <img src="{{ asset(config_get('site_view_all_image')) }}" alt="Xem ngay" class="category-cta-img">
+                                    <img loading="lazy" decoding="async" src="{{ asset(config_get('site_view_all_image')) }}" alt="Xem ngay" class="category-cta-img">
                                 @else
                                     <span class="category-btn-cta">
                                         <span>Xem ngay</span>
@@ -534,7 +536,7 @@
                 @if ($wheel->active)
                     <a href="{{ route('lucky.index', ['slug' => $wheel->slug]) }}" class="category-card" style="position: relative;">
                         <div class="category-img">
-                            <img src="{{ asset($wheel->thumbnail) }}" alt="{{ $wheel->name }}">
+                            <img loading="lazy" decoding="async" src="{{ asset($wheel->thumbnail) }}" alt="{{ $wheel->name }}">
                         </div>
                         <div class="category-body" style="display: flex; flex-direction: column;">
                             <div class="category-name">{{ $wheel->name }}</div>
@@ -546,7 +548,7 @@
                             </div>
                             <div class="category-cta-wrapper">
                                 @if(config_get('site_view_all_image'))
-                                    <img src="{{ asset(config_get('site_view_all_image')) }}" alt="Xem ngay" class="category-cta-img">
+                                    <img loading="lazy" decoding="async" src="{{ asset(config_get('site_view_all_image')) }}" alt="Xem ngay" class="category-cta-img">
                                 @else
                                     <span class="category-btn-cta">
                                         <span>Xem ngay</span>
@@ -576,7 +578,7 @@
                 @if ($service->active)
                     <a href="{{ route('service.show', ['slug' => $service->slug]) }}" class="category-card">
                         <div class="category-img">
-                            <img src="{{ asset($service->thumbnail) }}" alt="{{ $service->name }}">
+                            <img loading="lazy" decoding="async" src="{{ asset($service->thumbnail) }}" alt="{{ $service->name }}">
                         </div>
                         <div class="category-body" style="display: flex; flex-direction: column;">
                             <div class="category-name">{{ $service->name }}</div>
@@ -585,7 +587,7 @@
                             </div>
                             <div class="category-cta-wrapper">
                                 @if(config_get('site_view_all_image'))
-                                    <img src="{{ asset(config_get('site_view_all_image')) }}" alt="Xem ngay" class="category-cta-img">
+                                    <img loading="lazy" decoding="async" src="{{ asset(config_get('site_view_all_image')) }}" alt="Xem ngay" class="category-cta-img">
                                 @else
                                     <span class="category-btn-cta">
                                         <span>Xem ngay</span>
@@ -685,7 +687,7 @@
     $announceCloseText = trim((string) config_get('welcome_modal_close_text', 'Đóng')) ?: 'Đóng';
     $announceSnoozeText = str_replace(':hours', $announceHoursLabel, trim((string) config_get('welcome_modal_snooze_text', 'Đóng trong :hours giờ')));
 @endphp
-<div class="announce-overlay" id="announceOverlay">
+<div class="announce-overlay" id="announceOverlay" style="display:none;" aria-hidden="true">
     <div class="announce-modal">
         <div class="announce-header">
             <span class="announce-title"><span class="iconify" data-icon="ant-design:notification-filled"></span> Thông Báo</span>
@@ -1002,19 +1004,41 @@
 <script>
     (function() {
         var KEY = 'announce_dismiss_until';
+        var SESSION_KEY = 'announce_dismissed_session';
         var snoozeDuration = {{ (int) round($announceSnoozeHours * 60 * 60 * 1000) }};
         var overlay = document.getElementById('announceOverlay');
         if (!overlay) return;
 
-        var ts = localStorage.getItem(KEY);
-        if (ts && Date.now() < parseInt(ts)) {
-            overlay.style.display = 'none';
+        function readStore(store, key) {
+            try { return window[store].getItem(key); } catch (e) { return null; }
+        }
+        function writeStore(store, key, value) {
+            try { window[store].setItem(key, value); } catch (e) {}
+        }
+
+        function isSnoozed() {
+            var raw = readStore('localStorage', KEY);
+            if (!raw) return false;
+            var until = parseInt(raw, 10);
+            if (!isFinite(until) || until <= Date.now()) {
+                try { localStorage.removeItem(KEY); } catch (e) {}
+                return false;
+            }
+            return true;
+        }
+
+        function openAnnounce() {
+            overlay.style.display = 'flex';
+            overlay.setAttribute('aria-hidden', 'false');
         }
 
         function closeAnnounce(silent2h) {
             overlay.style.display = 'none';
+            overlay.setAttribute('aria-hidden', 'true');
             if (silent2h) {
-                localStorage.setItem(KEY, Date.now() + snoozeDuration);
+                writeStore('localStorage', KEY, String(Date.now() + snoozeDuration));
+            } else {
+                writeStore('sessionStorage', SESSION_KEY, '1');
             }
         }
 
@@ -1024,6 +1048,10 @@
         overlay.addEventListener('click', function(event) {
             if (event.target === overlay) closeAnnounce(false);
         });
+
+        if (isSnoozed()) return;
+        if (readStore('sessionStorage', SESSION_KEY) === '1') return;
+        openAnnounce();
     })();
 
         // Flash Sale Countdown Logic

@@ -66,6 +66,7 @@
                                     <th class="text-uppercase small">Danh mục</th>
                                     <th class="text-uppercase small">Máy chủ</th>
                                     <th class="text-uppercase small">Giá</th>
+                                    <th class="text-uppercase small">Mức tiêu tối thiểu</th>
                                     <th class="text-uppercase small">Trạng thái</th>
                                     <th class="text-uppercase small">Người mua</th>
                                     <th class="text-uppercase small">Ngày tạo</th>
@@ -91,6 +92,13 @@
                                         </td>
                                         <td>{{ $account->server }}</td>
                                         <td>{{ number_format($account->price) }} đ</td>
+                                        <td>
+                                            @if(($account->min_spent ?? 0) > 0)
+                                                <span class="badge bg-light-warning text-warning fw-semibold">≥ {{ number_format($account->min_spent) }} đ</span>
+                                            @else
+                                                <span class="text-muted small">0 đ (Mọi user)</span>
+                                            @endif
+                                        </td>
                                         <td><span
                                                 class="badge {{ $account->status === 'available' ? 'bg-lightgreen' : 'bg-lightred' }}">{{ $account->status === 'available' ? 'Chưa bán' : 'Đã bán' }}</span>
                                         </td>

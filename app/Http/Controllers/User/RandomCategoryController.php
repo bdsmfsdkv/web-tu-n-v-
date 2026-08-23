@@ -81,15 +81,13 @@ class RandomCategoryController extends Controller
 
     public function showAll()
     {
-        $categories = RandomCategory::where('active', true)->get();
-
-        // Count total accounts and sold accounts for each category
-        foreach ($categories as $category) {
-            $category->soldCount = RandomCategoryAccount::where('random_category_id', $category->id)
-                ->where('status', 'sold')
-                ->count();
-            $category->allAccount = RandomCategoryAccount::where('random_category_id', $category->id)->count();
-        }
+        // withCount gộp thống kê vào 1 query thay vì 2 query COUNT cho mỗi danh mục (2N+1).
+        $categories = RandomCategory::where('active', true)
+            ->withCount([
+                'accounts as soldCount' => fn ($query) => $query->where('status', 'sold'),
+                'accounts as allAccount',
+            ])
+            ->get();
 
         return view('user.random.show-all', compact('categories'));
     }
@@ -114,9 +112,14 @@ class RandomCategoryController extends Controller
                 ]);
             }
 
-            // Lock and get available accounts
+            $user = Auth::user();
+            $totalSpent = $user->total_spent ?? 0;
+
+            // Lock and get available accounts filtered ngầm bởi min_spent <= user.total_spent
             $accounts = RandomCategoryAccount::where('random_category_id', $category->id)
                 ->where('status', 'available')
+                ->where('min_spent', '<=', $totalSpent)
+                ->inRandomOrder()
                 ->lockForUpdate()
                 ->limit($quantity)
                 ->get();
@@ -125,11 +128,9 @@ class RandomCategoryController extends Controller
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Không đủ tài khoản! (Chỉ còn ' . $accounts->count() . ' acc)'
+                    'message' => 'Số lượng tài khoản trong kho không đủ để thực hiện giao dịch này.'
                 ]);
             }
-
-            $user = Auth::user();
             
             $flashSalePrice = \App\Models\FlashSale::getActivePrice('random', $category->id);
             if ($flashSalePrice !== null) {

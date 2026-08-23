@@ -14,6 +14,7 @@ class LuckyWheel extends Model
         'slug',
         'thumbnail',
         'wheel_image',
+        'pointer_image',
         'description',
         'rules',
         'active',
@@ -32,5 +33,20 @@ class LuckyWheel extends Model
     public function histories()
     {
         return $this->hasMany(LuckyWheelHistory::class);
+    }
+
+    public function rewardItems()
+    {
+        return $this->hasMany(RewardItem::class);
+    }
+
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('home_catalog_data');
+        });
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('home_catalog_data');
+        });
     }
 }

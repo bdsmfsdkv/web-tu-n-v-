@@ -12,6 +12,7 @@ class WithdrawalHistory extends Model
 
     protected $fillable = [
         'user_id',
+        'reward_item_id',
         'amount',
         'type',
         'game',
@@ -32,6 +33,11 @@ class WithdrawalHistory extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function rewardItem(): BelongsTo
+    {
+        return $this->belongsTo(RewardItem::class);
     }
 
     public function getOrderCodeAttribute()

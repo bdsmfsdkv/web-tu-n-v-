@@ -17,8 +17,10 @@ class MoneyWithdrawalController extends Controller
     public function index(\Illuminate\Http\Request $request)
     {
         $withdrawals = MoneyWithdrawalHistory::with('user')
-            ->latest() // Using the latest() method for better readability
-            ->get();
+            ->adminFilter($request)
+            ->latest()
+            ->paginate($request->input('per_page', 20))
+            ->withQueryString();
 
         return view('admin.history.money-withdrawal-history', compact('withdrawals'));
     }

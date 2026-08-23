@@ -12,9 +12,14 @@ body {
 /* ---- CSS Variables ---- */
 :root {
     --primary: #dc2626;
+    --primary-rgb: 220, 38, 38;
     --primary-dark: #b91c1c;
     --primary-light: #ef4444;
     --primary-glow: rgba(220, 38, 38, 0.2);
+    --menu-accent: var(--primary);
+    --menu-accent-bg: rgba(var(--primary-rgb), 0.07);
+    --menu-accent-border: rgba(var(--primary-rgb), 0.22);
+    --menu-accent-glow: rgba(var(--primary-rgb), 0.15);
     --accent: #f59e0b;
     --ant-primary-color: #dc2626;
     --radius: 8px;
@@ -101,7 +106,11 @@ a:hover {
 /* ---- Dark Mode ---- */
 [data-theme="dark"] {
     --primary: #f87171;
+    --primary-rgb: 248, 113, 113;
     --primary-dark: #ef4444;
+    --menu-accent-bg: rgba(var(--primary-rgb), 0.1);
+    --menu-accent-border: rgba(var(--primary-rgb), 0.28);
+    --menu-accent-glow: rgba(var(--primary-rgb), 0.18);
 }
 
 [data-theme="dark"] body {
@@ -422,8 +431,8 @@ body {
 
 .nav-links .nav-link-item:hover,
 .nav-links .nav-link-item.active {
-    background: rgba(220, 38, 38, 0.06);
-    color: var(--primary, #dc2626);
+    background: var(--menu-accent-bg);
+    color: var(--menu-accent);
 }
 
 /* Nav Badges */
@@ -545,8 +554,8 @@ body {
 }
 
 .bg-card-icon {
-    background: rgba(220, 38, 38, 0.1);
-    color: var(--primary, #dc2626);
+    background: var(--menu-accent-bg);
+    color: var(--menu-accent);
 }
 
 .bg-atm-icon {
@@ -717,8 +726,8 @@ body {
 
 .mega-menu-item:hover {
     background: #ffffff;
-    border-color: var(--primary, #dc2626);
-    color: var(--primary, #dc2626);
+    border-color: var(--menu-accent);
+    color: var(--menu-accent);
     transform: translateY(-1px);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
 }
@@ -796,8 +805,8 @@ body {
 
 [data-theme="dark"] .mega-menu-item:hover {
     background: #262626;
-    border-color: var(--primary, #dc2626);
-    color: var(--primary, #dc2626);
+    border-color: var(--menu-accent);
+    color: var(--menu-accent);
 }
 
 [data-theme="dark"] .mega-menu-icon-fallback {
@@ -897,7 +906,7 @@ body {
 
 .nav-avatar:hover {
     opacity: 0.9;
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+    box-shadow: 0 0 0 3px var(--menu-accent-glow);
 }
 
 .nav-balance {

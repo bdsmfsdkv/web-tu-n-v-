@@ -55,9 +55,9 @@ html body .mobile-bottom-nav-container {
 
     html body nav.navbar > .nav-container > .nav-brand img {
         display: block !important;
-        height: 30px !important;
+        height: 34px !important;
         width: auto !important;
-        max-width: 105px !important;
+        max-width: 135px !important;
         object-fit: contain !important;
     }
 
@@ -118,12 +118,12 @@ html body .mobile-bottom-nav-container {
 
     /* The hamburger itself reflects the panel state; no extra JS class is needed. */
     html body nav.navbar > .nav-container:has(#navLinks.show) #navToggle {
-        border-color: rgba(220,38,38,.28) !important;
-        background: #fff1f2 !important;
+        border-color: var(--menu-accent-border) !important;
+        background: var(--menu-accent-bg) !important;
     }
 
     html body nav.navbar > .nav-container:has(#navLinks.show) #navToggle span {
-        background: #dc2626 !important;
+        background: var(--menu-accent) !important;
     }
 
     html body nav.navbar > .nav-container:has(#navLinks.show) #navToggle span:nth-child(1) {
@@ -247,9 +247,9 @@ html body .mobile-bottom-nav-container {
     html body nav.navbar #navLinks .nav-dropdown.open > .nav-link-item,
     html body nav.navbar #navLinks .nav-mega-dropdown.open > .nav-link-item,
     html body nav.navbar #navLinks .nav-link-item:active {
-        color: #dc2626 !important;
-        background: #fff1f2 !important;
-        border-color: rgba(220,38,38,.22) !important;
+        color: var(--menu-accent) !important;
+        background: var(--menu-accent-bg) !important;
+        border-color: var(--menu-accent-border) !important;
     }
 
     html body nav.navbar #navLinks .nav-link-item .nav-arrow {
@@ -351,8 +351,8 @@ html body .mobile-bottom-nav-container {
 
     html body nav.navbar #navLinks .dropdown-link-card:active,
     html body nav.navbar #navLinks .mega-menu-item:active {
-        color: #dc2626 !important;
-        background: #fff1f2 !important;
+        color: var(--menu-accent) !important;
+        background: var(--menu-accent-bg) !important;
     }
 
     /* Overlay is always below navbar/menu, and never blurs anything. */
@@ -395,17 +395,17 @@ html body .mobile-bottom-nav-container {
     }
 
     html body nav.navbar .nav-link-item:hover {
-        color: #dc2626 !important;
-        background: rgba(220,38,38,.07) !important;
-        border-color: rgba(220,38,38,.22) !important;
+        color: var(--menu-accent) !important;
+        background: var(--menu-accent-bg) !important;
+        border-color: var(--menu-accent-border) !important;
     }
 
     html body nav.navbar .dropdown-link-card:hover,
     html body nav.navbar .mega-menu-item:hover,
     html body #avatarDropdown .dropdown-item:hover {
-        color: #dc2626 !important;
-        background: #fff7f7 !important;
-        border-color: rgba(220,38,38,.18) !important;
+        color: var(--menu-accent) !important;
+        background: var(--menu-accent-bg) !important;
+        border-color: var(--menu-accent-border) !important;
         transform: translateX(2px) !important;
     }
 }

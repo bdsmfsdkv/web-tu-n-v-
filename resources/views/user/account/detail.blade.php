@@ -2,6 +2,10 @@
 
 @section('title', 'Chi tiết tài khoản #' . $account->id)
 
+@push('css')
+    <link href="{{ asset('css/related-account-cards.css') }}?v={{ filemtime(public_path('css/related-account-cards.css')) }}" rel="stylesheet">
+@endpush
+
 @section('content')
 <!-- SimpleLightbox Library -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/simplelightbox/2.14.2/simple-lightbox.min.css" rel="stylesheet" />
@@ -26,12 +30,12 @@
                     <!-- Vertical Thumbnails -->
                     <div class="ecom-thumbs-vertical">
                         @foreach (array_slice($images, 0, 8) as $index => $image)
-                            <img src="{{ $image }}" class="ecom-thumb" onclick="changeMainImage('{{ $image }}', {{ $index }})" alt="Thumb">
+                            <img src="{{ $image }}" class="ecom-thumb" onclick="changeMainImage('{{ $image }}', {{ $index }})" alt="Ảnh tài khoản {{ $index + 1 }}" width="80" height="50" loading="{{ $index === 0 ? 'eager' : 'lazy' }}" decoding="async">
                         @endforeach
                     </div>
                     <!-- Main Image -->
                     <div class="ecom-main-img-wrapper" style="cursor: pointer;" onclick="openLightbox()">
-                        <img src="{{ $images[0] ?? '' }}" id="ecom-main-img" class="ecom-main-img" alt="Main Image">
+                        <img src="{{ $images[0] ?? '' }}" id="ecom-main-img" class="ecom-main-img" alt="Ảnh tài khoản #{{ $account->id }}" width="800" height="450" fetchpriority="high" decoding="async">
                         <div class="ecom-img-count"><i class="far fa-images"></i> 1/{{ count($images) }}</div>
                     </div>
 
@@ -39,7 +43,6 @@
                     <div id="lightbox-gallery" style="display: none;">
                         @foreach ($images as $image)
                             <a href="{{ $image }}" class="detail__images-link">
-                                <img src="{{ $image }}" alt="Hình ảnh tài khoản">
                             </a>
                         @endforeach
                     </div>
@@ -57,21 +60,19 @@
             <!-- Related Accounts Grid -->
             @if(isset($relatedAccounts) && $relatedAccounts->count() > 0)
             <div class="ecom-box ecom-all-images-box" style="margin-top: 20px; border-color: transparent;">
-                <h3 class="ecom-box-title" style="font-size: 1.3rem;">Tài khoản liên quan</h3>
-                <div class="account-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                <h3 class="ecom-box-title" style="font-size: 1.3rem;">Tài khoản cùng danh mục</h3>
+                <div class="related-accounts">
                     @foreach ($relatedAccounts as $related)
-                        <div class="account-card" style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; background: var(--box-bg);">
-                            <div class="account-media" style="position: relative;">
-                                <a href="{{ route('account.show', ['id' => $related->id]) }}">
-                                    <img src="{{ $related->thumb ?? asset('assets/images/default.jpg') }}" alt="Account" style="width: 100%; height: 120px; object-fit: cover;">
-                                </a>
-                                <div style="position: absolute; bottom: 0; left: 0; background: rgba(0,0,0,0.6); color: #fff; padding: 2px 8px; font-size: 0.8rem; border-top-right-radius: 4px;">Mã số: {{ $related->id }}</div>
+                        <article class="related-account-card">
+                            <a href="{{ route('account.show', ['id' => $related->id]) }}" class="related-account-image">
+                                <img src="{{ $related->thumb ?: asset('assets/images/default.jpg') }}" alt="Tài khoản #{{ $related->id }}" loading="lazy" decoding="async">
+                                <span class="related-account-code">Mã #{{ $related->id }}</span>
+                            </a>
+                            <div class="related-account-content">
+                                <div class="related-account-price">{{ number_format($related->price) }}đ</div>
+                                <a href="{{ route('account.show', ['id' => $related->id]) }}" class="related-account-link">Xem chi tiết</a>
                             </div>
-                            <div class="account-info" style="padding: 10px; flex-grow: 1; text-align: center;">
-                                <div style="color: #ef4444; font-weight: bold; font-size: 1.1rem; margin-bottom: 8px;">{{ number_format($related->price) }} VNĐ</div>
-                                <a href="{{ route('account.show', ['id' => $related->id]) }}" class="ecom-btn ecom-btn-outline" style="width: 100%; padding: 6px; font-size: 0.85rem;">XEM CHI TIẾT</a>
-                            </div>
-                        </div>
+                        </article>
                     @endforeach
                 </div>
             </div>

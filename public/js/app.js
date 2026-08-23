@@ -347,30 +347,6 @@
         }
         html body .varied-attributes-title { color: #dc2626 !important; font-family: Inter,system-ui,sans-serif !important; font-weight: 900 !important; }
 
-        /* ================= CLOSABLE TOAST ================= */
-        html body #fui-toast > * { position: relative !important; padding-right: 46px !important; }
-        html body #fui-toast > *.shop-balance-toast { border-left: 4px solid #ef4444 !important; box-shadow: 0 12px 30px rgba(15,23,42,.14) !important; }
-        html body .shop-toast-close {
-            position: absolute !important;
-            top: 50% !important;
-            right: 10px !important;
-            width: 28px !important;
-            height: 28px !important;
-            padding: 0 !important;
-            transform: translateY(-50%) !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            color: #64748b !important;
-            font-size: 18px !important;
-            background: rgba(148,163,184,.12) !important;
-            border: 0 !important;
-            border-radius: 50% !important;
-            cursor: pointer !important;
-            z-index: 5 !important;
-        }
-        html body .shop-toast-close:hover { color: #dc2626 !important; background: #fee2e2 !important; }
-
         [data-theme="dark"] body #avatarDropdown { background: #181818 !important; border-color: #303030 !important; }
         [data-theme="dark"] body #avatarDropdown .dropdown-user-card { background: linear-gradient(145deg,#1b1b1b,#24191a) !important; }
         [data-theme="dark"] body #avatarDropdown .dropdown-name { color: #f8fafc !important; }
@@ -453,47 +429,6 @@ function moveLanguageIntoProfile() {
     var firstDivider = avatarDropdown.querySelector('.dropdown-divider');
     if (firstDivider) avatarDropdown.insertBefore(section, firstDivider);
     else avatarDropdown.appendChild(section);
-}
-
-function enhanceFuiToast(toast) {
-    if (!toast || toast.nodeType !== 1 || toast.dataset.shopClosable === '1') return;
-    toast.dataset.shopClosable = '1';
-
-    var message = (toast.textContent || '').trim().toLowerCase();
-    if (message.indexOf('số dư không đủ') !== -1 || message.indexOf('vui lòng nạp thêm tiền') !== -1) {
-        toast.classList.add('shop-balance-toast');
-    }
-
-    var closeBtn = document.createElement('button');
-    closeBtn.type = 'button';
-    closeBtn.className = 'shop-toast-close';
-    closeBtn.setAttribute('aria-label', 'Đóng thông báo');
-    closeBtn.textContent = '×';
-    closeBtn.addEventListener('click', function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        var toastId = toast.dataset.id;
-        if (toastId && typeof FuiToast !== 'undefined' && typeof FuiToast.close === 'function') {
-            FuiToast.close(toastId);
-        } else {
-            toast.remove();
-        }
-    });
-    toast.appendChild(closeBtn);
-}
-
-function setupClosableToasts() {
-    var root = document.getElementById('fui-toast');
-    if (!root) return;
-    Array.from(root.children).forEach(enhanceFuiToast);
-
-    new MutationObserver(function (mutations) {
-        mutations.forEach(function (mutation) {
-            mutation.addedNodes.forEach(function (node) {
-                if (node.nodeType === 1 && node.parentElement === root) enhanceFuiToast(node);
-            });
-        });
-    }).observe(root, { childList: true });
 }
 
 function markVariedAttributesTitle() {
@@ -584,7 +519,6 @@ document.addEventListener('click', function (event) {
 
 document.addEventListener('DOMContentLoaded', function () {
     moveLanguageIntoProfile();
-    setupClosableToasts();
     markVariedAttributesTitle();
 
     /* Theme */

@@ -27,22 +27,42 @@ class FlashSale extends Model
         return $this->hasMany(FlashSaleItem::class);
     }
 
+    /** Cache trong 1 request: getActivePrice() được gọi nhiều lần trên cùng một trang. */
+    private static ?array $activePriceMap = null;
+
     public static function getActivePrice($type, $categoryId)
     {
-        $activeCampaign = self::where('status', 1)
-            ->where('start_time', '<=', now())
-            ->where('end_time', '>', now())
-            ->first();
-            
-        if ($activeCampaign) {
-            $item = FlashSaleItem::where('flash_sale_id', $activeCampaign->id)
-                ->where('item_type', $type)
-                ->where('item_id', $categoryId)
+        if (self::$activePriceMap === null) {
+            $activeCampaign = self::where('status', 1)
+                ->where('start_time', '<=', now())
+                ->where('end_time', '>', now())
                 ->first();
-            if ($item) {
-                return $item->new_price;
-            }
+
+            self::$activePriceMap = $activeCampaign
+                ? FlashSaleItem::where('flash_sale_id', $activeCampaign->id)
+                    ->get(['item_type', 'item_id', 'new_price'])
+                    ->mapWithKeys(fn ($item) => [$item->item_type . ':' . $item->item_id => $item->new_price])
+                    ->all()
+                : [];
         }
-        return null;
+
+        return self::$activePriceMap[$type . ':' . $categoryId] ?? null;
+    }
+
+    /** Dùng khi dữ liệu flash sale thay đổi giữa request (queue, test). */
+    public static function flushActivePriceCache(): void
+    {
+        self::$activePriceMap = null;
+    }
+
+    protected static function booted()
+    {
+        $forgetHomeCache = static function () {
+            self::flushActivePriceCache();
+            \Illuminate\Support\Facades\Cache::forget('home_flash_sales');
+        };
+
+        static::saved($forgetHomeCache);
+        static::deleted($forgetHomeCache);
     }
 }

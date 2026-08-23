@@ -374,15 +374,16 @@
                 <div class="section-label">CHỌN VẬT PHẨM</div>
                 
                 <div class="items-grid">
+                    <div class="item-card" onclick='selectGemItem({{ $gemBalance }})' id="item-card-gem">
+                        <img src="{{ asset('assets/images/gem.png') }}" class="item-icon" alt="CC">
+                        <div class="item-name">CC</div>
+                        <div class="item-balance">{{ number_format($gemBalance) }}</div>
+                    </div>
                     @foreach($rewardItems as $item)
-                        @php
-                            // Determine user balance for this item based on logic (gem for now)
-                            $balance = Auth::check() ? Auth::user()->gem : 0;
-                        @endphp
-                        <div class="item-card" onclick="selectItem({{ $item->id }}, '{{ $item->name }}', {{ $balance }}, {{ $item->min_withdraw }}, {{ $item->max_withdraw }})" id="item-card-{{ $item->id }}">
+                        <div class="item-card" onclick='selectItem({{ $item->id }}, @json($item->name), {{ $item->available_amount }}, {{ $item->min_withdraw }}, {{ $item->max_withdraw }})' id="item-card-{{ $item->id }}">
                             <img src="{{ $item->icon ? asset($item->icon) : asset('assets/images/gem.png') }}" class="item-icon" onerror="this.src='https://i.imgur.com/NpL6V6y.png'">
                             <div class="item-name">{{ $item->name }}</div>
-                            <div class="item-balance">{{ number_format($balance) }}</div>
+                            <div class="item-balance">{{ number_format($item->available_amount) }}</div>
                         </div>
                     @endforeach
                     
@@ -466,6 +467,7 @@
                         <thead>
                             <tr style="background: rgba(59,130,246,0.07); border-bottom: 1px solid var(--border-subtle, #e5e7eb);">
                                 <th style="padding: 14px 20px; text-align: left; font-weight: 700; color: var(--text-muted, #6b7280); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">Thời gian</th>
+                                <th style="padding: 14px 20px; text-align: left; font-weight: 700; color: var(--text-muted, #6b7280); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">Vật phẩm</th>
                                 <th style="padding: 14px 20px; text-align: left; font-weight: 700; color: var(--text-muted, #6b7280); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">Số lượng</th>
                                 <th style="padding: 14px 20px; text-align: left; font-weight: 700; color: var(--text-muted, #6b7280); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">Tên nhân vật</th>
                                 <th style="padding: 14px 20px; text-align: left; font-weight: 700; color: var(--text-muted, #6b7280); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">Ghi chú</th>
@@ -476,13 +478,14 @@
                             @forelse($withdrawals as $w)
                                 <tr style="border-bottom: 1px solid var(--border-subtle, #e5e7eb); transition: background 0.15s;" onmouseover="this.style.background='rgba(59,130,246,0.03)'" onmouseout="this.style.background='transparent'">
                                     <td style="padding: 14px 20px; color: var(--text-muted, #6b7280); font-size: 0.82rem;">{{ $w->created_at->format('H:i d/m/Y') }}</td>
+                                    <td style="padding: 14px 20px; color: var(--text-main, #1f2937);">{{ $w->rewardItem?->name ?? 'Ngọc cũ' }}</td>
                                     <td style="padding: 14px 20px; font-weight: 700; color: var(--text-main, #1f2937);">{{ number_format($w->amount) }}</td>
                                     <td style="padding: 14px 20px; color: var(--text-main, #1f2937);">{{ $w->character_name }}</td>
                                     <td style="padding: 14px 20px; color: var(--text-muted, #6b7280);">{{ $w->user_note ?: '—' }}</td>
                                     <td style="padding: 14px 20px; text-align: center;">
                                         @if($w->status === 'processing')
                                             <span style="display: inline-block; padding: 4px 12px; background: rgba(234,179,8,0.1); color: #eab308; border: 1px solid rgba(234,179,8,0.25); border-radius: 8px; font-size: 0.78rem; font-weight: 700;">⏳ Đang xử lý</span>
-                                        @elseif($w->status === 'completed')
+                                        @elseif($w->status === 'completed' || $w->status === 'success')
                                             <span style="display: inline-block; padding: 4px 12px; background: rgba(16,185,129,0.1); color: #10b981; border: 1px solid rgba(16,185,129,0.25); border-radius: 8px; font-size: 0.78rem; font-weight: 700;">✓ Hoàn thành</span>
                                         @else
                                             <span style="display: inline-block; padding: 4px 12px; background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; font-size: 0.78rem; font-weight: 700;">✕ Đã hủy</span>
@@ -491,7 +494,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" style="padding: 40px; text-align: center; color: var(--text-muted, #6b7280);">
+                                    <td colspan="6" style="padding: 40px; text-align: center; color: var(--text-muted, #6b7280);">
                                         <i class="fa-solid fa-inbox" style="font-size: 2rem; margin-bottom: 10px; display: block; opacity: 0.4;"></i>
                                         Chưa có lịch sử rút vật phẩm nào.
                                     </td>
@@ -547,6 +550,19 @@
             let limitText = `Giới hạn rút: Tối thiểu ${min > 0 ? min : 1}`;
             if (max > 0) limitText += ` - Tối đa ${max}`;
             document.getElementById('withdraw-limit-text').textContent = limitText;
+        }
+
+        function selectGemItem(balance) {
+            selectItem('gem', 'CC', balance, 1, 0);
+            document.getElementById('item-card-gem').classList.add('active');
+            document.getElementById('reward_item_id').value = '';
+            document.getElementById('withdraw-amount-label').textContent = 'Số lượng CC muốn rút';
+            document.getElementById('withdraw-limit-text').textContent = `Có thể rút tối đa ${new Intl.NumberFormat('vi-VN').format(balance)} CC`;
+        }
+
+        const selectedRewardItemId = @json($selectedRewardItemId);
+        if (selectedRewardItemId) {
+            document.getElementById('item-card-' + selectedRewardItemId)?.click();
         }
     </script>
 @endpush

@@ -70,6 +70,7 @@
                                     <th class="text-uppercase small">ID</th>
                                     <th class="text-uppercase small">Người dùng</th>
                                     <th class="text-uppercase small">Loại</th>
+                                    <th class="text-uppercase small">Vật phẩm</th>
                                     <th class="text-uppercase small text-end">Số lượng</th>
                                     <th class="text-uppercase small">Game</th>
                                     <th class="text-uppercase small">Tên nhân vật</th>
@@ -95,6 +96,7 @@
                                                 <span class="badge bg-light-info text-info fw-bold px-3 py-2 rounded-pill">Ngọc</span>
                                             @endif
                                         </td>
+                                        <td>{{ $withdrawal->rewardItem?->name ?? ($withdrawal->type === 'gold' ? '-' : 'Ngọc') }}</td>
                                         <td class="text-end fw-bold text-primary">{{ number_format($withdrawal->amount) }}</td>
                                         <td>{{ $withdrawal->game ?? 'N/A' }}</td>
                                         <td><span class="text-muted">{{ $withdrawal->character_name }}</span></td>
@@ -221,27 +223,11 @@
                             </tbody>
                         </table>
                     </div>
-@php
-                    // Find the paginator variable
-                    $paginator = null;
-                    foreach(get_defined_vars() as $var) {
-                        if (is_object($var) && method_exists($var, 'hasPages')) {
-                            $paginator = $var;
-                            break;
-                        }
-                    }
-                @endphp
-                @if($paginator && $paginator->hasPages())
+                @if($withdrawals->hasPages())
                     <div class="d-flex justify-content-end p-3 border-top">
-                        {{ $paginator->withQueryString()->links('pagination::bootstrap-5') }}
+                        {{ $withdrawals->withQueryString()->links('pagination::bootstrap-5') }}
                     </div>
                 @endif
-
-                    @if($withdrawals->hasPages())
-                    <div class="pagination-area mt-4 d-flex justify-content-center">
-                        {{ $withdrawals->links('pagination::bootstrap-5') }}
-                    </div>
-                    @endif
                 </div>
             </div>
         </div>
