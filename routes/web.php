@@ -81,7 +81,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/installment/{id}/pay', [\App\Http\Controllers\User\InstallmentController::class, 'pay'])->name('installment.pay');
 });
 Route::prefix('category')->name('category.')->group(function () {
-    Route::get('/', [GameCategoryController::class, 'showAll'])->name('show-all');
     Route::get('/group/{slug}', [GameCategoryController::class, 'showGroup'])->name('group');
     Route::get('/{slug}', [GameCategoryController::class, 'index'])->name('index');
 });
