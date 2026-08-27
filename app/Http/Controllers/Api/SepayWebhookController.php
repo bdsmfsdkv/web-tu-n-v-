@@ -65,9 +65,9 @@ class SepayWebhookController extends Controller
         }
 
         $amountIn = (int) round(floatval($rawAmount));
-        if ($amountIn <= 0 || $amountIn > 2000000000) {
-            $this->logWebhook($gateway, $accountNumber, $content, $amountIn, null, $referenceNumber, 'INVALID_AMOUNT', 'Invalid amount', $ip);
-            return response()->json(['success' => false, 'message' => 'Invalid amount'], 400);
+        if ($amountIn < 10000 || $amountIn > 2000000000) {
+            $this->logWebhook($gateway, $accountNumber, $content, $amountIn, null, $referenceNumber, 'INVALID_AMOUNT', 'Số tiền nạp tối thiểu là 10.000đ', $ip);
+            return response()->json(['success' => false, 'message' => 'Số tiền nạp tối thiểu là 10.000đ'], 400);
         }
 
         if (empty($referenceNumber)) {

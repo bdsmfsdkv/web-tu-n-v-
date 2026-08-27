@@ -1,111 +1,943 @@
-/* Chỉ áp dụng cho các ô thuộc tính trong card tài khoản ở trang danh mục. */
-.account-grid .account-card > .account-info > .account-details-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 10px !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: 0 !important;
+/* ==========================================================================
+   HIGH-PERFORMANCE ACCOUNT CARDS & CATEGORY STYLES (60FPS SMOOTH SCROLL)
+   ========================================================================== */
+
+/* 1. Account Grid Container */
+html {
+    scrollbar-gutter: stable;
 }
 
-.account-grid .account-card > .account-info > .account-details-grid > .account-detail-tile {
+.account-section {
+    padding: 20px 0 40px;
+}
+
+.account-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+    gap: 16px !important;
+    margin-top: 18px !important;
+}
+
+/* 2. Modern Account Card (Optimized for silky smooth scrolling) */
+.account-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
     display: flex !important;
     flex-direction: column !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    position: relative !important;
+    transform: translateZ(0);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease !important;
+}
+
+.account-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 18px -2px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03) !important;
+    border-color: rgba(220, 38, 38, 0.3) !important;
+}
+
+/* 3. Card Media / Thumbnail */
+.account-media {
+    position: relative !important;
+    width: 100% !important;
+    padding-top: 56.25% !important; /* 16:9 Aspect Ratio */
+    background: #f1f5f9 !important;
+    overflow: hidden !important;
+}
+
+[data-theme="dark"] .account-media {
+    background: #1e293b !important;
+}
+
+.account-img-link {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+}
+
+.account-img {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    transition: opacity 0.2s ease-out !important;
+}
+
+/* 4. Badges on Image (No heavy blur to ensure 60fps scrolling) */
+.account-badge-code {
+    position: absolute !important;
+    top: 7px !important;
+    left: 7px !important;
+    background: rgba(15, 23, 42, 0.88) !important;
+    color: #ffffff !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    padding: 3px 8px !important;
+    border-radius: 5px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    letter-spacing: 0.2px !important;
+    z-index: 2 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.account-badge-tag {
+    position: absolute !important;
+    top: 7px !important;
+    right: 7px !important;
+    font-size: 0.68rem !important;
+    font-weight: 800 !important;
+    padding: 3px 7px !important;
+    border-radius: 5px !important;
+    z-index: 2 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.3px !important;
+}
+
+.account-badge-tag.badge-discount {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+}
+
+.account-badge-tag.badge-flash {
+    background: #d97706 !important;
+    color: #ffffff !important;
+}
+
+.account-badge-tag.badge-hot {
+    background: #db2777 !important;
+    color: #ffffff !important;
+}
+
+/* 5. Attributes Info Grid */
+.account-info {
+    padding: 9px 9px 4px !important;
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+}
+
+.account-details-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+    width: 100% !important;
+}
+
+.account-detail-tile {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    background: #f8fafc !important;
+    border: 1px solid #edf2f7 !important;
+    border-radius: 6px !important;
+    padding: 4px 5px !important;
+    min-height: 44px !important;
+    text-align: center !important;
+}
+
+.account-detail-label {
+    display: block !important;
+    font-size: 0.63rem !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    line-height: 1.15 !important;
+    margin-bottom: 2px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+}
+
+.account-detail-value {
+    display: block !important;
+    font-size: 0.73rem !important;
+    font-weight: 750 !important;
+    color: #0f172a !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+}
+
+/* 6. Pricing Section */
+.account-pricing-section {
+    padding: 7px 10px !important;
+    margin: 4px 9px 0 !important;
+    background: #fff5f5 !important;
+    border: 1px dashed rgba(220, 38, 38, 0.22) !important;
+    border-radius: 7px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.price-atm-wrap {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+}
+
+.price-label-atm {
+    font-size: 0.58rem !important;
+    font-weight: 700 !important;
+    color: #dc2626 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.3px !important;
+    line-height: 1 !important;
+    margin-bottom: 2px !important;
+}
+
+.price-value-atm {
+    font-size: 1rem !important;
+    font-weight: 850 !important;
+    color: #dc2626 !important;
+    line-height: 1.1 !important;
+    letter-spacing: -0.2px !important;
+}
+
+.price-value-atm small {
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    margin-left: 1px !important;
+}
+
+.price-card-wrap {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    text-align: right !important;
+}
+
+.price-label-card {
+    font-size: 0.58rem !important;
+    font-weight: 500 !important;
+    color: #94a3b8 !important;
+    line-height: 1 !important;
+    margin-bottom: 2px !important;
+}
+
+.price-value-card {
+    font-size: 0.73rem !important;
+    font-weight: 600 !important;
+    color: #94a3b8 !important;
+    text-decoration: line-through !important;
+    line-height: 1.1 !important;
+}
+
+/* 7. Action Buttons (CTA) */
+.account-actions-btns {
+    display: grid !important;
+    grid-template-columns: 1fr 1.2fr !important;
+    gap: 6px !important;
+    padding: 9px !important;
+}
+
+.btn-card-action {
+    display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    min-height: 52px !important;
-    margin: 0 !important;
-    padding: 6px 8px !important;
-    gap: 2px !important;
-    text-align: center !important;
-    background: linear-gradient(145deg, #ffffff 0%, #f7f9ff 100%) !important;
-    border: 1px solid #e6eaf2 !important;
-    border-radius: 8px !important;
-    box-shadow: 0 2px 6px rgba(15, 23, 42, .035) !important;
-    box-sizing: border-box !important;
-    overflow: hidden !important;
-    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease !important;
-}
-
-.account-grid .account-card > .account-info > .account-details-grid > .account-detail-tile > .account-detail-label {
-    display: block !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    margin: 0 !important;
-    color: #64748b !important;
-    font-size: .62rem !important;
+    gap: 5px !important;
+    padding: 7px 8px !important;
+    border-radius: 6px !important;
+    font-size: 0.76rem !important;
     font-weight: 700 !important;
-    line-height: 1.15 !important;
-    text-align: center !important;
-    white-space: normal !important;
-    overflow-wrap: anywhere !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    border: none !important;
+    transition: background 0.18s ease, color 0.18s ease !important;
+    white-space: nowrap !important;
 }
 
-.account-grid .account-card > .account-info > .account-details-grid > .account-detail-tile > .account-detail-value {
-    display: block !important;
+.btn-card-detail {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.btn-card-detail:hover {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+}
+
+.btn-card-buy {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 5px rgba(220, 38, 38, 0.2) !important;
+}
+
+.btn-card-buy:hover {
+    background: #b91c1c !important;
+}
+
+/* 8. Filter Inline Bar Modern Styling */
+.filter-inline-bar {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    padding: 12px 14px !important;
+    margin-bottom: 18px !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    align-items: center !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.filter-input, .filter-select {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 7px !important;
+    padding: 8px 11px !important;
+    font-size: 0.84rem !important;
+    color: #1e293b !important;
+    outline: none !important;
+    transition: border-color 0.18s ease !important;
+    flex: 1 1 150px !important;
+    min-width: 130px !important;
+}
+
+.filter-input:focus, .filter-select:focus {
+    border-color: #dc2626 !important;
+    background: #ffffff !important;
+}
+
+.filter-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 8px 16px !important;
+    border-radius: 7px !important;
+    font-size: 0.84rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    transition: background 0.18s ease !important;
+    white-space: nowrap !important;
+}
+
+.filter-btn-search {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+.filter-btn-search:hover {
+    background: #b91c1c !important;
+}
+
+.filter-btn-reset {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+.filter-btn-reset:hover {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+}
+
+/* 9. Quick Buy Modal (Popup Mua Nhanh - Chuẩn 60FPS, Không Giật) */
+.quick-buy-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10050 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px !important;
+    box-sizing: border-box !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition: opacity 0.2s ease, visibility 0.2s ease !important;
+}
+
+.quick-buy-modal.active,
+.quick-buy-modal.show {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+
+.quick-buy-backdrop {
+    position: absolute !important;
+    inset: 0 !important;
+    background: rgba(15, 23, 42, 0.65) !important;
+}
+
+.quick-buy-dialog {
+    position: relative !important;
+    background: #ffffff !important;
     width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    margin: 0 !important;
-    color: #111827 !important;
-    font-size: .72rem !important;
+    max-width: 420px !important;
+    border-radius: 14px !important;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.22) !important;
+    overflow: hidden !important;
+    z-index: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border: 1px solid #e2e8f0 !important;
+    transform: scale(0.95) translateY(8px) !important;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.quick-buy-modal.active .quick-buy-dialog,
+.quick-buy-modal.show .quick-buy-dialog {
+    transform: scale(1) translateY(0) !important;
+}
+
+.quick-buy-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 12px 16px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    background: #f8fafc !important;
+}
+
+.quick-buy-title {
+    font-size: 0.95rem !important;
     font-weight: 800 !important;
-    line-height: 1.2 !important;
-    text-align: center !important;
-    white-space: normal !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-    overflow-wrap: anywhere !important;
-    word-break: normal !important;
+    color: #0f172a !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 7px !important;
 }
 
-@media (hover: hover) and (pointer: fine) {
-    .account-grid .account-card > .account-info > .account-details-grid > .account-detail-tile:hover {
-        transform: translateY(-2px) !important;
-        border-color: rgba(220, 38, 38, .24) !important;
-        box-shadow: 0 7px 16px rgba(15, 23, 42, .08) !important;
-    }
+.quick-buy-close {
+    background: none !important;
+    border: none !important;
+    font-size: 1.3rem !important;
+    line-height: 1 !important;
+    color: #94a3b8 !important;
+    cursor: pointer !important;
+    padding: 2px 6px !important;
+    border-radius: 5px !important;
 }
 
-@media (max-width: 520px) {
-    .account-grid .account-card > .account-info > .account-details-grid {
-        grid-template-columns: 1fr !important;
+.quick-buy-close:hover {
+    color: #ef4444 !important;
+    background: #fee2e2 !important;
+}
+
+.quick-buy-body {
+    padding: 14px 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+
+.qb-summary-card {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 8px 10px !important;
+}
+
+.qb-thumb {
+    width: 80px !important;
+    height: 50px !important;
+    border-radius: 5px !important;
+    object-fit: cover !important;
+    flex-shrink: 0 !important;
+    background: #0f172a !important;
+}
+
+.qb-summary-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+.qb-category-name {
+    font-size: 0.74rem !important;
+    color: #64748b !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.qb-code-badge {
+    font-size: 0.78rem !important;
+    color: #334155 !important;
+    margin: 2px 0 !important;
+}
+
+.qb-price-display {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 5px !important;
+}
+
+.qb-price-label {
+    font-size: 0.72rem !important;
+    color: #64748b !important;
+    font-weight: 500 !important;
+}
+
+.qb-price-val {
+    font-size: 1rem !important;
+    font-weight: 850 !important;
+    color: #dc2626 !important;
+}
+
+.qb-discount-box {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px !important;
+}
+
+.qb-discount-input-wrap {
+    display: flex !important;
+    gap: 6px !important;
+    width: 100% !important;
+    align-items: stretch !important;
+}
+
+.qb-input {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    width: auto !important;
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 7px !important;
+    padding: 8px 10px !important;
+    font-size: 0.82rem !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+}
+
+.qb-input:focus {
+    border-color: #dc2626 !important;
+}
+
+.qb-btn-apply {
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    width: auto !important;
+    padding: 8px 14px !important;
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 7px !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    color: #334155 !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+}
+
+.qb-btn-apply:hover {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+}
+
+.qb-msg {
+    font-size: 0.76rem !important;
+    font-weight: 600 !important;
+}
+
+.qb-msg.success { color: #16a34a !important; }
+.qb-msg.error { color: #dc2626 !important; }
+
+.qb-balance-box {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 9px 12px !important;
+    font-size: 0.82rem !important;
+}
+
+.qb-balance-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.qb-balance-status {
+    margin-top: 5px !important;
+    padding-top: 5px !important;
+    border-top: 1px dashed #e2e8f0 !important;
+    font-size: 0.78rem !important;
+}
+
+.qb-guest-notice {
+    background: #eff6ff !important;
+    border: 1px solid #bfdbfe !important;
+    color: #1e40af !important;
+    border-radius: 8px !important;
+    padding: 10px !important;
+    font-size: 0.82rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.quick-buy-footer {
+    padding: 10px 16px 14px !important;
+    border-top: 1px solid #f1f5f9 !important;
+    background: #f8fafc !important;
+    display: flex !important;
+    gap: 6px !important;
+}
+
+.qb-btn {
+    flex: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    padding: 9px 14px !important;
+    border-radius: 7px !important;
+    font-size: 0.84rem !important;
+    font-weight: 750 !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    border: none !important;
+    transition: background 0.18s ease !important;
+}
+
+.qb-btn-submit {
+    background: #16a34a !important;
+    color: #ffffff !important;
+}
+
+.qb-btn-submit:hover {
+    background: #15803d !important;
+}
+
+.qb-btn-primary {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+}
+
+.qb-btn-atm {
+    background: #0ea5e9 !important;
+    color: #ffffff !important;
+    font-size: 0.78rem !important;
+}
+
+.qb-btn-card {
+    background: #f59e0b !important;
+    color: #ffffff !important;
+    font-size: 0.78rem !important;
+}
+
+/* 10. Mobile Responsiveness (Screen <= 560px) */
+@media (max-width: 560px) {
+    .account-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 8px !important;
     }
 
-    .account-grid .account-card > .account-info > .account-details-grid > .account-detail-tile {
-        display: none !important;
-        min-height: 0 !important;
-        padding: 7px 6px !important;
-        gap: 2px !important;
+    .account-card {
+        border-radius: 9px !important;
+        contain-intrinsic-size: 320px;
     }
 
-    .account-grid .account-card > .account-info > .account-details-grid > .account-detail-tile:nth-child(-n+2) {
+    .account-badge-code {
+        top: 5px !important;
+        left: 5px !important;
+        font-size: 0.62rem !important;
+        padding: 2px 5px !important;
+    }
+
+    .account-badge-tag {
+        top: 5px !important;
+        right: 5px !important;
+        font-size: 0.6rem !important;
+        padding: 2px 5px !important;
+    }
+
+    .account-info {
+        padding: 5px 5px 3px !important;
+    }
+
+    .account-details-grid {
+        grid-template-columns: 1fr !important;
+        gap: 3px !important;
+    }
+
+    .account-detail-tile {
+        min-height: 0 !important;
+        padding: 3px 3px !important;
+        display: none !important;
+    }
+
+    .account-detail-tile:nth-child(-n+2) {
         display: flex !important;
     }
 
-    .account-grid .account-card > .account-info > .account-details-grid > .account-detail-tile > .account-detail-label {
-        font-size: .62rem !important;
+    .account-detail-label {
+        font-size: 0.58rem !important;
     }
 
-    .account-grid .account-card > .account-info > .account-details-grid > .account-detail-tile > .account-detail-value {
-        font-size: .72rem !important;
+    .account-detail-value {
+        font-size: 0.68rem !important;
+    }
+
+    .account-pricing-section {
+        margin: 2px 5px 0 !important;
+        padding: 5px 5px !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 2px !important;
+    }
+
+    .price-atm-wrap {
+        align-items: center !important;
+    }
+
+    .price-value-atm {
+        font-size: 0.92rem !important;
+    }
+
+    .price-card-wrap {
+        align-items: center !important;
+        text-align: center !important;
+    }
+
+    .account-actions-btns {
+        padding: 5px !important;
+        gap: 4px !important;
+        grid-template-columns: 1fr !important;
+    }
+
+    .btn-card-action {
+        padding: 6px 5px !important;
+        font-size: 0.7rem !important;
+    }
+
+    .filter-inline-bar {
+        padding: 9px !important;
+        gap: 6px !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .filter-input, .filter-select {
+        min-width: 0 !important;
+        flex: 1 1 auto !important;
+        font-size: 0.78rem !important;
+        padding: 7px 9px !important;
+    }
+
+    .filter-btn {
+        grid-column: span 1 !important;
+        padding: 7px 9px !important;
+        font-size: 0.78rem !important;
     }
 }
 
-[data-theme="dark"] .account-grid .account-card > .account-info > .account-details-grid > .account-detail-tile {
-    background: #202020 !important;
-    border-color: #303030 !important;
-    box-shadow: none !important;
+/* 11. Dark Mode Styling */
+[data-theme="dark"] .account-card {
+    background: #1e1e1e !important;
+    border-color: #2d2d2d !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
 }
 
-[data-theme="dark"] .account-grid .account-card > .account-info > .account-details-grid > .account-detail-tile > .account-detail-label {
-    color: #9ca3af !important;
+[data-theme="dark"] .account-card:hover {
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35) !important;
 }
 
-[data-theme="dark"] .account-grid .account-card > .account-info > .account-details-grid > .account-detail-tile > .account-detail-value {
-    color: #f3f4f6 !important;
+[data-theme="dark"] .account-detail-tile {
+    background: #262626 !important;
+    border-color: #333333 !important;
 }
+
+[data-theme="dark"] .account-detail-label {
+    color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .account-detail-value {
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .account-pricing-section {
+    background: rgba(220, 38, 38, 0.08) !important;
+    border-color: rgba(220, 38, 38, 0.25) !important;
+}
+
+[data-theme="dark"] .price-value-atm {
+    color: #f87171 !important;
+}
+
+[data-theme="dark"] .price-label-atm {
+    color: #f87171 !important;
+}
+
+[data-theme="dark"] .btn-card-detail {
+    background: #262626 !important;
+    color: #cbd5e1 !important;
+    border-color: #333333 !important;
+}
+
+[data-theme="dark"] .btn-card-detail:hover {
+    background: #333333 !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .filter-inline-bar {
+    background: #1e1e1e !important;
+    border-color: #2d2d2d !important;
+}
+
+[data-theme="dark"] .filter-input,
+[data-theme="dark"] .filter-select {
+    background: #262626 !important;
+    border-color: #333333 !important;
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .filter-btn-reset {
+    background: #262626 !important;
+    border-color: #333333 !important;
+    color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .quick-buy-dialog {
+    background: #1e1e1e !important;
+    border-color: #2d2d2d !important;
+}
+
+[data-theme="dark"] .quick-buy-header {
+    background: #262626 !important;
+    border-color: #333333 !important;
+}
+
+[data-theme="dark"] .quick-buy-title {
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .qb-summary-card,
+[data-theme="dark"] .qb-balance-box {
+    background: #262626 !important;
+    border-color: #333333 !important;
+}
+
+[data-theme="dark"] .qb-code-badge {
+    color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .qb-input {
+    background: #262626 !important;
+    border-color: #333333 !important;
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .qb-btn-apply {
+    background: #333333 !important;
+    border-color: #404040 !important;
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .quick-buy-footer {
+    background: #262626 !important;
+    border-color: #333333 !important;
+}
+
+/* Mobile Responsive Quick Buy Modal */
+@media (max-width: 576px) {
+    .quick-buy-modal {
+        padding: 10px !important;
+    }
+
+    .quick-buy-dialog {
+        width: calc(100% - 16px) !important;
+        max-width: 375px !important;
+        border-radius: 12px !important;
+        margin: auto !important;
+    }
+
+    .quick-buy-header {
+        padding: 10px 14px !important;
+    }
+
+    .quick-buy-title {
+        font-size: 0.88rem !important;
+    }
+
+    .quick-buy-body {
+        padding: 12px 14px !important;
+        gap: 10px !important;
+    }
+
+    .qb-summary-card {
+        padding: 7px 9px !important;
+        gap: 8px !important;
+    }
+
+    .qb-thumb {
+        width: 70px !important;
+        height: 45px !important;
+        border-radius: 4px !important;
+    }
+
+    .qb-category-name {
+        font-size: 0.72rem !important;
+    }
+
+    .qb-code-badge {
+        font-size: 0.75rem !important;
+        margin: 1px 0 !important;
+    }
+
+    .qb-price-val {
+        font-size: 0.95rem !important;
+    }
+
+    .qb-discount-input-wrap {
+        gap: 6px !important;
+        width: 100% !important;
+    }
+
+    .qb-input {
+        padding: 7px 9px !important;
+        font-size: 0.78rem !important;
+        min-width: 0 !important;
+    }
+
+    .qb-btn-apply {
+        padding: 7px 12px !important;
+        font-size: 0.78rem !important;
+        flex-shrink: 0 !important;
+    }
+
+    .qb-balance-box {
+        padding: 8px 10px !important;
+        font-size: 0.78rem !important;
+    }
+
+    .quick-buy-footer {
+        padding: 10px 14px 12px !important;
+    }
+
+    .qb-btn {
+        padding: 9px 12px !important;
+        font-size: 0.84rem !important;
+        border-radius: 8px !important;
+    }
+}
+

@@ -3,7 +3,7 @@
 @section('title', $title)
 
 @section('content')
-    <section class="profile-section">
+    <section class="profile-section" style="padding-bottom: 90px;">
         <div class="container">
             <div class="profile-container">
                 <div class="profile-header">
@@ -160,7 +160,7 @@
                                                     @endforeach
                                                 @else
                                                     <tr>
-                                                        <td colspan="6" class="text-center">Chưa có lịch sử rút vàng</td>
+                                                        <td colspan="7" class="text-center">Chưa có lịch sử rút vàng</td>
                                                     </tr>
                                                 @endif
                                             </tbody>
@@ -181,6 +181,66 @@
     </section>
 
     <!-- Withdrawal Details Modal -->
+    <style>
+        .modal {
+            position: fixed;
+            z-index: 1050;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(15, 23, 42, 0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+        .modal.active, .modal.show {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+        .modal__content {
+            background-color: #fff;
+            margin: auto;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.95) translateY(8px);
+            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal.active .modal__content, .modal.show .modal__content {
+            transform: scale(1) translateY(0);
+        }
+        .modal__header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e5e7eb; background-color: #f8fafc; }
+        .modal__title { margin: 0; font-size: 1.25rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; }
+        .modal__close { background: none; border: none; font-size: 1.5rem; color: #64748b; cursor: pointer; line-height: 1; padding: 0; transition: color 0.2s; }
+        .modal__close:hover { color: #ef4444; }
+        .modal__body { padding: 20px; flex: 1; }
+        .modal__footer { padding: 16px 20px; border-top: 1px solid #e5e7eb; background-color: #f8fafc; text-align: right; }
+        .modal__btn { padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; border: none; }
+        .modal__btn--close { background-color: #e2e8f0; color: #475569; }
+        .modal__btn--close:hover { background-color: #cbd5e1; }
+        .modal__row { display: flex; margin-bottom: 12px; font-size: 0.95rem; }
+        .modal__row:last-child { margin-bottom: 0; }
+        .modal__label { width: 130px; color: #64748b; font-weight: 500; display: flex; align-items: center; flex-shrink: 0; }
+        .modal__value { flex: 1; color: #0f172a; font-weight: 600; }
+        [data-theme="dark"] .modal__content { background-color: #171717; border: 1px solid #2a2a2a; }
+        [data-theme="dark"] .modal__header { background-color: #0f172a; border-bottom-color: #333; }
+        [data-theme="dark"] .modal__title { color: #f8fafc; }
+        [data-theme="dark"] .modal__close { color: #94a3b8; }
+        [data-theme="dark"] .modal__footer { background-color: #0f172a; border-top-color: #333; }
+        [data-theme="dark"] .modal__btn--close { background-color: #334155; color: #f8fafc; }
+        [data-theme="dark"] .modal__label { color: #94a3b8; }
+        [data-theme="dark"] .modal__value { color: #f8fafc; }
+    </style>
     <div id="withdrawalDetailsModal" class="modal">
         <div class="modal__content">
             <div class="modal__header">
@@ -337,14 +397,12 @@
 
         // Function to open withdrawal modal
         function openWithdrawalModal() {
-            document.getElementById('withdrawalDetailsModal').style.display = 'block';
-            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+            document.getElementById('withdrawalDetailsModal').classList.add('active');
         }
 
         // Function to close withdrawal modal
         function closeWithdrawalModal() {
-            document.getElementById('withdrawalDetailsModal').style.display = 'none';
-            document.body.style.overflow = ''; // Restore scrolling
+            document.getElementById('withdrawalDetailsModal').classList.remove('active');
         }
     </script>
 @endpush

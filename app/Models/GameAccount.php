@@ -53,6 +53,7 @@ class GameAccount extends Model
             ])) as $categoryId) {
                 \Illuminate\Support\Facades\Cache::forget('category_detail_keys_' . $categoryId);
             }
+            \Illuminate\Support\Facades\Cache::forget('home_catalog_data');
         };
 
         static::saved($forgetDetailKeys);

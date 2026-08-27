@@ -74,6 +74,10 @@
         FileETag None
     </FilesMatch>
 
+    # Uploaded images may change from admin; force browser/CDN revalidation.
+    SetEnvIf Request_URI "^/storage/" uploaded_asset
+    Header set Cache-Control "public, max-age=0, must-revalidate" env=uploaded_asset
+
     # Correct caching behaviour behind proxies once compression is on.
     Header append Vary Accept-Encoding
 </IfModule>

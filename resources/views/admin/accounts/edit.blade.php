@@ -154,16 +154,16 @@
                                     <label class="form-label">Ảnh đại diện <span class="text-danger">*</span></label>
                                     <div class="image-upload" style="position: relative; border: 1px dashed #4680ff; background: rgba(70, 128, 255, 0.05); padding: 20px; border-radius: 8px; text-align: center;">
                                         <input type="file" name="thumb" class="form-control @error('thumb') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="previewImage(this, 'preview-acc-edit-thumb')">
-                                        <div class="image-uploads mt-2">
+                                        <div class="image-uploads mt-2" style="pointer-events: none;">
                                             @if ($account->thumb)
-                                                <div class="existing-thumb-wrapper d-inline-block" style="position: relative; display: inline-block;">
+                                                <div class="existing-thumb-wrapper d-inline-block" style="position: relative; display: inline-block; pointer-events: auto;">
                                                     <img id="preview-acc-edit-thumb" src="{{ asset($account->thumb) }}" alt="img" style="max-height: 80px; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
                                                     <button type="button"
                                                         class="btn btn-danger remove-existing-thumb"
                                                         title="Xoá ảnh này"
                                                         aria-label="Xoá ảnh này"
                                                         onclick="removeExistingThumb(this)"
-                                                        style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; min-width: 24px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 18px; font-weight: 800; line-height: 1; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,.25);">×</button>
+                                                        style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; min-width: 24px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 18px; font-weight: 800; line-height: 1; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,.25); cursor: pointer;">×</button>
                                                 </div>
                                                 <h5 class="mb-0 fw-semibold">Đổi ảnh đại diện (Kéo thả hoặc click)</h5>
                                             @else
@@ -195,11 +195,14 @@
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
                                     
-                                    @if ($account->images)
+                                    @php
+                                        $existingImages = is_array($account->images) ? $account->images : (json_decode($account->images, true) ?: []);
+                                    @endphp
+                                    @if (!empty($existingImages))
                                         <div class="mt-3 bg-light p-3 rounded">
                                             <label class="form-label fw-semibold text-muted d-block mb-2">Các ảnh chi tiết hiện tại:</label>
                                             <div class="d-flex flex-wrap gap-2">
-                                                @foreach (json_decode($account->images) as $image)
+                                                @foreach ($existingImages as $image)
                                                     <div class="existing-detail-image border rounded p-1 bg-white" style="position: relative;">
                                                         <img src="{{ asset($image) }}" alt="preview" style="height: 80px; width: auto; object-fit: contain; display: block;">
                                                         <button type="button"

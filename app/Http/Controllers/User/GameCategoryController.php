@@ -16,7 +16,12 @@ class GameCategoryController extends Controller
 
     public function index(string $slug, Request $request)
     {
-        $category = GameCategory::where("slug", $slug)->where('active', 1)->firstOrFail();
+        $category = GameCategory::where("slug", $slug)->where('active', 1)->first();
+        if (!$category) {
+            return redirect()->route('home');
+        }
+
+        session(['last_category_url' => $request->fullUrl()]);
 
         // Get all accounts linked to this category
         $accounts = GameAccount::where('game_category_id', $category->id);
@@ -123,81 +128,85 @@ class GameCategoryController extends Controller
 
     public function showAll()
     {
-        $title = 'Danh mục bán nick game';
-        $gameGroups = \App\Models\GameGroup::where('active', 1)->orderBy('order', 'asc')->orderBy('id', 'asc')->get();
-
-        // Get all categories with additional statistics
-        $categories = GameCategory::with('gameGroup')
-            ->withCount([
-                'accounts as allAccount' => fn ($query) => $query->where('status', 'available'),
-                'accounts as soldCount' => fn ($query) => $query->where('status', 'sold'),
-            ])
-            ->withMin([
-                'accounts as price' => fn ($query) => $query->where('status', 'available'),
-            ], 'price')
-            ->where('active', 1)
-            ->get();
-
-        foreach ($categories as $category) {
-            $category->price = $category->price ?: 0;
-            $category->url = route('category.index', ['slug' => $category->slug]);
-        }
-
-        $randomCategories = RandomCategory::with('gameGroup')
-            ->withCount([
-                'accounts as allAccount' => fn ($query) => $query->where('status', 'available'),
-                'accounts as soldCount' => fn ($query) => $query->where('status', 'sold'),
-            ])
-            ->withMin([
-                'accounts as price' => fn ($query) => $query->where('status', 'available'),
-            ], 'price')
-            ->where('active', 1)
-            ->get();
-        foreach ($randomCategories as $category) {
-            $category->price = $category->price ?: 0;
-            $category->url = route('random.index', ['slug' => $category->slug]);
-        }
-
-        $categories = $categories->concat($randomCategories);
-
-        return view('user.category.show-all', compact('categories', 'title', 'gameGroups'));
+        return redirect()->route('home');
     }
 
     public function showGroup($slug)
     {
-        $gameGroup = \App\Models\GameGroup::where('slug', $slug)->firstOrFail();
-        $title = $gameGroup->name;
-        
-        $categories = Category::withCount([
-                'accounts as allAccount' => fn ($q) => $q->where('status', 'available'),
-                'accounts as soldCount' => fn ($q) => $q->where('status', 'sold'),
-            ])
-            ->withMin(['accounts as price' => fn ($q) => $q->where('status', 'available')], 'price')
-            ->where('game_group_id', $gameGroup->id)
-            ->where('active', 1)
-            ->get();
-
-        foreach ($categories as $category) {
-            $category->price = $category->price ?: 0;
-            $category->url = route('category.index', ['slug' => $category->slug]);
+        $gameGroup = \App\Models\GameGroup::where('slug', $slug)->first();
+        if (!$gameGroup) {
+            $gameGroup = \App\Models\GameGroup::where('name', 'LIKE', '%' . str_replace('-', ' ', $slug) . '%')->first();
         }
 
-        $randomCategories = RandomCategory::withCount([
-                'accounts as allAccount' => fn ($q) => $q->where('status', 'available'),
-                'accounts as soldCount' => fn ($q) => $q->where('status', 'sold'),
-            ])
-            ->withMin(['accounts as price' => fn ($q) => $q->where('status', 'available')], 'price')
-            ->where('game_group_id', $gameGroup->id)
-            ->where('active', 1)
-            ->get();
+        $categories = collect([]);
+        $platform = '';
+        $title = '';
 
-        foreach ($randomCategories as $category) {
-            $category->price = $category->price ?: 0;
-            $category->url = route('random.index', ['slug' => $category->slug]);
+        if ($gameGroup) {
+            $title = $gameGroup->name;
+            $platform = $gameGroup->name;
+
+            $gameCats = GameCategory::withCount([
+                    'accounts as allAccount' => fn ($q) => $q->where('status', 'available'),
+                    'accounts as soldCount' => fn ($q) => $q->where('status', 'sold'),
+                ])
+                ->withMin(['accounts as price' => fn ($q) => $q->where('status', 'available')], 'price')
+                ->where('game_group_id', $gameGroup->id)
+                ->where('active', 1)
+                ->get();
+
+            foreach ($gameCats as $category) {
+                if ($category->custom_stock_count !== null) $category->allAccount = $category->custom_stock_count;
+                if ($category->custom_sold_count !== null) $category->soldCount = $category->custom_sold_count;
+                $category->price = $category->price ?: 0;
+                $category->url = route('category.index', ['slug' => $category->slug]);
+            }
+
+            $randomCategories = RandomCategory::withCount([
+                    'accounts as allAccount' => fn ($q) => $q->where('status', 'available'),
+                    'accounts as soldCount' => fn ($q) => $q->where('status', 'sold'),
+                ])
+                ->withMin(['accounts as price' => fn ($q) => $q->where('status', 'available')], 'price')
+                ->where('game_group_id', $gameGroup->id)
+                ->where('active', 1)
+                ->get();
+
+            foreach ($randomCategories as $category) {
+                if ($category->custom_stock_count !== null) $category->allAccount = $category->custom_stock_count;
+                if ($category->custom_sold_count !== null) $category->soldCount = $category->custom_sold_count;
+                $category->price = $category->price ?: 0;
+                $category->url = route('random.index', ['slug' => $category->slug]);
+            }
+
+            $categories = $gameCats->concat($randomCategories);
+        } else {
+            $platformName = str_replace('-', ' ', $slug);
+            $gameCats = GameCategory::withCount([
+                    'accounts as allAccount' => fn ($q) => $q->where('status', 'available'),
+                    'accounts as soldCount' => fn ($q) => $q->where('status', 'sold'),
+                ])
+                ->where('active', 1)
+                ->where(function($q) use ($slug, $platformName) {
+                    $q->where('platform', 'LIKE', "%{$platformName}%")
+                      ->orWhere('platform', $slug);
+                })
+                ->get();
+
+            foreach ($gameCats as $category) {
+                if ($category->custom_stock_count !== null) $category->allAccount = $category->custom_stock_count;
+                if ($category->custom_sold_count !== null) $category->soldCount = $category->custom_sold_count;
+                $category->price = $category->price ?: 0;
+                $category->url = route('category.index', ['slug' => $category->slug]);
+            }
+
+            $categories = $gameCats;
+            $title = ucwords($platformName);
+            $platform = $title;
         }
 
-        $categories = $categories->concat($randomCategories);
-        $platform = $gameGroup->name;
+        if ($categories->count() === 0) {
+            return redirect()->route('home');
+        }
 
         return view('user.category.show-group', compact('categories', 'title', 'gameGroup', 'platform'));
     }

@@ -31,7 +31,7 @@ class HomeController extends Controller
                 ->groupBy('game_category_id');
             $categories = Category::with('gameGroup')
                 ->leftJoinSub($accountStats, 'account_stats', fn ($join) => $join->on('game_categories.id', '=', 'account_stats.game_category_id'))
-                ->select('game_categories.*', DB::raw('COALESCE(account_stats.sold_count, 0) AS soldCount'), DB::raw('COALESCE(account_stats.available_count, 0) AS allAccount'), DB::raw('COALESCE(account_stats.min_price, 0) AS price'))
+                ->select('game_categories.*', DB::raw('COALESCE(game_categories.custom_sold_count, account_stats.sold_count, 0) AS soldCount'), DB::raw('COALESCE(game_categories.custom_stock_count, account_stats.available_count, 0) AS allAccount'), DB::raw('COALESCE(account_stats.min_price, 0) AS price'))
                 ->where('game_categories.active', 1)
                 ->orderBy('game_categories.updated_at', 'desc')
                 ->get();
@@ -50,7 +50,7 @@ class HomeController extends Controller
                 ->groupBy('random_category_id');
             $randomCategories = RandomCategory::with('gameGroup')
                 ->leftJoinSub($randomAccountStats, 'random_account_stats', fn ($join) => $join->on('random_categories.id', '=', 'random_account_stats.random_category_id'))
-                ->select('random_categories.*', DB::raw('COALESCE(random_account_stats.sold_count, 0) AS soldCount'), DB::raw('COALESCE(random_account_stats.available_count, 0) AS allAccount'), DB::raw('COALESCE(random_account_stats.min_price, 0) AS price'))
+                ->select('random_categories.*', DB::raw('COALESCE(random_categories.custom_sold_count, random_account_stats.sold_count, 0) AS soldCount'), DB::raw('COALESCE(random_categories.custom_stock_count, random_account_stats.available_count, 0) AS allAccount'), DB::raw('COALESCE(random_account_stats.min_price, 0) AS price'))
                 ->where('random_categories.active', 1)
                 ->orderBy('random_categories.updated_at', 'desc')
                 ->get();

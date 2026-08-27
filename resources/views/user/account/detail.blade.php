@@ -11,14 +11,19 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/simplelightbox/2.14.2/simple-lightbox.min.css" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/simplelightbox/2.14.2/simple-lightbox.min.js"></script>
 
-<div class="container" style="padding-top: 24px; padding-bottom: 40px;">
-    <!-- Breadcrumb -->
-    <div class="page-breadcrumb" style="margin-bottom: 24px;">
-        <a href="/" class="breadcrumb-link"><i class="fas fa-home"></i> Trang Chủ</a>
-        <span class="breadcrumb-separator">/</span>
-        <a href="{{ route('category.index', ['slug' => $account->category->slug ?? '']) }}" class="breadcrumb-link">{{ $account->category->name ?? 'Danh Mục' }}</a>
-        <span class="breadcrumb-separator">/</span>
-        <span class="breadcrumb-current">Tài khoản #{{ $account->id }}</span>
+<div class="container account-detail-page-container">
+    <!-- Breadcrumb & Quay lai button -->
+    <div class="account-detail-header-bar">
+        <div class="page-breadcrumb">
+            <a href="/" class="breadcrumb-link"><i class="fas fa-home"></i> <span>Trang Chủ</span></a>
+            <span class="breadcrumb-separator">/</span>
+            <a href="{{ $categoryUrl ?? route('category.index', ['slug' => $account->category->slug ?? '']) }}" class="breadcrumb-link">{{ $account->category->name ?? 'Danh Mục' }}</a>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current">#{{ $account->id }}</span>
+        </div>
+        <a href="{{ $categoryUrl ?? route('category.index', ['slug' => $account->category->slug ?? '']) }}" class="detail-back-link">
+            <i class="fas fa-arrow-left"></i> <span class="back-text-full">Quay lại {{ $account->category->name ?? 'danh mục' }}</span><span class="back-text-short">Quay lại</span>
+        </a>
     </div>
 
     <div class="ecom-layout">
@@ -101,17 +106,33 @@
                 </div>
 
                 <div class="ecom-price-box">
+                    @php
+                        $discountPercent = (float) config_get('payment.card.discount_percent', 0);
+                        $cardPrice = ($discountPercent > 0 && $discountPercent < 100) 
+                            ? round($account->price / ((100 - $discountPercent) / 100)) 
+                            : $account->price;
+                        $hasDiscount = $cardPrice > $account->price;
+                        $discountRatio = $hasDiscount ? round((($cardPrice - $account->price) / $cardPrice) * 100) : 0;
+                    @endphp
                     <div class="ecom-price-row">
-                        @php
-                            $discountPercent = config_get('payment.card.discount_percent');
-                            $cardPrice = $account->price / ((100 - $discountPercent) / 100);
-                            $discountRatio = round(100 - ($account->price / $cardPrice) * 100);
-                        @endphp
-                        <span class="old-price">{{ number_format($cardPrice) }}đ</span>
-                        <span class="new-price">{{ number_format($account->price) }}đ</span>
-                        <span class="discount-badge">-{{ $discountRatio }}%</span>
+                        @if($hasDiscount && $discountRatio > 0)
+                            <span class="old-price">{{ number_format($cardPrice) }}đ</span>
+                            <span class="new-price">{{ number_format($account->price) }}đ</span>
+                            <span class="discount-badge">-{{ $discountRatio }}%</span>
+                        @else
+                            <span class="new-price">{{ number_format($account->price) }}đ</span>
+                            <span class="discount-badge price-best-badge">
+                                <i class="fa-solid fa-shield-halved me-1"></i> GIÁ TỐT NHẤT
+                            </span>
+                        @endif
                     </div>
-                    <div class="ecom-price-subtitle">Rẻ vô đối, giá tốt nhất thị trường</div>
+                    <div class="ecom-price-subtitle">
+                        @if($hasDiscount && $discountRatio > 0)
+                            <i class="fa-solid fa-credit-card me-1"></i> Thẻ cào: <strong>{{ number_format($cardPrice) }}đ</strong> | Thanh toán qua ATM/MoMo tiết kiệm <strong>{{ $discountRatio }}%</strong>
+                        @else
+                            <i class="fa-solid fa-circle-check text-success me-1"></i> Rẻ vô đối, thanh toán tự động 24/7 nhận tài khoản ngay
+                        @endif
+                    </div>
                 </div>
 
                 <hr class="ecom-divider">
@@ -119,20 +140,20 @@
                 <div class="ecom-actions">
                     @if ($account->status === 'available')
                         <div class="ecom-action-row-1">
-                            <a href="{{ route('profile.deposit-card') }}" class="ecom-btn ecom-btn-outline"><i class="fas fa-shopping-cart"></i> Nạp thẻ</a>
-                            <button class="ecom-btn ecom-btn-solid" onclick="buyAccount({{ $account->id }})">Mua Ngay</button>
+                            <a href="{{ route('profile.deposit-card') }}" class="ecom-btn-action ecom-btn-outline">
+                                <i class="fas fa-credit-card"></i> <span>Nạp Thẻ</span>
+                            </a>
+                            <button type="button" class="ecom-btn-action ecom-btn-solid" onclick="buyAccount({{ $account->id }})">
+                                <i class="fas fa-bolt"></i> <span>Mua Ngay</span>
+                            </button>
                         </div>
-                        <div class="ecom-or-divider">--- hoặc ---</div>
-                        <a href="{{ route('profile.deposit-atm') }}" class="ecom-btn ecom-btn-atm" style="margin-top: 10px; width: 100%; background: #0bcfa5ffff; border-color: #0bcfa5ffff; color: white; text-decoration: none;">
-                            Mua Bằng ATM, Momo<br>
-                            <small>{{ number_format($account->price) }} Đ</small>
+                        <div class="ecom-or-divider">--- HOẶC NẠP NHANH ---</div>
+                        <a href="{{ route('profile.deposit-atm') }}" class="ecom-btn-atm">
+                            <span class="atm-btn-title"><i class="fas fa-qrcode"></i> NẠP TIỀN ATM / QR / MOMO TỰ ĐỘNG</span>
+                            <small class="atm-btn-sub">Giá chỉ: <strong>{{ number_format($account->price) }}đ</strong></small>
                         </a>
-                        {{-- <button class="ecom-btn" style="margin-top: 10px; width: 100%; background: #3b82f6; border-color: #3b82f6; color: white;" onclick="showInstallmentModal()">
-                            <i class="fas fa-hand-holding-usd"></i> Mua Trả Góp<br>
-                            <small>Trả trước từ {{ number_format($account->price * 0.2) }} Đ</small>
-                        </button> --}}
                     @else
-                        <div class="detail__purchased" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; padding: 20px; border-radius: 8px; text-align: center; font-weight: 700; font-size: 1.1rem;">
+                        <div class="detail__purchased" style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; padding: 18px; border-radius: 12px; text-align: center; font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
                             <i class="fas fa-lock"></i> TÀI KHOẢN NÀY ĐÃ ĐƯỢC BÁN
                         </div>
                     @endif
@@ -168,65 +189,62 @@
     <!-- Purchase Modal -->
     @if ($account->status === 'available')
     <div id="purchaseModal" class="modal-modern">
-        <div class="modal__content">
-            <div class="modal__header">
-                <h2 class="modal__title">XÁC NHẬN MUA TÀI KHOẢN #{{ $account->id }}</h2>
-                <button class="modal__close" onclick="closePurchaseModal()"><i class="fas fa-times"></i></button>
+        <div class="modal__content" style="border-radius: 16px; border: 1px solid rgba(226,232,240,0.8); box-shadow: 0 10px 40px rgba(0,0,0,0.3); overflow: hidden;">
+            <div class="modal__header" style="background: var(--primary, #dc2626); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; color: #fff;">
+                <h2 class="modal__title" style="font-size: 1.05rem; font-weight: 800; margin: 0; color: #fff; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-cart-shopping"></i> XÁC NHẬN MUA TÀI KHOẢN #{{ $account->id }}
+                </h2>
+                <button class="modal__close" onclick="closePurchaseModal()" style="border: none; background: none; font-size: 1.25rem; cursor: pointer; color: #fff; line-height: 1; padding: 2px 6px;"><i class="fas fa-times"></i></button>
             </div>
 
-            <div class="modal__body">
-                <div class="modal__info">
-                    <div class="modal__row">
-                        <span class="modal__label">Nhà phát hành:</span>
-                        <span class="modal__value">N/A</span>
+            <div class="modal__body" style="padding: 18px 20px;">
+                <div class="modal__info" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; margin-bottom: 16px;">
+                    <div class="modal__row" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px;">
+                        <span class="modal__label" style="color: #64748b; font-weight: 600; white-space: nowrap; flex-shrink: 0;">Danh mục:</span>
+                        <span class="modal__value" style="font-weight: 700; color: #0f172a; text-align: right; word-break: break-word;">{{ $account->category->name ?? 'Tài khoản Game' }}</span>
                     </div>
-                    <div class="modal__row">
-                        <span class="modal__label">Danh mục:</span>
-                        <span class="modal__value">{{ $account->category->name ?? 'Tài khoản Game' }}</span>
-                    </div>
-                    <div class="modal__row">
-                        <span class="modal__label">Giá tiền:</span>
-                        <span class="modal__value modal__value--price"
-                            id="account-price">{{ number_format($account->price) }} đ</span>
+                    <div class="modal__row" style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                        <span class="modal__label" style="color: #64748b; font-weight: 600; white-space: nowrap; flex-shrink: 0;">Giá thanh toán:</span>
+                        <span class="modal__value modal__value--price" id="account-price" style="font-size: 1.25rem; font-weight: 900; color: #dc2626;">{{ number_format($account->price) }}đ</span>
                     </div>
                 </div>
 
-                <div class="modal__discount">
-                    <div class="discount-input-group" style="display: flex; gap: 10px;">
-                        <input type="text" id="discount-code" class="modal__input" placeholder="Nhập mã giảm giá nếu có" style="flex: 1; padding: 8px 12px; border-radius: 4px; border: 1px solid #d9d9d9;">
-                        <button class="modal__btn--check" onclick="checkDiscountCode('account')" style="padding: 8px 16px; border-radius: 4px; border: 1px solid #d9d9d9; background: #f5f5f5; cursor: pointer;">Áp dụng</button>
+                <div class="modal__discount" style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; color: #475569;">Mã giảm giá (nếu có)</label>
+                    <div class="discount-input-group" style="display: flex; gap: 8px; width: 100%; align-items: stretch;">
+                        <input type="text" id="discount-code" class="modal__input" placeholder="Nhập mã ưu đãi..." style="flex: 1 1 auto; min-width: 0; padding: 9px 12px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-size: 0.88rem; box-sizing: border-box;">
+                        <button class="modal__btn--check" onclick="checkDiscountCode('account')" style="flex: 0 0 auto; flex-shrink: 0; white-space: nowrap; padding: 9px 16px; border-radius: 8px; border: none; background: #334155; color: #fff; font-weight: 700; cursor: pointer; font-size: 0.85rem; box-sizing: border-box;">Áp dụng</button>
                     </div>
-                    <div id="discount-message" class="modal__discount-message" style="margin-top: 8px; font-size: 0.9rem;"></div>
+                    <div id="discount-message" class="modal__discount-message" style="margin-top: 6px; font-size: 0.82rem;"></div>
                 </div>
 
                 @auth
                     @if (Auth::user()->balance < $account->price)
-                        <div class="modal__notice">
-                            <strong><i class="fas fa-exclamation-triangle"></i> Số dư không đủ!</strong><br>
-                            Bạn cần thêm {{ number_format($account->price - Auth::user()->balance) }} đ để mua tài khoản này.
-                            Vui lòng nạp thêm tiền để tiếp tục.
+                        <div class="modal__notice" style="background: rgba(220, 38, 38, 0.08); border: 1px solid rgba(220, 38, 38, 0.25); color: #dc2626; padding: 12px; border-radius: 8px; font-size: 0.85rem; line-height: 1.5; margin-bottom: 14px;">
+                            <strong><i class="fas fa-exclamation-triangle"></i> Số dư hiện tại không đủ!</strong><br>
+                            Bạn cần thêm <strong>{{ number_format($account->price - Auth::user()->balance) }}đ</strong> để hoàn tất mua tài khoản này.
                         </div>
                     @endif
                 @else
-                    <div class="modal__notice">
+                    <div class="modal__notice" style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); color: #2563eb; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 14px;">
                         <strong><i class="fas fa-info-circle"></i> Chưa đăng nhập</strong><br>
-                        Vui lòng đăng nhập để thực hiện giao dịch.
+                        Vui lòng đăng nhập tài khoản để thực hiện giao dịch an toàn.
                     </div>
                 @endauth
             </div>
 
-            <div class="modal__footer">
+            <div class="modal__footer" style="padding: 14px 20px 18px; border-top: 1px solid #f1f5f9; display: flex; gap: 8px; flex-wrap: nowrap;">
                 @auth
                     @if (Auth::user()->balance < $account->price)
-                        <a class="modal__btn modal__btn--card" href="{{ route('profile.deposit-card') }}"><i class="fas fa-credit-card"></i> NẠP THẺ CÀO</a>
-                        <a class="modal__btn modal__btn--wallet" href="{{ route('profile.deposit-atm') }}"><i class="fas fa-university"></i> NẠP ATM</a>
+                        <a class="modal__btn modal__btn--card" href="{{ route('profile.deposit-card') }}" style="flex: 1; padding: 10px 12px; text-align: center; border-radius: 8px; font-weight: 700; text-decoration: none; background: #f8fafc; border: 1px solid #cbd5e1; color: #334155; font-size: 0.85rem; white-space: nowrap;"><i class="fas fa-credit-card"></i> NẠP THẺ</a>
+                        <a class="modal__btn modal__btn--wallet" href="{{ route('profile.deposit-atm') }}" style="flex: 1.3; padding: 10px 12px; text-align: center; border-radius: 8px; font-weight: 800; text-decoration: none; background: var(--brand-gradient, linear-gradient(135deg, #dc2626, #ef4444)); color: #fff; box-shadow: 0 4px 12px rgba(220,38,38,0.25); font-size: 0.85rem; white-space: nowrap;"><i class="fas fa-qrcode"></i> NẠP ATM / QR</a>
                     @else
-                        <button class="modal__btn modal__btn--submit" onclick="submitPurchase()"><i class="fas fa-check-circle"></i> XÁC NHẬN MUA</button>
+                        <button class="modal__btn modal__btn--submit" onclick="submitPurchase()" style="flex: 2; padding: 11px 14px; border-radius: 8px; border: none; font-weight: 800; background: var(--brand-gradient, linear-gradient(135deg, #dc2626, #ef4444)); color: #fff; cursor: pointer; box-shadow: 0 4px 12px rgba(220,38,38,0.25); font-size: 0.9rem; white-space: nowrap;"><i class="fas fa-check-circle"></i> XÁC NHẬN MUA</button>
                     @endif
                 @else
-                    <a class="modal__btn modal__btn--submit" href="{{ route('login') }}"><i class="fas fa-sign-in-alt"></i> ĐĂNG NHẬP</a>
+                    <a class="modal__btn modal__btn--submit" href="{{ route('login') }}" style="flex: 2; padding: 11px 14px; text-align: center; border-radius: 8px; border: none; font-weight: 800; background: var(--brand-gradient, linear-gradient(135deg, #dc2626, #ef4444)); color: #fff; text-decoration: none; font-size: 0.9rem; white-space: nowrap;"><i class="fas fa-sign-in-alt"></i> ĐĂNG NHẬP</a>
                 @endauth
-                <button class="modal__btn modal__btn--close" onclick="closePurchaseModal()"><i class="fas fa-times"></i> ĐÓNG</button>
+                <button class="modal__btn modal__btn--close" onclick="closePurchaseModal()" style="flex: 1; padding: 11px 14px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f1f5f9; color: #475569; font-weight: 700; cursor: pointer; font-size: 0.85rem; white-space: nowrap;">ĐÓNG</button>
             </div>
         </div>
     </div>
@@ -292,12 +310,6 @@
     </div>
     
     <script>
-        window.addEventListener('pageshow', function(event) {
-            if (event.persisted) {
-                window.location.reload();
-            }
-        });
-
         document.addEventListener('DOMContentLoaded', function() {
                 // Initialize the lightbox for account images
                 galleryLightbox = new SimpleLightbox('.detail__images-link', {
@@ -315,15 +327,24 @@
             function buyAccount(accountId) {
                 const modal = document.getElementById('purchaseModal');
                 if (modal) {
-                    modal.style.display = 'block';
-                    document.body.style.overflow = 'hidden';
+                    modal.classList.add('active');
                     // Initialize discount handler
-                    initDiscountHandler('account', accountId, {{ $account->price }});
+                    if (typeof initDiscountHandler === 'function') {
+                        initDiscountHandler('account', accountId, {{ $account->price }});
+                    }
                 }
             }
 
             function submitPurchase() {
                 const accountId = {{ $account->id }};
+                const submitBtn = document.querySelector('.modal__btn--submit');
+                if (submitBtn && submitBtn.disabled) {
+                    return;
+                }
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG XỬ LÝ...';
+                }
                 
                 let finalDiscountCode = '';
                 if (typeof discountHandler !== 'undefined' && discountHandler.discountCode) {
@@ -337,13 +358,22 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
                         body: JSON.stringify({
-                            discount_code: finalDiscountCode
+                            discount_code: finalDiscountCode,
+                            return_url: @json($categoryUrl)
                         })
                     })
-                    .then(response => response.json())
+                    .then(async response => {
+                        const data = await response.json().catch(() => null);
+                        if (!data) {
+                            throw new Error('Máy chủ trả về dữ liệu không hợp lệ.');
+                        }
+                        return data;
+                    })
                     .then(data => {
                         if (data.success) {
                             if (typeof FuiToast !== 'undefined') {
@@ -352,8 +382,7 @@
                                 alert('Thành công! ' + data.message);
                             }
                             
-                            // Đổi nút thành Đang xử lý
-                            const submitBtn = document.querySelector('.modal__btn--submit');
+                            // Đổi nút thành Đang chuyển hướng
                             if(submitBtn) {
                                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG CHUYỂN HƯỚNG...';
                                 submitBtn.disabled = true;
@@ -361,9 +390,15 @@
 
                             setTimeout(() => {
                                 closePurchaseModal();
-                                window.location.href = data.redirect_url;
+                                sessionStorage.setItem('refreshPurchaseSource', '1');
+                                sessionStorage.setItem('purchaseReturnScrollY', '0');
+                                window.location.assign(data.redirect_url);
                             }, 1500);
                         } else {
+                            if (submitBtn) {
+                                submitBtn.disabled = false;
+                                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> XÁC NHẬN MUA';
+                            }
                             if (typeof FuiToast !== 'undefined') {
                                 FuiToast.error(data.message || 'Giao dịch thất bại!');
                             } else {
@@ -372,9 +407,13 @@
                         }
                     })
                     .catch(error => {
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> XÁC NHẬN MUA';
+                        }
                         console.error('Error:', error);
                         if (typeof FuiToast !== 'undefined') {
-                            FuiToast.error('Đã xảy ra lỗi kết nối, vui lòng thử lại sau!');
+                            FuiToast.error(error.message || 'Đã xảy ra lỗi kết nối, vui lòng thử lại sau!');
                         } else {
                             alert('Lỗi! Đã xảy ra lỗi khi xử lý giao dịch');
                         }
@@ -388,8 +427,15 @@
             function closePurchaseModal() {
                 const modal = document.getElementById('purchaseModal');
                 if (modal) {
-                    modal.style.display = 'none';
-                    document.body.style.overflow = 'auto';
+                    modal.classList.remove('active');
+                }
+                const dcInput = document.getElementById('discount-code');
+                if (dcInput) dcInput.value = '';
+                if (typeof discountHandler !== 'undefined') {
+                    discountHandler.discountCode = '';
+                    discountHandler.discountedPrice = {{ $account->price }};
+                    discountHandler.updatePriceDisplay({{ $account->price }});
+                    discountHandler.showMessage('', 'info');
                 }
             }
 
@@ -403,19 +449,24 @@
                 });
             });
 
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closePurchaseModal();
+                    closeInstallmentModal();
+                }
+            });
+
             function showInstallmentModal() {
                 const modal = document.getElementById('installmentModal');
                 if (modal) {
-                    modal.style.display = 'block';
-                    document.body.style.overflow = 'hidden';
+                    modal.classList.add('active');
                 }
             }
 
             function closeInstallmentModal() {
                 const modal = document.getElementById('installmentModal');
                 if (modal) {
-                    modal.style.display = 'none';
-                    document.body.style.overflow = 'auto';
+                    modal.classList.remove('active');
                 }
             }
 

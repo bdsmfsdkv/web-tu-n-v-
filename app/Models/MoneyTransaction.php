@@ -17,7 +17,8 @@ class MoneyTransaction extends Model
         'balance_before',
         'balance_after',
         'description',
-        'reference_id'
+        'reference_id',
+        'is_notified'
     ];
 
     /**
@@ -33,5 +34,16 @@ class MoneyTransaction extends Model
         $timestampHex = dechex($this->created_at ? $this->created_at->timestamp : time());
         $hashHex = substr(md5('order_' . $this->id), 0, 13 - strlen($timestampHex));
         return $timestampHex . $hashHex;
+    }
+
+    protected static function booted()
+    {
+        $forgetTransactionCache = function () {
+            \Illuminate\Support\Facades\Cache::forget('home_recent_transactions');
+            \Illuminate\Support\Facades\Cache::forget('home_top_depositors');
+        };
+
+        static::saved($forgetTransactionCache);
+        static::deleted($forgetTransactionCache);
     }
 }

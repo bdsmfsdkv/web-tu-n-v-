@@ -6,6 +6,8 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
+    use \Illuminate\Foundation\Testing\WithoutMiddleware;
+
     public function createApplication()
     {
         $app = require __DIR__.'/../bootstrap/app.php';

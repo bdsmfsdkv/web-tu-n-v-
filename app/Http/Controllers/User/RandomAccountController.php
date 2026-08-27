@@ -12,9 +12,63 @@ use Illuminate\Support\Facades\DB;
 
 class RandomAccountController extends Controller
 {
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $account = RandomCategoryAccount::with('category')->findOrFail($id);
+        try {
+            $account = RandomCategoryAccount::with('category')->find($id);
+        } catch (\Throwable $e) {
+            $account = null;
+        }
+
+        if (!$account || $account->status !== 'available') {
+            $categoryUrl = null;
+            if ($request->filled('back_url')) {
+                $candidate = $request->query('back_url');
+                if (is_string($candidate) && str_starts_with($candidate, '/') && !str_starts_with($candidate, '//') && !str_contains($candidate, '\\')) {
+                    if (!preg_match('#^/random/account/' . preg_quote((string)$id, '#') . '(\?|$)#', $candidate)) {
+                        $categoryUrl = $candidate;
+                    }
+                }
+            }
+            if (!$categoryUrl && session()->has('last_category_url')) {
+                $lastCat = session('last_category_url');
+                if (is_string($lastCat) && !preg_match('#/random/account/' . preg_quote((string)$id, '#') . '(\?|$)#', $lastCat)) {
+                    $categoryUrl = $lastCat;
+                }
+            }
+            if (!$categoryUrl && $account && $account->category && !empty($account->category->slug)) {
+                try {
+                    $categoryUrl = route('random.index', ['slug' => $account->category->slug]);
+                } catch (\Throwable $e) {
+                    $categoryUrl = null;
+                }
+            }
+            if (!$categoryUrl) {
+                $categoryUrl = route('home');
+            }
+
+            return redirect()->to($categoryUrl);
+        }
+
+        $categoryUrl = null;
+        if ($request->filled('back_url')) {
+            $candidate = $request->query('back_url');
+            if (is_string($candidate) && str_starts_with($candidate, '/') && !str_starts_with($candidate, '//') && !str_contains($candidate, '\\')) {
+                $categoryUrl = $candidate;
+            }
+        }
+        if (!$categoryUrl && $account->category && !empty($account->category->slug)) {
+            $categoryUrl = route('random.index', ['slug' => $account->category->slug]);
+        }
+        if (!$categoryUrl && session()->has('last_category_url')) {
+            $categoryUrl = session('last_category_url');
+        }
+        if ($categoryUrl) {
+            session(['last_category_url' => $categoryUrl]);
+        }
+        if (!$categoryUrl) {
+            $categoryUrl = route('home');
+        }
 
         $flashSalePrice = \App\Models\FlashSale::getActivePrice('random', $account->random_category_id);
         if ($flashSalePrice !== null) {
@@ -29,7 +83,7 @@ class RandomAccountController extends Controller
             ->take(6)
             ->get();
 
-        return view("user.random.detail", compact('account', 'relatedAccounts'));
+        return view("user.random.detail", compact('account', 'relatedAccounts', 'categoryUrl'));
     }
 
     public function purchase(Request $request, $id)
@@ -41,7 +95,16 @@ class RandomAccountController extends Controller
             $account = RandomCategoryAccount::where('id', $id)
                 ->where('status', 'available')
                 ->lockForUpdate()
-                ->firstOrFail();
+                ->first();
+
+            if (!$account) {
+                DB::rollBack();
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tài khoản này đã được mua hoặc không còn tồn tại.',
+                ], 409);
+            }
 
             $user = \App\Models\User::whereKey(Auth::id())->lockForUpdate()->firstOrFail();
 
@@ -213,13 +276,21 @@ class RandomAccountController extends Controller
 
             DB::commit();
 
+            \Illuminate\Support\Facades\Cache::forget('home_catalog_data');
+            \Illuminate\Support\Facades\Cache::forget('home_recent_transactions');
+
+            $returnUrl = $this->safeReturnUrl($request->input('return_url'));
+
             return response()->json([
                 'success' => true,
                 'message' => 'Mua tài khoản random thành công!',
                 'data' => [
                     'new_balance' => $balanceAfter
                 ],
-                'redirect_url' => route('profile.purchased-random-account-detail', $batchId)
+                'redirect_url' => route('profile.purchased-random-account-detail', array_filter([
+                    'batchId' => $batchId,
+                    'return_url' => $returnUrl,
+                ]))
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -233,5 +304,12 @@ class RandomAccountController extends Controller
                 'message' => 'Có lỗi xảy ra khi mua tài khoản. Vui lòng thử lại sau.'
             ], 500);
         }
+    }
+
+    private function safeReturnUrl(mixed $url): ?string
+    {
+        return is_string($url) && str_starts_with($url, '/') && !str_starts_with($url, '//') && !str_contains($url, '\\')
+            ? $url
+            : null;
     }
 }

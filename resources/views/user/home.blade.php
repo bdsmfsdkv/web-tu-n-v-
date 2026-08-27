@@ -2,7 +2,7 @@
 @section('title', 'Trang chủ')
 @section('content')
 
-<!-- Hero Section: 3-7 Layout -->
+<!-- Hero Section: 3-7 Split Layout -->
 <section class="hero-split">
     <div class="container">
         <div class="hero-grid">
@@ -10,24 +10,24 @@
             <div class="hero-left">
                 <div class="top-deposit-panel">
                     <div class="panel-tabs">
-                        <button class="panel-tab active" data-tab="tab-top" onclick="switchTab(this, 'tab-top')">
-                            <span class="iconify" data-icon="ant-design:trophy-filled" style="color:#faad14;"></span> Top Nạp Tiền
+                        <button type="button" class="panel-tab active" data-tab="tab-top" onclick="switchTab(this, 'tab-top')">
+                            <span class="iconify panel-tab-icon icon-trophy" data-icon="ant-design:trophy-filled"></span> Top Nạp Tiền
                         </button>
-                        <button class="panel-tab" data-tab="tab-reward" onclick="switchTab(this, 'tab-reward')">
-                            <span class="iconify" data-icon="ant-design:gift-filled" style="color:#dc2626;"></span> Phần Thưởng
+                        <button type="button" class="panel-tab" data-tab="tab-reward" onclick="switchTab(this, 'tab-reward')">
+                            <span class="iconify panel-tab-icon icon-gift" data-icon="ant-design:gift-filled"></span> Phần Thưởng
                         </button>
                     </div>
 
                     <!-- Tab 1: Top Nạp Tiền -->
                     <div class="panel-body tab-content active" id="tab-top">
                         @forelse($topDepositors as $depositor)
-                            <div class="top-item">
+                            <div class="top-item top-item-rank-{{ $loop->iteration }}">
                                 @if($loop->iteration <= 5)
-                                    <div class="top-avatar" style="background: transparent; border: none; box-shadow: none; padding: 0;">
-                                        <img src="https://shopacc68.com/assets/svg/{{ $loop->iteration }}.svg" alt="Top {{ $loop->iteration }}" style="width: 40px; height: 40px; object-fit: contain; border-radius: 0;">
+                                    <div class="top-avatar top-avatar-svg">
+                                        <img src="https://shopacc68.com/assets/svg/{{ $loop->iteration }}.svg" alt="Top {{ $loop->iteration }}" width="36" height="36" loading="lazy">
                                     </div>
                                 @else
-                                    <div class="top-avatar">{{ $loop->iteration }}</div>
+                                    <div class="top-avatar top-avatar-num">{{ $loop->iteration }}</div>
                                 @endif
                                 <div class="top-info">
                                     <div class="top-name">{{ substr($depositor->user->username, 0, 4) }}***</div>
@@ -35,16 +35,21 @@
                                 <div class="top-amount">{{ number_format($depositor->total_amount) }}đ</div>
                             </div>
                         @empty
-                            <div style="text-align:center;padding:20px;color:#999;">Chưa có dữ liệu nạp thẻ tháng này.</div>
+                            <div class="top-empty">
+                                <i class="fa-solid fa-inbox me-1"></i> Chưa có dữ liệu nạp thẻ tháng này.
+                            </div>
                         @endforelse
                     </div>
 
                     <!-- Tab 2: Phần Thưởng -->
-                    <div class="panel-body tab-content" id="tab-reward" style="padding:16px;overflow-y:auto;display:none;">
+                    <div class="panel-body tab-content" id="tab-reward">
                         <div class="reward-content-render">{!! config_get('top_deposit_reward', '<p>Phần thưởng nạp thẻ đang được cập nhật...</p>') !!}</div>
                     </div>
-                    <div style="padding:10px 14px;margin-top:auto;">
-                        <a href="javascript:void(0)" onclick="document.getElementById('depositMethodModal').style.display='flex'" style="display:block;text-align:center;padding:10px;background:var(--primary);color:#fff;border-radius:8px;font-weight:600;font-size:0.85rem;text-decoration:none;transition:all .2s;">Nạp Ngay</a>
+                    
+                    <div class="panel-footer-action">
+                        <a href="javascript:void(0)" onclick="document.getElementById('depositMethodModal').style.display='flex'" class="btn-hero-deposit">
+                            <i class="fa-solid fa-bolt-lightning"></i> NẠP TIỀN NGAY
+                        </a>
                     </div>
                 </div>
             </div>
@@ -63,10 +68,14 @@
                         @endphp
                         @if(count($banners) > 0)
                             @foreach($banners as $index => $banner)
-                                <div class="slide {{ $index == 0 ? 'active' : '' }}" style="background:url('{{ asset($banner) }}') center/cover no-repeat;"></div>
+                                <div class="slide {{ $index == 0 ? 'active' : '' }}">
+                                    <img src="{{ asset($banner) }}" alt="Banner {{ $index + 1 }}" style="width:100%;height:100%;object-fit:cover;" {{ $index === 0 ? 'fetchpriority=high decoding=async' : 'loading=lazy decoding=async' }}>
+                                </div>
                             @endforeach
                         @else
-                            <div class="slide active" style="background:url('https://via.placeholder.com/800x400?text=No+Banner') center/cover no-repeat;"></div>
+                            <div class="slide active">
+                                <img src="https://via.placeholder.com/800x400?text=Shop+Game+Uy+Tin" alt="Shop Game" style="width:100%;height:100%;object-fit:cover;">
+                            </div>
                         @endif
                     </div>
 
@@ -84,275 +93,99 @@
         </div>
     </div>
 </section>
+
+<!-- Marquee Notifications -->
 @php
-    // Dùng lại $notifications đã được HomeController cache 300s, thay vì query lại
-    // Notification trong view ở mỗi lần render trang chủ.
     $marqueeNotifications = $notifications;
 @endphp
 @if($marqueeNotifications->count() > 0)
-<div class="container custom-marquee-container" style="margin-top: 20px; margin-bottom: 20px;">
-    <div class="marquee-badge">
-        <div class="marquee-icon">
-            <i class="fa-solid fa-satellite-dish" aria-hidden="true"></i>
+<div class="container">
+    <div class="custom-marquee-container">
+        <div class="marquee-badge">
+            <div class="marquee-icon">
+                <i class="fa-solid fa-bullhorn" aria-hidden="true"></i>
+            </div>
+            <div class="marquee-badge-text">
+                <span class="marquee-title">THÔNG BÁO</span>
+                <span class="marquee-subtitle">Updates</span>
+            </div>
+            <span class="marquee-divider" aria-hidden="true"></span>
         </div>
-        <div class="marquee-badge-text">
-            <span class="marquee-title">THÔNG BÁO</span>
-            <span class="marquee-subtitle">Updates</span>
-        </div>
-        <span class="marquee-divider" aria-hidden="true"></span>
-    </div>
 
-    <div class="marquee-content-wrapper">
-        <div class="marquee-track">
-            <div class="marquee-item">
-                @foreach($marqueeNotifications as $notif)
-                <div class="marquee-item-inner">
-                    <i class="{{ str_starts_with($notif->class_favicon, 'fa-') ? 'fa-solid ' . $notif->class_favicon : $notif->class_favicon }} marquee-item-icon" aria-hidden="true"></i>
-                    <span class="marquee-item-text">{{ $notif->content }}</span>
+        <div class="marquee-content-wrapper">
+            <div class="marquee-track">
+                <div class="marquee-item">
+                    @foreach($marqueeNotifications as $notif)
+                    <div class="marquee-item-inner">
+                        <i class="{{ str_starts_with($notif->class_favicon, 'fa-') ? 'fa-solid ' . $notif->class_favicon : $notif->class_favicon }} marquee-item-icon" aria-hidden="true"></i>
+                        <span class="marquee-item-text">{{ $notif->content }}</span>
+                    </div>
+                    @endforeach
                 </div>
-                @endforeach
-            </div>
-            <!-- Duplicate for seamless scroll -->
-            <div class="marquee-item">
-                @foreach($marqueeNotifications as $notif)
-                <div class="marquee-item-inner">
-                    <i class="{{ str_starts_with($notif->class_favicon, 'fa-') ? 'fa-solid ' . $notif->class_favicon : $notif->class_favicon }} marquee-item-icon" aria-hidden="true"></i>
-                    <span class="marquee-item-text">{{ $notif->content }}</span>
+                <!-- Duplicate for seamless scroll -->
+                <div class="marquee-item">
+                    @foreach($marqueeNotifications as $notif)
+                    <div class="marquee-item-inner">
+                        <i class="{{ str_starts_with($notif->class_favicon, 'fa-') ? 'fa-solid ' . $notif->class_favicon : $notif->class_favicon }} marquee-item-icon" aria-hidden="true"></i>
+                        <span class="marquee-item-text">{{ $notif->content }}</span>
+                    </div>
+                    @endforeach
                 </div>
-                @endforeach
             </div>
+            <div class="marquee-fade-left" aria-hidden="true"></div>
+            <div class="marquee-fade-right" aria-hidden="true"></div>
         </div>
-        <div class="marquee-fade-left" aria-hidden="true"></div>
-        <div class="marquee-fade-right" aria-hidden="true"></div>
     </div>
 </div>
 @endif
 
-<style>
-    .custom-marquee-container {
-        display: flex;
-        min-height: 48px;
-        align-items: stretch;
-        overflow: hidden;
-        border-radius: 12px;
-        border: 1px solid #f0f0f0;
-        background: #fff;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-        transition: all 0.3s;
-    }
-    .custom-marquee-container:hover {
-        border-color: rgba(59, 130, 246, 0.25);
-        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06);
-    }
-    .marquee-badge {
-        position: relative;
-        display: flex;
-        flex-shrink: 0;
-        align-items: center;
-        gap: 8px;
-        border-right: 1px solid rgba(59, 130, 246, 0.15);
-        background: rgba(59, 130, 246, 0.05);
-        padding: 8px 14px;
-    }
-    .marquee-icon {
-        position: relative;
-        display: flex;
-        height: 28px;
-        width: 28px;
-        flex-shrink: 0;
-        align-items: center;
-        justify-content: center;
-        border-radius: 8px;
-        background-color: #3b82f6;
-        color: #fff;
-        font-size: 11px;
-        box-shadow: 0 4px 10px -2px rgba(59, 130, 246, 0.35);
-        animation: pulse-blue 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-    .marquee-badge-text {
-        display: none;
-        flex-direction: column;
-        gap: 2px;
-    }
-    @media (min-width: 768px) {
-        .marquee-badge-text { display: flex; }
-    }
-    .marquee-title {
-        font-size: 11px;
-        line-height: 1;
-        font-weight: 900;
-        letter-spacing: -0.025em;
-        color: #3b82f6;
-        text-transform: uppercase;
-    }
-    .marquee-subtitle {
-        font-size: 8px;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        color: #94a3b8;
-        text-transform: uppercase;
-    }
-    .marquee-divider {
-        position: absolute;
-        top: 20%;
-        right: 0;
-        display: none;
-        height: 60%;
-        width: 2px;
-        border-radius: 2px;
-        background-color: #3b82f6;
-    }
-    @media (min-width: 768px) {
-        .marquee-divider { display: block; }
-    }
-    @media (max-width: 576px) {
-        .custom-marquee-container {
-            min-height: 40px;
-            margin-top: 12px !important;
-            margin-bottom: 12px !important;
-            border-radius: 8px;
-        }
-        .marquee-badge {
-            padding: 6px 10px;
-        }
-        .marquee-icon {
-            width: 24px;
-            height: 24px;
-            font-size: 10px;
-        }
-    }
-    .marquee-content-wrapper {
-        position: relative;
-        display: flex;
-        flex: 1 1 0%;
-        align-items: center;
-        overflow: hidden;
-    }
-    .marquee-track {
-        display: flex;
-        width: max-content;
-        align-items: center;
-        animation: marquee-scroll 45s linear infinite;
-    }
-    .marquee-track:hover {
-        animation-play-state: paused;
-    }
-    .marquee-item {
-        display: flex;
-        align-items: center;
-        white-space: nowrap;
-        min-width: 1200px;
-        padding-right: 50px;
-    }
-    .marquee-item-inner {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding-right: 28px;
-    }
-    .marquee-item-icon {
-        flex-shrink: 0;
-        font-size: 9px;
-        color: rgba(59, 130, 246, 0.6);
-    }
-    .marquee-item-text {
-        font-size: 12px;
-        font-weight: 800;
-        letter-spacing: -0.025em;
-        color: var(--text-color, #334155);
-        text-transform: uppercase;
-        transition: color 0.15s;
-    }
-    .marquee-item-text:hover {
-        color: #3b82f6;
-    }
-    .marquee-fade-left {
-        pointer-events: none;
-        position: absolute;
-        top: 0; bottom: 0; left: 0;
-        z-index: 10;
-        width: 48px;
-        background: linear-gradient(to right, #fff, transparent);
-    }
-    .marquee-fade-right {
-        pointer-events: none;
-        position: absolute;
-        top: 0; bottom: 0; right: 0;
-        z-index: 10;
-        width: 48px;
-        background: linear-gradient(to left, #fff, transparent);
-    }
-    @keyframes pulse-blue {
-        0%, 100% { opacity: 1; }
-        50% { opacity: .5; }
-    }
-    @keyframes marquee-scroll {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(-50%); }
-    }
-    [data-theme="dark"] .marquee-item-text {
-        color: #cbd5e1;
-    }
-    [data-theme="dark"] .marquee-item-text:hover {
-        color: #3b82f6;
-    }
-    [data-theme="dark"] .custom-marquee-container {
-        background: #1a1a1a;
-        border-color: #2a2a2a;
-    }
-    [data-theme="dark"] .marquee-fade-left {
-        background: linear-gradient(to right, #1a1a1a, transparent);
-    }
-    [data-theme="dark"] .marquee-fade-right {
-        background: linear-gradient(to left, #1a1a1a, transparent);
-    }
-</style>
 <!-- Ticker (Recent Transactions) -->
 <div class="container">
     <div class="purchase-ticker">
+        <div class="ticker-live-badge">
+            <span class="ticker-live-dot"></span>
+            <span class="ticker-badge-text-full">GIAO DỊCH GẦN ĐÂY</span>
+            <span class="ticker-badge-text-short">Giao dịch</span>
+        </div>
         <div class="ticker-track">
             <div class="ticker-content">
                 @foreach($recentTransactions as $transaction)
                     <div class="ticker-item">
-                        <span class="ticker-icon"><span class="iconify" data-icon="ant-design:check-circle-filled" style="color:#52c41a"></span></span>
-                        <div class="ticker-text">
-                            <div class="ticker-line1">
-                                <strong>{{ substr($transaction->user->username, 0, 3) }}***</strong> 
-                                @if ($transaction->type == 'deposit')
-                                    đã nạp
-                                @elseif($transaction->type == 'withdraw')
-                                    đã rút
-                                @elseif($transaction->type == 'purchase')
-                                    đã mua tài khoản
-                                @elseif($transaction->type == 'refund')
-                                    được hoàn
-                                @endif
-                                giá <span class="ticker-price">{{ number_format($transaction->amount) }}đ</span>
-                            </div>
-                            <div class="ticker-line2">{{ $transaction->created_at->diffForHumans() }}</div>
-                        </div>
+                        <span class="ticker-icon"><i class="fa-solid fa-circle-check" style="color: #16a34a; font-size: 0.72rem;"></i></span>
+                        <span class="ticker-user">{{ substr($transaction->user->username, 0, 3) }}***</span>
+                        <span class="ticker-action">
+                            @if ($transaction->type == 'deposit')
+                                nạp
+                            @elseif($transaction->type == 'withdraw')
+                                rút
+                            @elseif($transaction->type == 'purchase')
+                                mua nick
+                            @elseif($transaction->type == 'refund')
+                                nhận
+                            @endif
+                        </span>
+                        <span class="ticker-price">{{ number_format($transaction->amount) }}đ</span>
+                        <span class="ticker-time">({{ $transaction->created_at->diffForHumans(null, true) }})</span>
                     </div>
                 @endforeach
-                <!-- Duplicate for seamless scroll if needed -->
+                <!-- Duplicate for seamless scroll -->
                 @foreach($recentTransactions as $transaction)
                     <div class="ticker-item">
-                        <span class="ticker-icon"><span class="iconify" data-icon="ant-design:check-circle-filled" style="color:#52c41a"></span></span>
-                        <div class="ticker-text">
-                            <div class="ticker-line1">
-                                <strong>{{ substr($transaction->user->username, 0, 3) }}***</strong> 
-                                @if ($transaction->type == 'deposit')
-                                    đã nạp
-                                @elseif($transaction->type == 'withdraw')
-                                    đã rút
-                                @elseif($transaction->type == 'purchase')
-                                    đã mua tài khoản
-                                @elseif($transaction->type == 'refund')
-                                    được hoàn
-                                @endif
-                                giá <span class="ticker-price">{{ number_format($transaction->amount) }}đ</span>
-                            </div>
-                            <div class="ticker-line2">{{ $transaction->created_at->diffForHumans() }}</div>
-                        </div>
+                        <span class="ticker-icon"><i class="fa-solid fa-circle-check" style="color: #16a34a; font-size: 0.72rem;"></i></span>
+                        <span class="ticker-user">{{ substr($transaction->user->username, 0, 3) }}***</span>
+                        <span class="ticker-action">
+                            @if ($transaction->type == 'deposit')
+                                nạp
+                            @elseif($transaction->type == 'withdraw')
+                                rút
+                            @elseif($transaction->type == 'purchase')
+                                mua nick
+                            @elseif($transaction->type == 'refund')
+                                nhận
+                            @endif
+                        </span>
+                        <span class="ticker-price">{{ number_format($transaction->amount) }}đ</span>
+                        <span class="ticker-time">({{ $transaction->created_at->diffForHumans(null, true) }})</span>
                     </div>
                 @endforeach
             </div>
@@ -362,12 +195,13 @@
 
 <!-- Flash Sale Section -->
 @if((isset($timelineCampaigns) && $timelineCampaigns->count() > 0) || (isset($activeFlashSale) && $activeFlashSale))
-<div class="container" style="margin-top: 20px;">
+<div class="container">
     <div class="flash-sale-wrapper">
         <div class="fs-header">
-            <div class="fs-title-box" style="padding-left: 15px; padding-right: 15px;">
-                <span class="fs-title-text" style="font-size: 1.2rem;">
-                    {{ isset($activeFlashSale) && $activeFlashSale ? mb_strtoupper($activeFlashSale->campaign_name) : 'F⚡ASH SALE' }}
+            <div class="fs-title-box">
+                <span class="fs-title-icon"><i class="fa-solid fa-bolt"></i></span>
+                <span class="fs-title-text">
+                    {{ isset($activeFlashSale) && $activeFlashSale ? mb_strtoupper($activeFlashSale->campaign_name) : 'FLASH SALE GIÁ RẺ' }}
                 </span>
             </div>
             <div class="fs-timer-box">
@@ -380,7 +214,7 @@
                     <div class="fs-time-box"><span id="fs-secs">00</span><small>SECS</small></div>
                 </div>
             </div>
-            <a href="#" class="fs-view-all">Xem tất cả <span class="iconify" data-icon="ant-design:right-outlined"></span></a>
+            <a href="{{ route('home') }}" class="fs-view-all">Xem tất cả <i class="fa-solid fa-angle-right ms-1"></i></a>
         </div>
         
         <div class="fs-timeline">
@@ -399,7 +233,7 @@
                 <div class="fs-slot {{ $index < $activeIndex ? 'past' : ($index == $activeIndex ? 'active' : 'future') }}">
                     <div class="fs-time">{{ $time }}</div>
                     <div class="fs-status">
-                        {{ $index < $activeIndex ? 'Đã diễn ra' : ($index == $activeIndex ? 'Đang diễn ra' : 'Sắp diễn ra') }}
+                        {{ $index < $activeIndex ? 'Đã diễn ra' : ($index == $activeIndex ? 'Đang diễn ra 🔥' : 'Sắp diễn ra') }}
                     </div>
                 </div>
             @endforeach
@@ -408,9 +242,9 @@
         @if(isset($flashSales) && count($flashSales) > 0)
             <div class="fs-grid">
                 @foreach($flashSales as $fs)
-                    <a href="{{ $fs->is_random ? route('random.index', ['slug' => $fs->slug]) : route('category.index', ['slug' => $fs->slug]) }}" class="fs-card" style="text-decoration: none; display: block;">
+                    <a href="{{ $fs->is_random ? route('random.index', ['slug' => $fs->slug]) : route('category.index', ['slug' => $fs->slug]) }}" class="fs-card">
                         <div class="fs-card-img">
-                            <img loading="lazy" decoding="async" src="{{ asset($fs->thumbnail) }}" onerror="this.src='https://via.placeholder.com/200x120?text=Flash+Sale'" alt="{{ $fs->name }}">
+                            <img loading="{{ $loop->iteration <= 5 ? 'eager' : 'lazy' }}" decoding="async" src="{{ asset($fs->thumbnail) }}" onerror="this.src='https://via.placeholder.com/200x120?text=Flash+Sale'" alt="{{ $fs->name }}">
                             @if($fs->flash_sale_old_price > 0 && $fs->flash_sale_new_price > 0 && $fs->flash_sale_old_price > $fs->flash_sale_new_price)
                                 @php
                                     $discountPercent = round((($fs->flash_sale_old_price - $fs->flash_sale_new_price) / $fs->flash_sale_old_price) * 100);
@@ -421,32 +255,29 @@
                             @endif
                         </div>
                         <div class="fs-card-info">
-                            <div class="fs-id">ID: {{ $fs->id }}</div>
-                            @if($fs->flash_sale_old_price)
-                                <div class="fs-old-price">{{ number_format($fs->flash_sale_old_price) }}đ</div>
-                            @else
-                                <div class="fs-old-price" style="visibility: hidden;">0đ</div>
-                            @endif
-                            
-                            @if($fs->flash_sale_new_price)
-                                <div class="fs-new-price">{{ number_format($fs->flash_sale_new_price) }}đ</div>
-                            @else
-                                <div class="fs-new-price">0đ</div>
-                            @endif
+                            <div class="fs-id">MÃ SỐ #{{ $fs->id }}</div>
+                            <div class="fs-name-clamp">{{ $fs->name }}</div>
+                            <div class="fs-prices">
+                                @if($fs->flash_sale_old_price)
+                                    <div class="fs-old-price">{{ number_format($fs->flash_sale_old_price) }}đ</div>
+                                @endif
+                                <div class="fs-new-price">{{ number_format($fs->flash_sale_new_price ?? 0) }}đ</div>
+                            </div>
                         </div>
                     </a>
                 @endforeach
             </div>
         @else
-            <div style="padding: 40px 20px; text-align: center; color: #6b7280; font-size: 1.1rem; font-weight: 500;">
-                <i class="fa fa-clock-o" style="font-size: 2rem; margin-bottom: 10px; color: #9ca3af; display: block;"></i>
-                Chưa đến thời gian Flash Sale. Các sản phẩm sẽ được hiển thị khi khung giờ bắt đầu!
+            <div class="fs-empty-box">
+                <i class="fa-solid fa-clock-rotate-left fs-empty-icon"></i>
+                <p>Chưa đến thời gian Flash Sale. Các sản phẩm giảm giá cực sốc sẽ được hiển thị khi khung giờ bắt đầu!</p>
             </div>
         @endif
     </div>
 </div>
 @endif
 
+<!-- Game Category Groups -->
 @php
     $groupedCategories = [];
     if (isset($gameGroups)) {
@@ -473,41 +304,58 @@
 @endphp
 
 @foreach ($groupedCategories as $platform => $group)
-    <section class="section" id="categories-{{ Str::slug($platform) }}">
+    @php 
+        $isFirstGroup = $loop->first;
+        $matchedGroup = isset($gameGroups) ? $gameGroups->first(fn($g) => trim($g->name) === trim($platform)) : null;
+        $groupSlug = $matchedGroup && $matchedGroup->slug ? $matchedGroup->slug : Str::slug($platform);
+        $targetGroupUrl = route('category.group', ['slug' => $groupSlug]);
+    @endphp
+    <section class="section category-section" id="categories-{{ Str::slug($platform) }}">
         <div class="container">
-            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <h2 class="section-title" style="margin-bottom: 0;">{{ $platform }}</h2>
-                <a href="{{ route('category.group', ['slug' => Str::slug($platform)]) }}" style="color: var(--primary); font-weight: 600; font-size: 0.95rem; text-decoration: none; display: flex; align-items: center; gap: 4px;">
-                    Xem tất cả <span>&rarr;</span>
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <span class="section-icon-dot"></span>
+                    <h2 class="section-title">{{ $platform }}</h2>
+                </div>
+                <a href="{{ $targetGroupUrl }}" class="section-view-all-btn">
+                    <span>Xem tất cả</span>
+                    <i class="fa-solid fa-arrow-right-long"></i>
                 </a>
             </div>
 
             <div class="category-grid">
                 @foreach ($group as $category)
-                    <a href="{{ $category->url ?? route('category.index', ['slug' => $category->slug]) }}" class="category-card" style="position: relative;">
+                    @php
+                        $categoryUrl = ($category instanceof \App\Models\RandomCategory) || (!empty($category->is_random))
+                            ? route('random.index', ['slug' => $category->slug])
+                            : route('category.index', ['slug' => $category->slug]);
+                    @endphp
+                    <a href="{{ $categoryUrl }}" class="category-card">
                         @if($category->tag_image)
-                        <img loading="lazy" decoding="async" src="{{ asset($category->tag_image) }}" alt="Tag" style="position: absolute; top: 0; right: 0; max-width: 60px; z-index: 10;">
+                        <img loading="{{ $isFirstGroup ? 'eager' : 'lazy' }}" decoding="async" src="{{ asset($category->tag_image) }}?v={{ $category->updated_at->timestamp }}" alt="Tag" class="category-tag-badge">
                         @endif
-                        <div class="category-img" style="display: flex; align-items: center; justify-content: center; background: rgba(220, 38, 38, 0.05); color: var(--primary); border: 1px solid rgba(220, 38, 38, 0.1);">
+                        <div class="category-img">
                             @if($category->thumbnail)
-                            <img loading="lazy" decoding="async" src="{{ asset($category->thumbnail) }}" alt="{{ $category->name }}">
+                            <img loading="{{ $isFirstGroup ? 'eager' : 'lazy' }}" decoding="async" src="{{ asset($category->thumbnail) }}?v={{ $category->updated_at->timestamp }}" alt="{{ $category->name }}">
                             @else
-                            <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 1024 1024" data-icon="ant-design:appstore-outlined" style="font-size:2.5rem;" class="iconify iconify--ant-design"><path fill="currentColor" d="M464 144H160c-8.8 0-16 7.2-16 16v304c0 8.8 7.2 16 16 16h304c8.8 0 16-7.2 16-16V160c0-8.8-7.2-16-16-16m-52 268H212V212h200zm452-268H560c-8.8 0-16 7.2-16 16v304c0 8.8 7.2 16 16 16h304c8.8 0 16-7.2 16-16V160c0-8.8-7.2-16-16-16m-52 268H612V212h200zM464 544H160c-8.8 0-16 7.2-16 16v304c0 8.8 7.2 16 16 16h304c8.8 0 16-7.2 16-16V560c0-8.8-7.2-16-16-16m-52 268H212V612h200zm452-268H560c-8.8 0-16 7.2-16 16v304c0 8.8 7.2 16 16 16h304c8.8 0 16-7.2 16-16V560c0-8.8-7.2-16-16-16m-52 268H612V612h200z"></path></svg>
+                            <div class="category-placeholder-icon">
+                                <span class="iconify" data-icon="ant-design:appstore-outlined"></span>
+                            </div>
                             @endif
                         </div>
                         
-                        <div class="category-body" style="display: flex; flex-direction: column;">
-                            <div class="category-name">{{ $category->name }}</div>
-                            <div class="category-count" style="display:flex;gap:8px;font-size:0.8rem;margin-bottom:15px;">
-                                <span style="color:#64748b;">Còn lại: {{ number_format($category->allAccount) }}</span>
-                                <span style="color:#64748b;">| Đã bán: {{ number_format($category->soldCount) }}</span>
+                        <div class="category-body">
+                            <div class="category-name" title="{{ $category->name }}">{{ $category->name }}</div>
+                            <div class="category-count">
+                                <span class="badge-stock"><i class="fa-solid fa-box-open me-1"></i> Còn: <strong>{{ number_format($category->allAccount) }}</strong></span>
+                                <span class="badge-sold"><i class="fa-solid fa-cart-shopping me-1"></i> Đã bán: <strong>{{ number_format($category->soldCount) }}</strong></span>
                             </div>
                             <div class="category-cta-wrapper">
                                 @if(config_get('site_view_all_image'))
                                     <img loading="lazy" decoding="async" src="{{ asset(config_get('site_view_all_image')) }}" alt="Xem ngay" class="category-cta-img">
                                 @else
                                     <span class="category-btn-cta">
-                                        <span>Xem ngay</span>
+                                        <span>XEM NGAY</span>
                                         <i class="fa-solid fa-arrow-right cta-icon"></i>
                                     </span>
                                 @endif
@@ -522,36 +370,41 @@
 
 <!-- Lucky Wheel -->
 @if(isset($LuckWheel) && $LuckWheel->count() > 0)
-<section class="section">
+<section class="section lucky-wheel-section">
     <div class="container">
-        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <h2 class="section-title" style="margin-bottom: 0;">Vòng Quay May Mắn</h2>
-            <a href="{{ route('lucky.show-all') }}" style="color: var(--primary); font-weight: 600; font-size: 0.95rem; text-decoration: none; display: flex; align-items: center; gap: 4px;">
-                Xem tất cả <span>&rarr;</span>
+        <div class="section-header">
+            <div class="section-title-wrap">
+                <span class="section-icon-dot wheel-dot"></span>
+                <h2 class="section-title">Vòng Quay May Mắn</h2>
+            </div>
+            <a href="{{ route('lucky.show-all') }}" class="section-view-all-btn">
+                <span>Xem tất cả</span>
+                <i class="fa-solid fa-arrow-right-long"></i>
             </a>
         </div>
 
         <div class="category-grid">
             @foreach ($LuckWheel as $wheel)
                 @if ($wheel->active)
-                    <a href="{{ route('lucky.index', ['slug' => $wheel->slug]) }}" class="category-card" style="position: relative;">
+                    <a href="{{ route('lucky.index', ['slug' => $wheel->slug]) }}" class="category-card wheel-card">
                         <div class="category-img">
                             <img loading="lazy" decoding="async" src="{{ asset($wheel->thumbnail) }}" alt="{{ $wheel->name }}">
+                            <div class="wheel-spin-badge"><i class="fa-solid fa-dharmachakra fa-spin-pulse me-1"></i> VÒNG QUAY</div>
                         </div>
-                        <div class="category-body" style="display: flex; flex-direction: column;">
+                        <div class="category-body">
                             <div class="category-name">{{ $wheel->name }}</div>
-                            <div class="category-count" style="display:flex;gap:8px;font-size:0.8rem;margin-bottom:10px;">
-                                <span style="color:#64748b;">Đã quay: {{ number_format($wheel->soldCount ?? 0) }}</span>
+                            <div class="category-count">
+                                <span class="badge-sold"><i class="fa-solid fa-rotate me-1"></i> Đã quay: <strong>{{ number_format($wheel->soldCount ?? 0) }}</strong></span>
                             </div>
-                            <div style="color: var(--primary); font-weight: 700; font-size: 1.1rem; margin-bottom: 12px;">
-                                {{ number_format($wheel->price_per_spin) }}đ / 1 lượt
+                            <div class="wheel-price-tag">
+                                <i class="fa-solid fa-coins me-1"></i> {{ number_format($wheel->price_per_spin) }}đ <small>/ 1 lượt</small>
                             </div>
                             <div class="category-cta-wrapper">
                                 @if(config_get('site_view_all_image'))
-                                    <img loading="lazy" decoding="async" src="{{ asset(config_get('site_view_all_image')) }}" alt="Xem ngay" class="category-cta-img">
+                                    <img loading="lazy" decoding="async" src="{{ asset(config_get('site_view_all_image')) }}" alt="Quay ngay" class="category-cta-img">
                                 @else
-                                    <span class="category-btn-cta">
-                                        <span>Xem ngay</span>
+                                    <span class="category-btn-cta btn-cta-gold">
+                                        <span>QUAY NGAY</span>
                                         <i class="fa-solid fa-arrow-right cta-icon"></i>
                                     </span>
                                 @endif
@@ -565,32 +418,35 @@
 </section>
 @endif
 
-<!-- Services -->
-@if($services->count() > 0)
-<section class="section">
+<!-- Game Services -->
+@if(isset($services) && $services->count() > 0)
+<section class="section service-section">
     <div class="container">
         <div class="section-header">
-            <h2 class="section-title">Dịch Vụ Game</h2>
+            <div class="section-title-wrap">
+                <span class="section-icon-dot service-dot"></span>
+                <h2 class="section-title">Dịch Vụ Game Tự Động</h2>
+            </div>
         </div>
 
         <div class="category-grid">
             @foreach ($services as $service)
                 @if ($service->active)
-                    <a href="{{ route('service.show', ['slug' => $service->slug]) }}" class="category-card">
+                    <a href="{{ route('service.show', ['slug' => $service->slug]) }}" class="category-card service-card">
                         <div class="category-img">
                             <img loading="lazy" decoding="async" src="{{ asset($service->thumbnail) }}" alt="{{ $service->name }}">
                         </div>
-                        <div class="category-body" style="display: flex; flex-direction: column;">
+                        <div class="category-body">
                             <div class="category-name">{{ $service->name }}</div>
-                            <div class="category-count" style="display:flex;gap:8px;font-size:0.8rem;margin-bottom:10px;">
-                                <span style="color:#999;">{{ number_format($service->orderCount) }} giao dịch</span>
+                            <div class="category-count">
+                                <span class="badge-stock"><i class="fa-solid fa-handshake me-1"></i> <strong>{{ number_format($service->orderCount) }}</strong> giao dịch</span>
                             </div>
                             <div class="category-cta-wrapper">
                                 @if(config_get('site_view_all_image'))
                                     <img loading="lazy" decoding="async" src="{{ asset(config_get('site_view_all_image')) }}" alt="Xem ngay" class="category-cta-img">
                                 @else
-                                    <span class="category-btn-cta">
-                                        <span>Xem ngay</span>
+                                    <span class="category-btn-cta btn-cta-cyan">
+                                        <span>THUÊ NGAY</span>
                                         <i class="fa-solid fa-arrow-right cta-icon"></i>
                                     </span>
                                 @endif
@@ -604,79 +460,59 @@
 </section>
 @endif
 
-<!-- About Shop Section -->
-<section class="section" style="margin-top: 20px;">
+<!-- About Shop & Trust Features -->
+<section class="section shop-intro-section">
     <div class="container">
-        <div class="shop-intro-card" style="background: #fff; border: 1px solid #f0f0f0; border-radius: 12px; padding: 28px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-            <div class="section-header" style="text-align: center; margin-bottom: 24px;">
-                <h2 class="section-title" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 1.5rem; margin-bottom: 8px; width: 100%;">
-                    <span class="iconify" data-icon="ant-design:shop-filled" style="color: var(--primary); font-size: 1.6rem;"></span>
+        <div class="shop-intro-card">
+            <div class="shop-intro-header">
+                <div class="shop-badge-capsule">
+                    <span class="iconify" data-icon="ant-design:safety-certificate-filled"></span>
+                    <span>UY TÍN & CHẤT LƯỢNG HÀNG ĐẦU</span>
+                </div>
+                <h2 class="shop-intro-title">
                     GIỚI THIỆU VỀ SHOP {{ mb_strtoupper(config_get('site_name', 'SHOP GAME')) }}
                 </h2>
-                <p style="color: #64748b; font-size: 0.95rem; margin: 0; max-width: 750px; margin: 0 auto; line-height: 1.6;">
+                <p class="shop-intro-desc">
                     {{ config_get('site_description', 'Hệ thống cung cấp tài khoản game tự động uy tín hàng đầu, giao dịch nhanh chóng và bảo mật 100%.') }}
                 </p>
             </div>
 
-            <div class="shop-features-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 20px;">
-                <div class="shop-feature-box" style="background: rgba(220, 38, 38, 0.03); border: 1px solid rgba(220, 38, 38, 0.08); border-radius: 10px; padding: 20px 16px; text-align: center; transition: all 0.2s;">
-                    <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(220, 38, 38, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 1.5rem;">
+            <div class="shop-features-grid">
+                <div class="shop-feature-box">
+                    <div class="shop-feature-icon-wrap icon-shield">
                         <span class="iconify" data-icon="ant-design:safety-certificate-filled"></span>
                     </div>
-                    <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; color: #1e293b;">Uy Tín & Bảo Mật</div>
-                    <div style="font-size: 0.85rem; color: #64748b; line-height: 1.5;">Thông tin tài khoản an toàn tuyệt đối, chính sách bảo hành rõ ràng, minh bạch.</div>
+                    <div class="shop-feature-title">Uy Tín & Bảo Mật</div>
+                    <div class="shop-feature-desc">Thông tin tài khoản an toàn tuyệt đối, chính sách bảo hành rõ ràng, minh bạch 100%.</div>
                 </div>
 
-                <div class="shop-feature-box" style="background: rgba(220, 38, 38, 0.03); border: 1px solid rgba(220, 38, 38, 0.08); border-radius: 10px; padding: 20px 16px; text-align: center; transition: all 0.2s;">
-                    <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(220, 38, 38, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 1.5rem;">
+                <div class="shop-feature-box">
+                    <div class="shop-feature-icon-wrap icon-thunder">
                         <span class="iconify" data-icon="ant-design:thunderbolt-filled"></span>
                     </div>
-                    <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; color: #1e293b;">Giao Dịch Tự Động</div>
-                    <div style="font-size: 0.85rem; color: #64748b; line-height: 1.5;">Nhận thông tin tài khoản ngay lập tức 24/7 sau khi thanh toán thành công.</div>
+                    <div class="shop-feature-title">Giao Dịch Tự Động</div>
+                    <div class="shop-feature-desc">Nhận thông tin tài khoản ngay lập tức 24/7 hoàn toàn tự động sau khi thanh toán.</div>
                 </div>
 
-                <div class="shop-feature-box" style="background: rgba(220, 38, 38, 0.03); border: 1px solid rgba(220, 38, 38, 0.08); border-radius: 10px; padding: 20px 16px; text-align: center; transition: all 0.2s;">
-                    <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(220, 38, 38, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 1.5rem;">
+                <div class="shop-feature-box">
+                    <div class="shop-feature-icon-wrap icon-price">
                         <span class="iconify" data-icon="ant-design:dollar-circle-filled"></span>
                     </div>
-                    <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; color: #1e293b;">Giá Tốt Hàng Đầu</div>
-                    <div style="font-size: 0.85rem; color: #64748b; line-height: 1.5;">Cam kết mức giá cạnh tranh nhất thị trường kèm nhiều khuyến mãi hấp dẫn.</div>
+                    <div class="shop-feature-title">Giá Tốt Hàng Đầu</div>
+                    <div class="shop-feature-desc">Cam kết mức giá cạnh tranh nhất thị trường kèm vô số chương trình ưu đãi tri ân.</div>
                 </div>
 
-                <div class="shop-feature-box" style="background: rgba(220, 38, 38, 0.03); border: 1px solid rgba(220, 38, 38, 0.08); border-radius: 10px; padding: 20px 16px; text-align: center; transition: all 0.2s;">
-                    <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(220, 38, 38, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 1.5rem;">
+                <div class="shop-feature-box">
+                    <div class="shop-feature-icon-wrap icon-support">
                         <span class="iconify" data-icon="ant-design:customer-service-filled"></span>
                     </div>
-                    <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; color: #1e293b;">Hỗ Trợ Tận Tâm</div>
-                    <div style="font-size: 0.85rem; color: #64748b; line-height: 1.5;">Đội ngũ CSKH sẵn sàng hỗ trợ, giải đáp mọi thắc mắc của khách hàng.</div>
+                    <div class="shop-feature-title">Hỗ Trợ Tận Tâm 24/7</div>
+                    <div class="shop-feature-desc">Đội ngũ CSKH chuyên nghiệp luôn sẵn sàng giải đáp và hỗ trợ mọi lúc mọi nơi.</div>
                 </div>
             </div>
         </div>
     </div>
 </section>
-
-<style>
-    @media (max-width: 992px) {
-        .shop-features-grid { grid-template-columns: repeat(2, 1fr) !important; }
-    }
-    @media (max-width: 576px) {
-        .shop-features-grid { grid-template-columns: 1fr !important; }
-    }
-    [data-theme="dark"] .shop-intro-card {
-        background: #1a1a1a !important;
-        border-color: #2a2a2a !important;
-    }
-    [data-theme="dark"] .shop-feature-box {
-        background: #262626 !important;
-        border-color: #333333 !important;
-    }
-    [data-theme="dark"] .shop-feature-box div {
-        color: #cbd5e1 !important;
-    }
-    [data-theme="dark"] .shop-feature-box .shop-feature-title {
-        color: #f8fafc !important;
-    }
-</style>
 
 <!-- Announcement Modal -->
 @if (config_get('welcome_modal', false))
@@ -706,302 +542,202 @@
 </div>
 
 <style>
-    .view-all-container {
-        text-align: center;
-        margin-top: 25px;
-        margin-bottom: 10px;
-    }
-    .btn-view-all {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(90deg, var(--primary), #fca5a5);
-        color: #fff;
-        padding: 10px 24px;
-        border-radius: 50px;
-        font-weight: 700;
-        font-size: 1rem;
-        text-transform: uppercase;
-        text-decoration: none;
-        box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
-        transition: all 0.3s ease;
-    }
-    .btn-view-all:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
-        color: #fff;
-    }
-    .btn-view-all-text {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    [data-theme="dark"] .btn-view-all {
-        background: linear-gradient(90deg, #dc2626, #991b1b);
-    }
-
-    .announce-overlay {
-        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0, 0, 0, 0.6); z-index: 99999;
-        display: flex; align-items: center; justify-content: center;
-        backdrop-filter: blur(4px); opacity: 0;
-        animation: announceFadeIn .3s forwards;
-    }
-    @keyframes announceFadeIn { to { opacity: 1; } }
-    .announce-modal {
-        position: relative; background: #fff; border-radius: 12px; max-width: 500px; width: 92%; max-height: 85vh;
-        display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-        animation: announceSlideUp .3s ease;
-    }
-    @keyframes announceSlideUp {
-        from { transform: translateY(30px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
-    .announce-header {
-        display: flex; min-height: 62px; align-items: center;
-        padding: 16px 64px 16px 20px; font-weight: 700; font-size: 1.15rem; border-bottom: 1px solid #f0f0f0; color: #111827;
-    }
-    .announce-title {
-        display: inline-flex; align-items: center; gap: 7px;
-    }
-    .announce-title .iconify {
-        flex: 0 0 auto; color: var(--primary);
-    }
-    .announce-close-x {
-        position: absolute; top: 13px; right: 14px; z-index: 2;
-        display: inline-flex; width: 36px; height: 36px; align-items: center; justify-content: center;
-        margin: 0; padding: 0; border: 0; border-radius: 50%; background: transparent;
-        color: #9ca3af; font-size: 1.8rem; font-weight: 300; line-height: 1; cursor: pointer; transition: .2s;
-    }
-    .announce-close-x:hover { color: #111827; }
-    .announce-body {
-        padding: 20px; overflow-y: auto; flex: 1; font-size: 0.95rem; line-height: 1.6; color: #374151;
-    }
-    .announce-body img { max-width: 100%; border-radius: 8px; height: auto; }
-    .announce-footer {
-        display: flex; gap: 12px; padding: 16px 20px; border-top: 1px solid #f0f0f0; justify-content: flex-end; background: #f8fafc; border-radius: 0 0 12px 12px;
-    }
-    .btn-announce {
-        padding: 8px 18px; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all .2s;
-    }
-    .btn-close-now { background: #e2e8f0; color: #475569; }
-    .btn-close-now:hover { background: #cbd5e1; }
-    .btn-close-2h { background: var(--primary); color: #fff; }
-    .btn-close-2h:hover { opacity: 0.9; }
-
-    /* Dark mode */
-    [data-theme="dark"] .announce-modal { background: #262626; border: 1px solid #404040; }
-    [data-theme="dark"] .announce-header { border-color: #404040; color: #f9fafb; }
-    [data-theme="dark"] .announce-close-x { color: #6b7280; }
-    [data-theme="dark"] .announce-close-x:hover { color: #f9fafb; }
-    [data-theme="dark"] .announce-body { color: #d1d5db; }
-    [data-theme="dark"] .announce-footer { border-color: #404040; background: #1f1f1f; }
-    [data-theme="dark"] .btn-close-now { background: #404040; color: #f9fafb; }
-    [data-theme="dark"] .btn-close-now:hover { background: #525252; }
-
-    /* Flash Sale Styles */
-    .flash-sale-wrapper {
-        background: #f0f2f5;
-        border-radius: 12px;
-        overflow: hidden;
-        margin-bottom: 30px;
-    }
-    [data-theme="dark"] .flash-sale-wrapper {
-        background: #1a1a1a;
-    }
-    .fs-header {
-        background: #3a49e9; /* Deep blue */
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 20px;
-        color: white;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-    .fs-title-box {
-        font-size: 1.6rem;
-        font-weight: 900;
-        letter-spacing: 1px;
-        font-style: italic;
-    }
-    .fs-title-text {
-        text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
-    }
-    .fs-timer-box {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex: 1;
-        justify-content: flex-start;
-        padding-left: 20px;
-    }
-    .fs-clock-icon {
-        font-size: 1.2rem;
-    }
-    .fs-timer-label {
-        font-size: 0.9rem;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-    .fs-countdown {
-        display: flex;
-        gap: 6px;
-    }
-    .fs-time-box {
-        background: #fc4e2a; /* Orange/Red */
-        color: white;
-        border-radius: 4px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-width: 32px;
-        padding: 2px 4px;
-        font-family: monospace;
-        font-weight: bold;
-        box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1);
-    }
-    .fs-time-box span {
-        font-size: 1rem;
-        line-height: 1;
-    }
-    .fs-time-box small {
-        font-size: 0.5rem;
-        opacity: 0.9;
-        margin-top: 1px;
-    }
-    .fs-view-all {
-        color: white;
-        text-decoration: none;
-        font-size: 0.9rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        transition: opacity 0.2s;
-    }
-    .fs-view-all:hover {
-        opacity: 0.8;
-    }
-
-    .fs-timeline {
-        display: flex;
-        background: #fff;
-        padding: 10px 0;
-        overflow-x: auto;
-        border-bottom: 1px solid #e5e7eb;
-    }
-    [data-theme="dark"] .fs-timeline {
-        background: #262626;
-        border-color: #404040;
-    }
-    .fs-timeline::-webkit-scrollbar { height: 4px; }
-    .fs-timeline::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    .fs-slot {
-        flex: 1;
-        min-width: 100px;
-        text-align: center;
-        padding: 5px 10px;
-        border-right: 1px solid #f3f4f6;
-        cursor: pointer;
-    }
-    [data-theme="dark"] .fs-slot { border-color: #404040; }
-    .fs-slot:last-child { border-right: none; }
-    .fs-time {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #9ca3af;
-    }
-    .fs-status {
-        font-size: 0.8rem;
-        color: #9ca3af;
-        margin-top: 2px;
-    }
-    .fs-slot.active .fs-time, .fs-slot.active .fs-status {
-        color: #111827;
-    }
-    [data-theme="dark"] .fs-slot.active .fs-time, [data-theme="dark"] .fs-slot.active .fs-status {
-        color: #f9fafb;
-    }
-    
-    .fs-grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 16px;
-        padding: 20px;
-    }
-    @media (max-width: 1024px) {
-        .fs-grid { grid-template-columns: repeat(4, 1fr); }
-        .fs-timer-box { padding-left: 0; }
-    }
-    @media (max-width: 768px) {
-        .fs-grid { grid-template-columns: repeat(3, 1fr); }
-    }
-    @media (max-width: 576px) {
-        .fs-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    .fs-card {
-        background: #fff;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        transition: transform 0.2s;
-    }
-    .fs-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-    }
-    [data-theme="dark"] .fs-card {
-        background: #262626;
-    }
-    .fs-card-img {
-        position: relative;
-        padding-top: 60%; /* 5:3 Aspect Ratio */
-        background: #e2e8f0;
-    }
-    .fs-card-img img {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    .fs-discount-badge {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        background: #fc4e2a;
-        color: #fff;
-        font-weight: 700;
-        font-size: 0.8rem;
-        padding: 3px 8px;
-        border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .fs-card-info {
-        padding: 12px;
-    }
-    .fs-id {
-        font-size: 0.85rem;
-        color: #6b7280;
-        margin-bottom: 6px;
-    }
-    .fs-old-price {
-        font-size: 0.85rem;
-        color: #9ca3af;
-        text-decoration: line-through;
-        margin-bottom: 2px;
-    }
-    .fs-new-price {
-        font-size: 1.25rem;
-        font-weight: 800;
-        color: #ea580c; /* Orange red */
-    }
+.announce-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 999999 !important;
+    background: rgba(15, 23, 42, 0.65) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: announceFadeIn .25s ease-out;
+}
+@keyframes announceFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.announce-modal {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+    overflow: hidden;
+    animation: announcePopIn .3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes announcePopIn { from { transform: scale(0.94) translateY(10px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+[data-theme="dark"] .announce-modal {
+    background: #1e1e22;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f1f5f9;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+}
+.announce-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #ffffff;
+}
+.announce-title {
+    font-weight: 800;
+    font-size: 1.05rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: .3px;
+}
+.announce-close-x {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: none !important;
+    color: #ffffff !important;
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+    transition: all .2s ease !important;
+}
+.announce-close-x:hover {
+    background: rgba(255, 255, 255, 0.35) !important;
+    transform: rotate(90deg);
+}
+.announce-body {
+    padding: 22px 20px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #334155;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+[data-theme="dark"] .announce-body { color: #cbd5e1; }
+.announce-footer {
+    display: flex;
+    gap: 10px;
+    padding: 12px 20px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    justify-content: flex-end;
+}
+[data-theme="dark"] .announce-footer {
+    background: #18181b;
+    border-color: rgba(255, 255, 255, 0.06);
+}
+.btn-announce {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all .2s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+.btn-close-now {
+    background: #e2e8f0;
+    color: #475569;
+}
+.btn-close-now:hover {
+    background: #cbd5e1;
+    color: #1e293b;
+}
+[data-theme="dark"] .btn-close-now {
+    background: #27272a;
+    color: #cbd5e1;
+}
+[data-theme="dark"] .btn-close-now:hover {
+    background: #3f3f46;
+    color: #ffffff;
+}
+.btn-close-2h {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+.btn-close-2h:hover {
+    background: linear-gradient(135deg, #f87171 0%, #b91c1c 100%);
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.45);
+}
 </style>
+@endif
 
+@endsection
+
+@push('scripts')
 <script>
+    function switchTab(btn, tabId) {
+        document.querySelectorAll('.panel-tab').forEach(function(b) {
+            b.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-content').forEach(function(t) {
+            t.classList.remove('active');
+        });
+        if (btn) btn.classList.add('active');
+        var target = document.getElementById(tabId);
+        if (target) target.classList.add('active');
+    }
+
+    // Flash Sale Countdown Logic
+    (function() {
+        @php
+            $targetEndTime = null;
+            if(isset($activeFlashSale)) {
+                $targetEndTime = $activeFlashSale->end_time;
+            } else if(isset($timelineCampaigns) && count($timelineCampaigns) > 0) {
+                $upcoming = $timelineCampaigns->filter(function($c) {
+                    return \Carbon\Carbon::parse($c->start_time)->isFuture();
+                })->first();
+                if($upcoming) {
+                    $targetEndTime = $upcoming->start_time;
+                }
+            }
+        @endphp
+
+        @if($targetEndTime)
+            var endTimeStr = "{{ \Carbon\Carbon::parse($targetEndTime)->format('Y/m/d H:i:s') }}";
+            var endTime = new Date(endTimeStr);
+        @else
+            var now = new Date();
+            var endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+        @endif
+
+        function updateTimer() {
+            var elDays = document.getElementById('fs-days');
+            if (!elDays) return;
+
+            var diff = endTime - new Date();
+            if (diff <= 0) { diff = 0; }
+            
+            var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            var mins = Math.floor((diff / 1000 / 60) % 60);
+            var secs = Math.floor((diff / 1000) % 60);
+
+            elDays.innerText = days.toString().padStart(2, '0');
+            var elH = document.getElementById('fs-hours');
+            var elM = document.getElementById('fs-mins');
+            var elS = document.getElementById('fs-secs');
+            if (elH) elH.innerText = hours.toString().padStart(2, '0');
+            if (elM) elM.innerText = mins.toString().padStart(2, '0');
+            if (elS) elS.innerText = secs.toString().padStart(2, '0');
+        }
+
+        setInterval(updateTimer, 1000);
+        updateTimer();
+    })();
+
+    // Announcement Modal Logic
+    @if (config_get('welcome_modal', false))
     (function() {
         var KEY = 'announce_dismiss_until';
         var SESSION_KEY = 'announce_dismissed_session';
@@ -1053,64 +789,6 @@
         if (readStore('sessionStorage', SESSION_KEY) === '1') return;
         openAnnounce();
     })();
-
-        // Flash Sale Countdown Logic
-        (function() {
-            @php
-                $targetEndTime = null;
-                if(isset($activeFlashSale)) {
-                    $targetEndTime = $activeFlashSale->end_time;
-                } else if(isset($timelineCampaigns) && count($timelineCampaigns) > 0) {
-                    $upcoming = $timelineCampaigns->filter(function($c) {
-                        return \Carbon\Carbon::parse($c->start_time)->isFuture();
-                    })->first();
-                    if($upcoming) {
-                        $targetEndTime = $upcoming->start_time;
-                    }
-                }
-            @endphp
-
-            @if($targetEndTime)
-                var endTimeStr = "{{ \Carbon\Carbon::parse($targetEndTime)->format('Y/m/d H:i:s') }}";
-                var endTime = new Date(endTimeStr);
-            @else
-                var now = new Date();
-                var endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
-            @endif
-
-        function updateTimer() {
-            var elDays = document.getElementById('fs-days');
-            if (!elDays) return; // Elements not present
-
-            var diff = endTime - new Date();
-            if (diff <= 0) { diff = 0; }
-            
-            var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            var hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-            var mins = Math.floor((diff / 1000 / 60) % 60);
-            var secs = Math.floor((diff / 1000) % 60);
-
-            elDays.innerText = days.toString().padStart(2, '0');
-            document.getElementById('fs-hours').innerText = hours.toString().padStart(2, '0');
-            document.getElementById('fs-mins').innerText = mins.toString().padStart(2, '0');
-            document.getElementById('fs-secs').innerText = secs.toString().padStart(2, '0');
-        }
-
-        setInterval(updateTimer, 1000);
-        updateTimer();
-    })();
-</script>
-@endif
-
-@endsection
-
-@push('scripts')
-<script>
-    function switchTab(btn, tabId) {
-        document.querySelectorAll('.panel-tab').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-        btn.classList.add('active');
-        document.getElementById(tabId).style.display = 'block';
-    }
+    @endif
 </script>
 @endpush

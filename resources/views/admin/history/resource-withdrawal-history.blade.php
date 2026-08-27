@@ -31,6 +31,7 @@
                             <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()">
                                 <option value="">--Hiển thị--</option>
                                 <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
+                                <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20</option>
                                 <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
                                 <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
                                 <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
@@ -83,7 +84,7 @@
                             <tbody>
                                 @forelse($withdrawals as $withdrawal)
                                     <tr>
-                                        <td><span class="fw-medium">#{{ $withdrawal->order_code }}</span></td>
+                                        <td><span class="fw-medium">#{{ $withdrawal->id }}</span></td>
                                         <td>
                                             <a href="{{ route('admin.users.show', $withdrawal->user_id) }}" class="fw-bold text-dark text-decoration-none">
                                                 {{ $withdrawal->user->username ?? 'N/A' }}

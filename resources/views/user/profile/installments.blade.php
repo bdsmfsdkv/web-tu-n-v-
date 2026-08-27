@@ -3,7 +3,7 @@
 @section('title', 'Lịch sử mua trả góp')
 
 @section('content')
-<div class="container" style="padding: 24px 0;">
+<div class="container" style="padding: 24px 0 90px;">
     <div class="profile-layout" style="display: flex; gap: 24px;">
         @include('layouts.user.sidebar')
 
@@ -82,8 +82,43 @@
 </div>
 
 <!-- Modal Thanh Toán -->
-<div id="payModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
-    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; width: 100%; max-width: 400px; animation: modalPop 0.2s ease-out;">
+<style>
+    .pay-modal {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 23, 42, 0.65);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+    .pay-modal.active {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+    .pay-modal-content {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        transform: scale(0.95) translateY(8px);
+        transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .pay-modal.active .pay-modal-content {
+        transform: scale(1) translateY(0);
+    }
+</style>
+<div id="payModal" class="pay-modal" onclick="if(event.target===this)closePayModal()">
+    <div class="pay-modal-content">
         <div style="display:flex; justify-content:space-between; align-items:center; padding: 16px 20px; border-bottom: 1px solid var(--border-color);">
             <h3 style="font-size:1.15rem; font-weight:700; margin:0; color: var(--text-color);">Thanh toán trả góp</h3>
             <button onclick="closePayModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color: var(--text-muted);">✕</button>
@@ -121,12 +156,22 @@
         currentRemaining = remaining;
         document.getElementById('payRemainingText').innerText = new Intl.NumberFormat('vi-VN').format(remaining) + 'đ';
         document.getElementById('payAmountInput').value = remaining; // Mặc định tất toán
-        document.getElementById('payModal').style.display = 'flex';
+        const modal = document.getElementById('payModal');
+        if (modal) {
+            modal.classList.add('active');
+        }
     }
 
     function closePayModal() {
-        document.getElementById('payModal').style.display = 'none';
+        const modal = document.getElementById('payModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
     }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closePayModal();
+    });
 
     function setPayAmount(ratio) {
         const amount = currentRemaining * ratio;

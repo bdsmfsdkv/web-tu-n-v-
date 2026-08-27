@@ -12,7 +12,12 @@ class RandomCategoryController extends Controller
 {
     public function index(string $slug, Request $request)
     {
-        $category = RandomCategory::where("slug", $slug)->firstOrFail();
+        $category = RandomCategory::where("slug", $slug)->first();
+        if (!$category || !$category->active) {
+            return redirect()->route('home');
+        }
+
+        session(['last_category_url' => $request->fullUrl()]);
 
         // Kiểm tra nếu là category_type == 'account_list' (Loại 2: chọn mua từng acc)
         if ($category->category_type === 'account_list') {
@@ -59,9 +64,9 @@ class RandomCategoryController extends Controller
         }
 
         // Count available accounts
-        $availableCount = RandomCategoryAccount::where('random_category_id', $category->id)
-            ->where('status', 'available')
-            ->count();
+        $availableCount = $category->custom_stock_count !== null 
+            ? $category->custom_stock_count 
+            : RandomCategoryAccount::where('random_category_id', $category->id)->where('status', 'available')->count();
             
         // Get sample account to determine price
         $sampleAccount = RandomCategoryAccount::where('random_category_id', $category->id)
@@ -81,15 +86,7 @@ class RandomCategoryController extends Controller
 
     public function showAll()
     {
-        // withCount gộp thống kê vào 1 query thay vì 2 query COUNT cho mỗi danh mục (2N+1).
-        $categories = RandomCategory::where('active', true)
-            ->withCount([
-                'accounts as soldCount' => fn ($query) => $query->where('status', 'sold'),
-                'accounts as allAccount',
-            ])
-            ->get();
-
-        return view('user.random.show-all', compact('categories'));
+        return redirect()->route('home');
     }
     
     public function purchase(Request $request, string $slug)
@@ -132,14 +129,24 @@ class RandomCategoryController extends Controller
                 ]);
             }
             
+            $sampleAccount = RandomCategoryAccount::where('random_category_id', $category->id)
+                ->where('status', 'available')
+                ->where('min_spent', '<=', $totalSpent)
+                ->first();
+
+            $unitPrice = $sampleAccount ? (float)$sampleAccount->price : 0;
+
             $flashSalePrice = \App\Models\FlashSale::getActivePrice('random', $category->id);
             if ($flashSalePrice !== null) {
-                $accounts->each(function($acc) use ($flashSalePrice) {
-                    $acc->price = $flashSalePrice;
-                });
+                $unitPrice = (float)$flashSalePrice;
             }
+
+            // Đồng bộ đơn giá cho toàn bộ acc trong danh mục random
+            $accounts->each(function($acc) use ($unitPrice) {
+                $acc->price = $unitPrice;
+            });
             
-            $totalPrice = $accounts->sum('price');
+            $totalPrice = $unitPrice * $quantity;
             $finalPrice = $totalPrice;
             $discountAmount = 0;
             $discountCode = null;
@@ -248,7 +255,7 @@ class RandomCategoryController extends Controller
                         'batch_id' => $batchId
                     ]);
                 
-                $accPrice = $account->price - $discountPerAccount;
+                $accPrice = $unitPrice - $discountPerAccount;
                 
                 DB::table('money_transactions')->insert([
                     'user_id' => $user->id,
@@ -266,10 +273,18 @@ class RandomCategoryController extends Controller
 
             DB::commit();
 
+            \Illuminate\Support\Facades\Cache::forget('home_catalog_data');
+            \Illuminate\Support\Facades\Cache::forget('home_recent_transactions');
+
+            $returnUrl = $this->safeReturnUrl($request->input('return_url'));
+
             return response()->json([
                 'success' => true,
                 'message' => 'Đã mua thành công ' . $quantity . ' tài khoản ngẫu nhiên!',
-                'redirect_url' => route('profile.purchased-random-accounts')
+                'redirect_url' => route('profile.purchased-random-account-detail', array_filter([
+                    'batchId' => $batchId,
+                    'return_url' => $returnUrl,
+                ]))
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -283,5 +298,12 @@ class RandomCategoryController extends Controller
                 'message' => 'Có lỗi xảy ra trong quá trình xử lý đơn hàng. Vui lòng thử lại sau.'
             ], 500);
         }
+    }
+
+    private function safeReturnUrl(mixed $url): ?string
+    {
+        return is_string($url) && str_starts_with($url, '/') && !str_starts_with($url, '//') && !str_contains($url, '\\')
+            ? $url
+            : null;
     }
 }

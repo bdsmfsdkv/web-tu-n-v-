@@ -3,7 +3,7 @@
 @section('title', $title)
 
 @section('content')
-    <section class="profile-section">
+    <section class="profile-section" style="padding-bottom: 90px;">
         <div class="container">
             <div class="profile-container">
                 <div class="profile-header">

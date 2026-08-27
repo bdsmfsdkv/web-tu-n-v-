@@ -9,7 +9,10 @@ class GameServiceController extends Controller
     //
     public function show($slug)
     {
-        $service = GameService::with('packages')->where('slug', $slug)->where('active', 1)->firstOrFail();
+        $service = GameService::with('packages')->where('slug', $slug)->where('active', 1)->first();
+        if (!$service) {
+            return redirect()->route('home');
+        }
         $title = $service->name;
         return view('user.service.show', compact('service', 'title'));
     }

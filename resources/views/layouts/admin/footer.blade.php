@@ -23,11 +23,15 @@
                 var el = document.getElementById(previewId);
                 if (el) {
                     el.src = e.target.result;
-                    el.style.display = 'block';
+                    el.style.display = 'inline-block';
                 }
                 var placeholder = document.getElementById(previewId + '-placeholder');
                 if (placeholder) {
                     placeholder.style.display = 'none';
+                }
+                var icon = input.parentElement ? input.parentElement.querySelector('i') : null;
+                if (icon) {
+                    icon.style.display = 'none';
                 }
             }
             reader.readAsDataURL(input.files[0]);
@@ -66,51 +70,95 @@
 <script src="https://cdn.jsdelivr.net/npm/simple-notify@1.0.4/dist/simple-notify.min.js"></script>
 
 <script>
-    window.addEventListener('DOMContentLoaded', () => {
-        const body = document.body;
-        body.setAttribute('data-pc-preset', 'preset-1');
-        body.setAttribute('data-pc-sidebar-caption', 'true');
-        body.setAttribute('data-pc-layout', 'vertical');
-        body.setAttribute('data-pc-direction', 'ltr');
-        body.setAttribute('data-pc-theme_contrast', '');
-        body.setAttribute('data-pc-theme', 'dark');
-        body.setAttribute('style', '');
+    (function() {
+        function showAdminNotifications() {
+            const body = document.body;
+            if (body) {
+                body.setAttribute('data-pc-preset', 'preset-1');
+                body.setAttribute('data-pc-sidebar-caption', 'true');
+                body.setAttribute('data-pc-layout', 'vertical');
+                body.setAttribute('data-pc-direction', 'ltr');
+                body.setAttribute('data-pc-theme_contrast', '');
+                body.setAttribute('data-pc-theme', 'dark');
+                body.setAttribute('style', '');
+            }
 
-        // SweetAlert2 Global Notifications
-        @if(session('success'))
-            Swal.fire({
-                icon: 'success',
-                title: 'Thành công!',
-                html: {!! json_encode(session('success')) !!},
-                confirmButtonText: 'Đóng',
-                timer: 3000,
-                timerProgressBar: true,
-                customClass: {
-                    confirmButton: 'btn btn-primary'
-                },
-                buttonsStyling: false
-            });
-        @endif
+            @if(session('success'))
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        html: {!! json_encode(session('success')) !!},
+                        confirmButtonText: 'Đóng',
+                        timer: 3500,
+                        timerProgressBar: true,
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    });
+                } else if (typeof Notify !== 'undefined') {
+                    new Notify({
+                        status: 'success',
+                        title: 'Thành công',
+                        text: {!! json_encode(session('success')) !!},
+                        effect: 'fade',
+                        speed: 300,
+                        showIcon: true,
+                        showCloseButton: true,
+                        autoclose: true,
+                        autotimeout: 3500
+                    });
+                }
+            @endif
 
-        @if(session('error'))
-            Swal.fire({
-                icon: 'error',
-                title: 'Thất bại!',
-                html: {!! json_encode(session('error')) !!},
-                confirmButtonText: 'Đóng',
-                customClass: {
-                   
-                    confirmButton: 'btn btn-danger'
-                },
-                buttonsStyling: false
-            });
-        @endif
+            @if(session('error'))
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Thất bại!',
+                        html: {!! json_encode(session('error')) !!},
+                        confirmButtonText: 'Đóng',
+                        customClass: {
+                            confirmButton: 'btn btn-danger'
+                        },
+                        buttonsStyling: false
+                    });
+                } else if (typeof Notify !== 'undefined') {
+                    new Notify({
+                        status: 'error',
+                        title: 'Lỗi',
+                        text: {!! json_encode(session('error')) !!},
+                        effect: 'fade',
+                        speed: 300,
+                        showIcon: true,
+                        showCloseButton: true
+                    });
+                }
+            @endif
 
-        // Hide legacy bootstrap alerts globally
-        document.querySelectorAll('.alert-success, .alert-danger').forEach(alert => {
-            alert.style.display = 'none';
-        });
-    });
+            @if($errors->any())
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Dữ liệu không hợp lệ!',
+                        html: '{!! implode("<br>", array_map("e", $errors->all())) !!}',
+                        confirmButtonText: 'Đóng',
+                        customClass: {
+                            confirmButton: 'btn btn-danger'
+                        },
+                        buttonsStyling: false
+                    });
+                }
+            @endif
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', showAdminNotifications);
+        } else {
+            showAdminNotifications();
+        }
+    })();
 </script>
 
 <script>

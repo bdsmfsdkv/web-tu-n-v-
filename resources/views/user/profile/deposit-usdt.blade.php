@@ -6,7 +6,7 @@
     <style>
         /* BASE LAYOUT */
         .recharge-page {
-            padding: 40px 20px;
+            padding: 40px 20px 90px;
             font-family: 'Inter', sans-serif;
         }
         .container-custom {
@@ -274,11 +274,10 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.6);
+            background: rgba(15, 23, 42, 0.7);
             z-index: 100000;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(4px);
         }
         .custom-modal-content {
             background: #ffffff;

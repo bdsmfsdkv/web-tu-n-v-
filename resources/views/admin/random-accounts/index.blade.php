@@ -29,6 +29,47 @@
                 <x-alert-admin type="danger" :message="session('error')" />
             @endif
 
+            <!-- Admin Notice Banner for Random Accounts -->
+            <div class="card border-0 shadow-sm mb-3" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #ffffff; border-radius: 12px; overflow: hidden;">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(239, 68, 68, 0.2); color: #f87171; width: 42px; height: 42px; font-size: 1.2rem;">
+                            <i class="ti ti-shield-lock"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+                                <h6 class="mb-0 fw-bold text-white d-flex align-items-center gap-2">
+                                    <i class="ti ti-info-circle text-warning"></i> LƯU Ý DÀNH RIÊNG CHO QUẢN TRỊ VIÊN KHI XÓA TÀI KHOẢN RANDOM
+                                </h6>
+                                <span class="badge bg-danger text-uppercase px-2 py-1" style="font-size: 0.7rem;">Admin Only</span>
+                            </div>
+                            <div class="row g-2 mt-1">
+                                <div class="col-md-6">
+                                    <div class="p-2 rounded h-100" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08);">
+                                        <div class="fw-semibold text-success small mb-1">
+                                            <i class="ti ti-check me-1"></i> Tài khoản ảo / Mẫu (Người mua: <span class="text-warning">Chưa có</span>):
+                                        </div>
+                                        <div class="text-light small" style="opacity: 0.85; font-size: 0.8rem; line-height: 1.4;">
+                                            Bạn có thể bấm <strong>Xóa thoải mái</strong> để điều chỉnh tồn kho. Việc xóa hoàn toàn an toàn và không ảnh hưởng đến bất kỳ thành viên nào.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-2 rounded h-100" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08);">
+                                        <div class="fw-semibold text-danger small mb-1">
+                                            <i class="ti ti-alert-triangle me-1"></i> Tài khoản khách mua thật (Người mua: <span class="text-info">Tên User</span>):
+                                        </div>
+                                        <div class="text-light small" style="opacity: 0.85; font-size: 0.8rem; line-height: 1.4;">
+                                            Nếu xóa, khách hàng đó sẽ <strong>không còn xem lại được</strong> thông tin/mật khẩu trong trang lịch sử đơn hàng của họ. Hãy cân nhắc kỹ trước khi xóa!
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="card overflow-hidden shadow-sm border border-dashed">
                 <div class="card-body px-0 py-0">
                 <form class="p-3 bg-light-subtle border-bottom filter-form" method="GET">

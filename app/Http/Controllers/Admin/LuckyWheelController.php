@@ -51,8 +51,8 @@ class LuckyWheelController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'price_per_spin' => 'required|numeric|min:1000',
-            'thumbnail' => 'nullable|image|max:65536',
-            'wheel_image' => 'nullable|image|max:65536',
+            'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
+            'wheel_image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
             'pointer_image' => 'nullable|image|max:2048',
             'description' => 'nullable|string',
             'rules' => 'nullable|string',
@@ -166,9 +166,9 @@ class LuckyWheelController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'price_per_spin' => 'required|numeric|min:1000',
-            'thumbnail' => 'nullable|image|max:65536',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
             'remove_thumbnail' => 'nullable|boolean',
-            'wheel_image' => 'nullable|image|max:65536',
+            'wheel_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
             'remove_wheel_image' => 'nullable|boolean',
             'pointer_image' => 'nullable|image|max:2048',
             'remove_pointer_image' => 'nullable|boolean',
@@ -197,11 +197,11 @@ class LuckyWheelController extends Controller
 
             // Xử lý upload ảnh đại diện nếu có
             if ($request->hasFile('thumbnail')) {
-                // Delete old thumbnail if exists
-                if ($luckyWheel->thumbnail) {
-                    UploadHelper::deleteByUrl($luckyWheel->thumbnail);
-                }
+                $oldThumbnail = $luckyWheel->thumbnail;
                 $luckyWheel->thumbnail = UploadHelper::upload($request->file('thumbnail'), self::UPLOAD_DIR . '/thumbnails');
+                if ($oldThumbnail) {
+                    UploadHelper::deleteByUrl($oldThumbnail);
+                }
             } elseif ($request->boolean('remove_thumbnail')) {
                 if ($luckyWheel->thumbnail) {
                     UploadHelper::deleteByUrl($luckyWheel->thumbnail);
@@ -211,11 +211,11 @@ class LuckyWheelController extends Controller
 
             // Xử lý upload ảnh vòng quay nếu có
             if ($request->hasFile('wheel_image')) {
-                // Delete old wheel image if exists
-                if ($luckyWheel->wheel_image) {
-                    UploadHelper::deleteByUrl($luckyWheel->wheel_image);
-                }
+                $oldWheelImage = $luckyWheel->wheel_image;
                 $luckyWheel->wheel_image = UploadHelper::upload($request->file('wheel_image'), self::UPLOAD_DIR . '/wheel-images');
+                if ($oldWheelImage) {
+                    UploadHelper::deleteByUrl($oldWheelImage);
+                }
             } elseif ($request->boolean('remove_wheel_image')) {
                 if ($luckyWheel->wheel_image) {
                     UploadHelper::deleteByUrl($luckyWheel->wheel_image);
@@ -224,10 +224,11 @@ class LuckyWheelController extends Controller
             }
 
             if ($request->hasFile('pointer_image')) {
-                if ($luckyWheel->pointer_image) {
-                    UploadHelper::deleteByUrl($luckyWheel->pointer_image);
-                }
+                $oldPointerImage = $luckyWheel->pointer_image;
                 $luckyWheel->pointer_image = UploadHelper::upload($request->file('pointer_image'), self::UPLOAD_DIR . '/pointers');
+                if ($oldPointerImage) {
+                    UploadHelper::deleteByUrl($oldPointerImage);
+                }
             } elseif ($request->boolean('remove_pointer_image')) {
                 if ($luckyWheel->pointer_image) {
                     UploadHelper::deleteByUrl($luckyWheel->pointer_image);
@@ -293,7 +294,7 @@ class LuckyWheelController extends Controller
                 ]);
             }
 
-            if ($isActive && $reward['reward_type'] === 'item' && empty($reward['reward_item_id'])) {
+            if ($isActive && $reward['reward_type'] === 'item' && ($reward['reward_item_id'] === null || $reward['reward_item_id'] === '')) {
                 throw ValidationException::withMessages([
                     "config.$index.reward_item_id" => 'Phần thưởng #' . ($index + 1) . ' phải chọn vật phẩm liên kết.',
                 ]);
@@ -304,7 +305,7 @@ class LuckyWheelController extends Controller
             $reward['active'] = array_key_exists('active', $reward) ? (bool) $reward['active'] : true;
             $reward['probability'] = (float) $reward['probability'];
             $reward['trial_probability'] = (float) $reward['trial_probability'];
-            $reward['reward_item_id'] = $reward['reward_type'] === 'item' && !empty($reward['reward_item_id'])
+            $reward['reward_item_id'] = $reward['reward_type'] === 'item' && ($reward['reward_item_id'] !== null && $reward['reward_item_id'] !== '')
                 ? (int) $reward['reward_item_id']
                 : null;
             $reward['amount'] = $reward['amount'] ?: null;

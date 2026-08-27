@@ -76,7 +76,17 @@
                                             <div class="form-check"><input class="form-check-input" type="checkbox"></div>
                                         </td>
                                         <td>{{ $category->id }}</td>
-                                        <td class="text-bolds">{{ $category->name }}</td>
+                                        <td class="text-bolds">
+                                            <div>{{ $category->name }}</div>
+                                            <div class="small mt-1 d-flex gap-1">
+                                                <span class="badge bg-light text-success border" style="font-size: 0.72rem;">
+                                                    Còn: {{ $category->custom_stock_count !== null ? number_format($category->custom_stock_count) : 'Tự động' }}
+                                                </span>
+                                                <span class="badge bg-light text-danger border" style="font-size: 0.72rem;">
+                                                    Đã bán: {{ $category->custom_sold_count !== null ? number_format($category->custom_sold_count) : 'Tự động' }}
+                                                </span>
+                                            </div>
+                                        </td>
                                         <td>
                                             <img src="{{ asset($category->thumbnail) }}" alt="{{ $category->name }}"
                                                 class="img-thumbnail" style="max-width: 200px;">

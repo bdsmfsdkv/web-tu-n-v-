@@ -47,4 +47,14 @@ class RandomCategoryAccount extends Model
         $hashHex = substr(md5('order_' . $this->id), 0, 13 - strlen($timestampHex));
         return $timestampHex . $hashHex;
     }
+
+    protected static function booted()
+    {
+        $forgetCatalogCache = function () {
+            \Illuminate\Support\Facades\Cache::forget('home_catalog_data');
+        };
+
+        static::saved($forgetCatalogCache);
+        static::deleted($forgetCatalogCache);
+    }
 }

@@ -222,7 +222,6 @@
         overlay.classList.add('is-open');
         overlay.setAttribute('aria-hidden', 'false');
         restore.hidden = true;
-        document.body.style.overflow = 'hidden';
         var close = document.getElementById('siteAnnouncementClose');
         if (close) setTimeout(function () { close.focus(); }, 20);
     }
@@ -230,7 +229,6 @@
     function closePopup(sessionOnly) {
         overlay.classList.remove('is-open');
         overlay.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
         if (sessionOnly) sessionStorage.setItem(sessionKey, '1');
     }
 

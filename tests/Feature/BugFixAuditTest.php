@@ -73,7 +73,7 @@ class BugFixAuditTest extends TestCase
         $detailResponse->assertStatus(200);
     }
 
-    public function test_admin_cannot_delete_game_category_with_existing_accounts()
+    public function test_admin_can_delete_game_category_with_existing_accounts()
     {
         $admin = $this->makeUser('admin');
         $category = GameCategory::create([
@@ -84,7 +84,7 @@ class BugFixAuditTest extends TestCase
             'active' => true,
         ]);
 
-        GameAccount::create([
+        $account = GameAccount::create([
             'game_category_id' => $category->id,
             'account_name' => 'acc_' . uniqid(),
             'password' => 'secret123',
@@ -94,11 +94,12 @@ class BugFixAuditTest extends TestCase
         ]);
 
         $response = $this->actingAs($admin)->deleteJson(route('admin.categories.destroy', $category->id));
-        $response->assertStatus(422);
+        $response->assertStatus(200);
         $response->assertJson([
-            'success' => false,
+            'success' => true,
         ]);
-        $this->assertDatabaseHas('game_categories', ['id' => $category->id]);
+        $this->assertDatabaseMissing('game_categories', ['id' => $category->id]);
+        $this->assertDatabaseMissing('game_accounts', ['id' => $account->id]);
     }
 
     public function test_card_deposit_callback_idempotency_and_atomic_balance()
@@ -198,6 +199,124 @@ class BugFixAuditTest extends TestCase
 
         $user->refresh();
         $this->assertEquals(150000, $user->balance); // Cộng tiền thành công
+    }
+
+    public function test_card_deposit_accepts_gachthefast_provider_and_correct_signature()
+    {
+        config_set('payment.card.active', 1);
+        config_set('payment.card.partner_website', 'gachthefast.com');
+        config_set('payment.card.partner_id', '123456');
+        config_set('payment.card.partner_key', 'gachthefast_secret_key');
+
+        \Illuminate\Support\Facades\Http::fake([
+            'https://gachthefast.com/chargingws/v2' => \Illuminate\Support\Facades\Http::response([
+                'status' => 99,
+                'message' => 'Thẻ đang được xử lý',
+                'request_id' => 99999999,
+            ], 200),
+        ]);
+
+        $user = $this->makeUser('member', 50000, 50000);
+        $this->actingAs($user);
+
+        $response = $this->post(url('/profile/deposit/card'), [
+            'telco' => 'VIETTEL',
+            'amount' => 50000,
+            'serial' => '10005678901',
+            'pin' => '123456789012',
+        ]);
+
+        $response->assertSessionHas('success');
+
+        \Illuminate\Support\Facades\Http::assertSent(function ($request) {
+            $data = $request->data();
+            $expectedSign = md5('gachthefast_secret_key' . '123456789012' . '10005678901');
+            return $request->url() === 'https://gachthefast.com/chargingws/v2'
+                && $data['telco'] === 'VIETTEL'
+                && $data['code'] === '123456789012'
+                && $data['serial'] === '10005678901'
+                && $data['amount'] == 50000
+                && $data['partner_id'] === '123456'
+                && $data['command'] === 'charging'
+                && $data['sign'] === $expectedSign;
+        });
+
+        $this->assertDatabaseHas('card_deposits', [
+            'user_id' => $user->id,
+            'telco' => 'VIETTEL',
+            'amount' => 50000,
+            'serial' => '10005678901',
+            'pin' => '123456789012',
+            'status' => 'processing',
+        ]);
+    }
+
+    public function test_admin_can_save_gachthefast_payment_settings()
+    {
+        $admin = $this->makeUser('admin', 0, 0);
+        $this->actingAs($admin);
+
+        $response = $this->post(route('admin.settings.payment.update'), [
+            'card_active' => '1',
+            'partner_website_card' => 'gachthefast.com',
+            'partner_id_card' => '987654',
+            'partner_key_card' => 'secret_partner_key_gtf',
+            'discount_percent_card' => '15',
+        ]);
+
+        $response->assertRedirect(route('admin.settings.index'));
+        $this->assertEquals('gachthefast.com', config_get('payment.card.partner_website'));
+        $this->assertEquals('987654', config_get('payment.card.partner_id'));
+        $this->assertEquals('secret_partner_key_gtf', config_get('payment.card.partner_key'));
+        $this->assertEquals('15', config_get('payment.card.discount_percent'));
+    }
+
+    public function test_card_deposit_callback_supports_gachthefast_wrong_denomination_and_success()
+    {
+        config_set('payment.card.partner_key', 'gtf_key_callback');
+        config_set('payment.card.discount_percent', '10');
+
+        $user = $this->makeUser('member', 0, 0);
+        $requestId = (string) rand(1000000000, 9999999999);
+
+        $deposit = CardDeposit::create([
+            'user_id' => $user->id,
+            'telco' => 'VIETTEL',
+            'amount' => 100000,
+            'received_amount' => 100000,
+            'serial' => '10005678901',
+            'pin' => '123456789012',
+            'request_id' => $requestId,
+            'status' => 'processing',
+        ]);
+
+        // GachTheFast callback with wrong denomination (status 2, card_value 50000 -> 50% = 25000)
+        $sign = md5('gtf_key_callback' . '123456789012' . '10005678901');
+        $callbackData = [
+            'status' => 2,
+            'message' => 'Nạp thẻ thành công sai mệnh giá',
+            'request_id' => $requestId,
+            'declared_value' => 100000,
+            'card_value' => 50000,
+            'value' => 50000,
+            'amount' => 50000,
+            'code' => '123456789012',
+            'serial' => '10005678901',
+            'telco' => 'VIETTEL',
+            'trans_id' => 'TRANS-GTF-' . $requestId,
+            'callback_sign' => $sign,
+        ];
+
+        $response = $this->postJson(route('callback.card'), $callbackData);
+        $response->assertStatus(200);
+
+        $user->refresh();
+        $this->assertEquals(25000, $user->balance);
+        $this->assertEquals(25000, $user->total_deposited);
+
+        $deposit->refresh();
+        $this->assertEquals('success', $deposit->status);
+        $this->assertEquals(25000, $deposit->received_amount);
     }
 
     public function test_lucky_wheel_history_isolation_and_atomic_spin()
@@ -342,7 +461,7 @@ class BugFixAuditTest extends TestCase
         $res2->assertJson(['success' => false]);
     }
 
-    public function test_sold_game_account_detail_view_and_purchase_protection()
+    public function test_sold_or_missing_game_account_detail_view_and_purchase_protection()
     {
         $user = $this->makeUser('member', 500000, 500000);
         $category = GameCategory::create([
@@ -362,17 +481,13 @@ class BugFixAuditTest extends TestCase
             'status' => 'sold',
         ]);
 
-        // TEST: Detail page for sold account does not render purchase modal or buy button
+        // TEST: Detail page for sold or deleted account redirects to category
         $response = $this->actingAs($user)->get(route('account.show', $account->id));
-        $response->assertStatus(200);
-        $response->assertSee('TÀI KHOẢN NÀY ĐÃ ĐƯỢC BÁN');
-        $response->assertDontSee('id="purchaseModal"', false);
-        $response->assertDontSee('Mua Ngay');
-        $response->assertDontSee('XÁC NHẬN MUA TÀI KHOẢN');
+        $response->assertRedirect();
 
         // TEST: Direct POST purchase on sold account is rejected without balance deduction
         $purchaseRes = $this->actingAs($user)->postJson(route('account.purchase', $account->id));
-        $purchaseRes->assertStatus(500); // or error status
+        $purchaseRes->assertStatus(409);
         $purchaseRes->assertJson(['success' => false]);
 
         $user->refresh();

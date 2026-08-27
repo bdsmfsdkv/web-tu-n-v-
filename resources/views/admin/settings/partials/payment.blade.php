@@ -47,6 +47,9 @@
                                         <option value="doithe1s.vn"
                                             {{ $configs['partner_website_card'] === 'doithe1s.vn' ? 'selected' : '' }}>
                                             DOITHE1S.VN</option>
+                                        <option value="gachthefast.com"
+                                            {{ $configs['partner_website_card'] === 'gachthefast.com' ? 'selected' : '' }}>
+                                            GACHTHEFAST.COM</option>
                                     </select>
                                     @error('partner_website_card')
                                         <div class="invalid-feedback">{{ $message }}</div>

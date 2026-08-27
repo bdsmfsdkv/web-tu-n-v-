@@ -10,11 +10,17 @@ class Category extends Model
     protected $table = "game_categories";
     protected $fillable = [
         'name',
+        'slug',
         'thumbnail',
+        'tag_image',
         'description',
         'active',
         'platform',
-        'game_group_id'
+        'game_group_id',
+        'is_flash_sale',
+        'flash_sale_old_price',
+        'flash_sale_new_price',
+        'flash_sale_end_time'
     ];
 
     public function gameGroup()

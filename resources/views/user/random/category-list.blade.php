@@ -3,7 +3,7 @@
 @section('title', $title)
 
 @push('css')
-    <link href="/css/category-attribute-fix.css?v=20260820-1" rel="stylesheet">
+    <link href="/css/category-attribute-fix.css?v={{ filemtime(public_path('css/category-attribute-fix.css')) }}" rel="stylesheet">
 @endpush
 
 @section('content')
@@ -15,10 +15,10 @@
         <div class="container">
             <!-- Filter Bar -->
             <form action="" method="GET" class="filter-inline-bar">
-                <input type="text" name="code" class="filter-input" placeholder="Mã số..." value="{{ request('code') }}">
+                <input type="text" name="code" class="filter-input" placeholder="Nhập mã số..." value="{{ request('code') }}">
                 
                 <select name="price_range" class="filter-select">
-                    <option value="">Khoảng giá</option>
+                    <option value="">Khoảng giá (Tất cả)</option>
                     <option value="0-50000" {{ request('price_range') == '0-50000' ? 'selected' : '' }}>Dưới 50K</option>
                     <option value="50000-200000" {{ request('price_range') == '50000-200000' ? 'selected' : '' }}>50K - 200K</option>
                     <option value="200000-500000" {{ request('price_range') == '200000-500000' ? 'selected' : '' }}>200K - 500K</option>
@@ -42,31 +42,71 @@
 
             <!-- Account Grid -->
             <div class="account-grid">
+                @php
+                    $discountPercent = config_get('payment.card.discount_percent', 0);
+                @endphp
+
                 @forelse($accounts as $account)
-                    <div class="account-card">
+                    @php
+                        $cardPrice = ($discountPercent < 100 && $discountPercent > 0)
+                            ? $account->price / ((100 - $discountPercent) / 100)
+                            : $account->price * 1.25;
+                        $discountRatio = $cardPrice > 0 ? round(100 - ($account->price / $cardPrice) * 100) : 0;
+                        $thumb = !empty($account->thumbnail) ? asset($account->thumbnail) : (!empty($category->thumbnail) ? asset($category->thumbnail) : 'https://via.placeholder.com/300x180');
+                    @endphp
+
+                    <div class="account-card" data-id="{{ $account->id }}">
+                        <!-- Media & Badges -->
                         <div class="account-media">
-                            <a href="{{ route('random.account.show', ['id' => $account->id]) }}">
-                                <img src="{{ !empty($account->thumbnail) ? asset($account->thumbnail) : (!empty($category->thumbnail) ? asset($category->thumbnail) : 'https://via.placeholder.com/300x180') }}" alt="Account Preview" class="account-img">
+                            <a href="{{ route('random.account.show', ['id' => $account->id]) }}" class="account-img-link" title="Xem chi tiết tài khoản #{{ $account->id }}">
+                                <img src="{{ $thumb }}" alt="Tài khoản #{{ $account->id }}" class="account-img" {{ $loop->index < 6 ? 'fetchpriority=high decoding=async' : 'loading=lazy decoding=async' }}>
                             </a>
-                            <div class="account-code">Mã số: {{ $account->id }}</div>
-                            <div class="account-price-top">ATM/VÍ ĐIỆN TỬ: {{ number_format($account->price) }} <span class="price-unit">VND</span></div>
+                            
+                            <div class="account-badge-code">
+                                <i class="fa-solid fa-hashtag"></i> {{ $account->id }}
+                            </div>
+
+                            @if($discountRatio > 0)
+                                <div class="account-badge-tag badge-discount">-{{ $discountRatio }}%</div>
+                            @else
+                                <div class="account-badge-tag badge-hot"><i class="fa-solid fa-fire"></i> Random</div>
+                            @endif
                         </div>
 
+                        <!-- Card Info / Note -->
                         <div class="account-info">
                             @if(!empty($account->note))
-                                <div class="account-row" style="padding: 10px 0 0 0; color: var(--text-muted); font-size: 0.85rem; line-height: 1.4;">
-                                    <span style="font-weight: 600; color: var(--text-color);"><i class="fa-solid fa-circle-info"></i> Ghi chú:</span> 
-                                    {{ Str::limit($account->note, 60) }}
+                                <div style="color: #64748b; font-size: 0.76rem; line-height: 1.35; padding: 4px 2px;">
+                                    <span style="font-weight: 700; color: #0f172a;"><i class="fa-solid fa-circle-info" style="color: #3b82f6;"></i> Mô tả:</span> 
+                                    {{ Str::limit($account->note, 50) }}
+                                </div>
+                            @else
+                                <div style="color: #64748b; font-size: 0.76rem; line-height: 1.35; padding: 4px 2px;">
+                                    <span style="font-weight: 700; color: #16a34a;"><i class="fa-solid fa-check-circle"></i> Tỉ lệ 100% trúng acc chuẩn VIP</span>
                                 </div>
                             @endif
                         </div>
 
-                        <div class="account-actions">
-                            <div class="card-price">CARD:
-                                {{ number_format($account->price / ((100 - config_get('payment.card.discount_percent', 0)) / 100)) }}
-                                Đ</div>
-                            <a href="{{ route('random.account.show', ['id' => $account->id]) }}"
-                                class="action-btn action-btn--detail">XEM CHI TIẾT</a>
+                        <!-- Pricing Section -->
+                        <div class="account-pricing-section">
+                            <div class="price-atm-wrap">
+                                <span class="price-label-atm">ATM / Ví Momo</span>
+                                <span class="price-value-atm">{{ number_format($account->price) }}<small>đ</small></span>
+                            </div>
+                            <div class="price-card-wrap">
+                                <span class="price-label-card">Thẻ cào</span>
+                                <span class="price-value-card">{{ number_format($cardPrice) }}đ</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="account-actions-btns">
+                            <a href="{{ route('random.account.show', ['id' => $account->id]) }}" class="btn-card-action btn-card-detail">
+                                <i class="fa-solid fa-eye"></i> Chi tiết
+                            </a>
+                            <a href="{{ route('random.account.show', ['id' => $account->id]) }}" class="btn-card-action btn-card-buy">
+                                <i class="fa-solid fa-bolt"></i> Mua ngay
+                            </a>
                         </div>
                     </div>
                 @empty
@@ -76,13 +116,13 @@
                             <path d="M1 3h22v5H1z"></path>
                             <path d="M10 12h4v4h-4z"></path>
                         </svg>
-                        <p style="color: #a0aec0; font-size: 1rem; margin: 0;">Chưa có tài khoản nào</p>
+                        <p style="color: #a0aec0; font-size: 1rem; margin: 0;">Chưa có tài khoản nào trong danh mục này</p>
                     </div>
                 @endforelse
             </div>
 
             <!-- Pagination -->
-            <div style="display: flex; justify-content: center; width: 100%;">
+            <div style="display: flex; justify-content: center; width: 100%; margin-top: 24px;">
                 {{ $accounts->links('user.pagination.custom') }}
             </div>
         </div>

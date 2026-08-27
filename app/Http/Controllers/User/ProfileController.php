@@ -8,6 +8,7 @@ use App\Models\BankDeposit;
 use App\Models\CardDeposit;
 use App\Models\GameAccount;
 use App\Models\MoneyTransaction;
+use App\Models\PurchasedAccountHistory;
 use App\Models\UsdtDeposit;
 use App\Models\RandomCategoryAccount;
 use App\Models\ServiceHistory;  // Fix the import here
@@ -90,15 +91,29 @@ class ProfileController extends Controller
     public function purchasedAccounts(Request $request)
     {
         $title = 'Tài khoản đã mua';
-        // with('category') tránh 10 query lazy-load do view đọc $transaction->category->name.
-        $transactions = GameAccount::with('category')
-            ->where('buyer_id', Auth::id())
-            ->where('status', 'sold')
+        $transactions = PurchasedAccountHistory::with('category')
+            ->where('user_id', Auth::id())
+            ->orderBy('purchased_at', 'desc')
             ->paginate(perPage: 10);
         return view('user.profile.purchased-accounts', [
             'user' => $request->user(),
             'transactions' => $transactions,
             'title' => $title
+        ]);
+    }
+
+    public function purchasedAccountDetail(Request $request, $id)
+    {
+        $transaction = PurchasedAccountHistory::with('category')
+            ->where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        $title = 'Chi tiết đơn hàng #' . ($transaction->order_code ?? $transaction->id);
+        return view('user.profile.purchased-account-detail', [
+            'user' => $request->user(),
+            'transaction' => $transaction,
+            'title' => $title,
+            'returnUrl' => $this->safeReturnUrl($request->query('return_url')),
         ]);
     }
 
@@ -223,8 +238,16 @@ class ProfileController extends Controller
         return view('user.profile.purchased-random-account-detail', [
             'user' => $request->user(),
             'order' => $order,
-            'title' => $title
+            'title' => $title,
+            'returnUrl' => $this->safeReturnUrl($request->query('return_url')),
         ]);
+    }
+
+    private function safeReturnUrl(mixed $url): ?string
+    {
+        return is_string($url) && str_starts_with($url, '/') && !str_starts_with($url, '//') && !str_contains($url, '\\')
+            ? $url
+            : null;
     }
 
     private function randomOrderTransactionTotals(int $userId, array $batchIds): array
@@ -314,23 +337,39 @@ class ProfileController extends Controller
     {
         $userId = Auth::id();
         $since = $request->input('since');
-        $afterId = $request->input('after_id');
+        $excludeIdsRaw = $request->input('exclude_ids', $request->input('after_id'));
         
-        $query = BankDeposit::where('user_id', $userId)
-            ->orderBy('created_at', 'desc');
+        $excludeIds = [];
+        if ($excludeIdsRaw) {
+            if (is_array($excludeIdsRaw)) {
+                $excludeIds = $excludeIdsRaw;
+            } else {
+                $excludeIds = array_filter(array_map('trim', explode(',', (string)$excludeIdsRaw)));
+            }
+        }
 
-        if ($afterId && is_string($afterId) && $afterId !== '') {
-            $query->where('transaction_id', '!=', $afterId);
-        } elseif ($since) {
-            try {
-                $query->where('created_at', '>', Carbon::parse($since));
-            } catch (\Exception $e) {}
-        } else {
-            // Nếu không truyền mốc thời gian hay after_id, không trả về lịch sử cũ để tránh lặp popup
+        if (!$since) {
             return response()->json([
                 'success' => true,
                 'found' => false,
             ]);
+        }
+
+        try {
+            $sinceDate = Carbon::parse($since);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => true,
+                'found' => false,
+            ]);
+        }
+
+        $query = BankDeposit::where('user_id', $userId)
+            ->where('created_at', '>=', $sinceDate)
+            ->orderBy('created_at', 'desc');
+
+        if (!empty($excludeIds)) {
+            $query->whereNotIn('transaction_id', $excludeIds);
         }
 
         $latestDeposit = $query->first();
@@ -343,7 +382,7 @@ class ProfileController extends Controller
                 'deposit' => [
                     'id' => $latestDeposit->transaction_id,
                     'amount' => $latestDeposit->amount,
-                    'amount_formatted' => number_format($latestDeposit->amount) . 'đ',
+                    'amount_formatted' => number_format($latestDeposit->amount),
                     'bank' => $latestDeposit->bank,
                     'content' => $latestDeposit->content,
                     'transaction_id' => $latestDeposit->transaction_id,
@@ -357,6 +396,71 @@ class ProfileController extends Controller
         return response()->json([
             'success' => true,
             'found' => false,
+        ]);
+    }
+
+    public function checkUnreadDeposit(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json(['success' => false, 'has_deposit' => false]);
+        }
+
+        $userId = Auth::id();
+        $user = User::find($userId) ?? Auth::user();
+
+        // 1. Check unnotified bank deposits
+        $latestBank = BankDeposit::where('user_id', $userId)
+            ->where('is_notified', false)
+            ->where('created_at', '>=', now()->subHours(24))
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // 2. Check unnotified deposit transactions
+        $latestTx = MoneyTransaction::where('user_id', $userId)
+            ->where('type', 'deposit')
+            ->where('amount', '>', 0)
+            ->where('is_notified', false)
+            ->where('created_at', '>=', now()->subHours(24))
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        $depositData = null;
+
+        if ($latestBank && (!$latestTx || $latestBank->created_at >= $latestTx->created_at)) {
+            // Mark as notified in database immediately
+            $latestBank->update(['is_notified' => true]);
+            if ($latestTx && $latestTx->reference_id === $latestBank->transaction_id) {
+                $latestTx->update(['is_notified' => true]);
+            }
+
+            $depositData = [
+                'id' => 'bank_' . $latestBank->transaction_id,
+                'amount' => $latestBank->amount,
+                'amount_formatted' => '+' . number_format($latestBank->amount) . 'đ',
+                'bank' => $latestBank->bank ?: 'Chuyển khoản Ngân hàng',
+                'txid' => $latestBank->transaction_id,
+                'time' => $latestBank->created_at ? $latestBank->created_at->format('H:i:s d/m/Y') : 'Vừa xong',
+                'new_balance' => number_format($user->balance) . 'đ',
+            ];
+        } elseif ($latestTx) {
+            // Mark as notified in database immediately
+            $latestTx->update(['is_notified' => true]);
+
+            $depositData = [
+                'id' => 'tx_' . $latestTx->id,
+                'amount' => $latestTx->amount,
+                'amount_formatted' => '+' . number_format($latestTx->amount) . 'đ',
+                'bank' => 'Hệ thống / ATM',
+                'txid' => $latestTx->reference_id ?: ('TX-' . $latestTx->id),
+                'time' => $latestTx->created_at ? $latestTx->created_at->format('H:i:s d/m/Y') : 'Vừa xong',
+                'new_balance' => number_format($user->balance) . 'đ',
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'has_deposit' => $depositData !== null,
+            'deposit' => $depositData
         ]);
     }
 
@@ -558,8 +662,8 @@ class ProfileController extends Controller
         $request->validate([
             'reward_item_id' => 'nullable|integer',
             'amount' => 'required|integer|min:1',
-            'character_name' => 'required|string|max:50',
-            'server' => 'required|integer|min:1|max:13',
+            'character_name' => 'required|string|max:100',
+            'server' => 'nullable|string|max:100',
             'user_note' => 'nullable|string|max:255',
         ]);
 
@@ -605,7 +709,7 @@ class ProfileController extends Controller
                 'amount' => $request->amount,
                 'type' => 'gem',
                 'character_name' => $request->character_name,
-                'server' => $request->input('server'),
+                'server' => $request->filled('server') ? $request->server : 'Mặc định',
                 'user_note' => $request->user_note,
                 'status' => 'processing',
             ]);

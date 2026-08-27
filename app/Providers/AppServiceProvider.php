@@ -32,6 +32,14 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
 
+        // Ensure generated URLs are clean without /public prefix
+        if (app()->bound('request') && !app()->runningInConsole()) {
+            $rootUrl = request()->getSchemeAndHttpHost();
+            if ($rootUrl) {
+                \Illuminate\Support\Facades\URL::forceRootUrl($rootUrl);
+            }
+        }
+
         //
         Paginator::defaultView('vendor.pagination.default');
 

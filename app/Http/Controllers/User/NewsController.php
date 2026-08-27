@@ -22,7 +22,11 @@ class NewsController extends Controller
     {
         $news = News::where('slug', $slug)
                     ->where('active', 1)
-                    ->firstOrFail();
+                    ->first();
+                    
+        if (!$news) {
+            return redirect()->route('home');
+        }
                     
         // Increment views
         $news->increment('views');

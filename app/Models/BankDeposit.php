@@ -10,13 +10,15 @@ class BankDeposit extends Model
 
     protected $primaryKey = 'transaction_id'; // Đặt khóa chính là transaction_id
     public $incrementing = false; // Không tự động tăng
+    protected $keyType = 'string';
     protected $fillable = [
         'transaction_id',
         'user_id',
         'account_number',
         'amount',
         'content',
-        'bank'
+        'bank',
+        'is_notified'
     ];
 
     protected $casts = [

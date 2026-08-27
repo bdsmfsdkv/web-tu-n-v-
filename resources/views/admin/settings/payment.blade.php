@@ -18,10 +18,11 @@
             <!-- Notication -->
             <div class="card-body">
                 <div class="alert alert-notication-custom alert-dismissible fade show" role="alert">
-                    <strong>Chúng tôi hiện đang hỗ trợ 3 đối tác thanh toán:</strong>
+                    <strong>Chúng tôi hiện đang hỗ trợ các đối tác thanh toán:</strong>
                     <a href="https://thesieure.com" target="_blank">THESIEURE.COM</a>,
                     <a href="https://doithe1s.vn" target="_blank">DOITHE1S.VN</a>,
-                    <a href="https://cardvip.vn" target="_blank">CARDVIP.VN</a>.
+                    <a href="https://cardvip.vn" target="_blank">CARDVIP.VN</a>,
+                    <a href="https://gachthefast.com" target="_blank">GACHTHEFAST.COM</a>.
                     Nếu bạn có nhu cầu chọn đối tác khác, xin vui lòng liên hệ với chúng tôi (phí dịch vụ là
                     100K).
                     <br>
@@ -81,6 +82,9 @@
                                         <option value="doithe1s.vn"
                                             {{ $configs['partner_website_card'] === 'doithe1s.vn' ? 'selected' : '' }}>
                                             DOITHE1S.VN</option>
+                                        <option value="gachthefast.com"
+                                            {{ $configs['partner_website_card'] === 'gachthefast.com' ? 'selected' : '' }}>
+                                            GACHTHEFAST.COM</option>
                                     </select>
                                     @error('partner_website_card')
                                         <div class="invalid-feedback">{{ $message }}</div>

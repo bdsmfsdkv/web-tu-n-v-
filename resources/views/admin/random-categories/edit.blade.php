@@ -133,6 +133,31 @@
                             </div>
                             
                             <div class="col-12 mt-2 mb-3">
+                                <h6 class="fw-bold border-bottom pb-2 text-primary">
+                                    <i class="ti ti-adjustments-horizontal me-1"></i> Tùy chỉnh số lượng hiển thị (Còn / Đã bán)
+                                </h6>
+                            </div>
+                            
+                            <div class="col-lg-6 col-sm-6 col-12">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">
+                                        <i class="ti ti-package text-success me-1"></i> Số lượng CÒN hiển thị
+                                    </label>
+                                    <input type="number" name="custom_stock_count" class="form-control" value="{{ old('custom_stock_count', $category->custom_stock_count) }}" placeholder="Để trống sẽ tự đếm theo số acc có sẵn thực tế">
+                                    <small class="text-muted">Nhập số lượng muốn hiển thị ở mục "Còn". Để trống = Tự động đếm.</small>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-6 col-12">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">
+                                        <i class="ti ti-shopping-cart text-danger me-1"></i> Số lượng ĐÃ BÁN hiển thị
+                                    </label>
+                                    <input type="number" name="custom_sold_count" class="form-control" value="{{ old('custom_sold_count', $category->custom_sold_count) }}" placeholder="Để trống sẽ tự đếm theo số acc đã bán thực tế">
+                                    <small class="text-muted">Nhập số lượng muốn hiển thị ở mục "Đã bán". Để trống = Tự động đếm.</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12 mt-2 mb-3">
                                 <h6 class="fw-bold border-bottom pb-2">Hình ảnh</h6>
                             </div>
 
@@ -141,16 +166,16 @@
                                     <label class="form-label">Ảnh đại diện <span class="text-danger">*</span></label>
                                     <div class="image-upload" style="position: relative; border: 1px dashed #4680ff; background: rgba(70, 128, 255, 0.05); padding: 20px; border-radius: 8px; text-align: center;">
                                         <input type="file" name="thumbnail" class="form-control @error('thumbnail') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="previewImage(this, 'preview-rc-edit-thumb')">
-                                        <div class="image-uploads mt-2">
+                                        <div class="image-uploads mt-2" style="pointer-events: none;">
                                             @if($category->thumbnail)
-                                                <div class="existing-thumb-wrapper d-inline-block" style="position: relative; display: inline-block;">
+                                                <div class="existing-thumb-wrapper d-inline-block" style="position: relative; display: inline-block; pointer-events: auto;">
                                                     <img id="preview-rc-edit-thumb" src="{{ asset($category->thumbnail) }}" alt="img" style="max-height: 80px; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
                                                     <button type="button"
                                                         class="btn btn-danger remove-existing-thumb"
                                                         title="Xoá ảnh này"
                                                         aria-label="Xoá ảnh này"
                                                         onclick="removeExistingCategoryThumb(this)"
-                                                        style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; min-width: 24px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 18px; font-weight: 800; line-height: 1; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,.25);">×</button>
+                                                        style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; min-width: 24px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 18px; font-weight: 800; line-height: 1; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,.25); cursor: pointer;">×</button>
                                                 </div>
                                                 <h5 class="mb-0 fw-semibold">Đổi ảnh đại diện (Kéo thả hoặc click)</h5>
                                             @else
@@ -171,16 +196,16 @@
                                     <label class="form-label">Ảnh Tag (Mua Nhiều, Hot...)</label>
                                     <div class="image-upload" style="position: relative; border: 1px dashed #ffb822; background: rgba(255, 184, 34, 0.05); padding: 20px; border-radius: 8px; text-align: center;">
                                         <input type="file" name="tag_image" class="form-control @error('tag_image') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="previewImage(this, 'preview-rc-edit-tag')">
-                                        <div class="image-uploads mt-2">
+                                        <div class="image-uploads mt-2" style="pointer-events: none;">
                                             @if($category->tag_image)
-                                                <div class="existing-tag-wrapper d-inline-block" style="position: relative; display: inline-block;">
+                                                <div class="existing-tag-wrapper d-inline-block" style="position: relative; display: inline-block; pointer-events: auto;">
                                                     <img id="preview-rc-edit-tag" src="{{ asset($category->tag_image) }}" alt="img" style="max-height: 50px; object-fit: contain; margin-bottom: 10px; border-radius: 4px;">
                                                     <button type="button"
                                                         class="btn btn-danger remove-existing-tag"
                                                         title="Xoá ảnh này"
                                                         aria-label="Xoá ảnh này"
                                                         onclick="removeExistingCategoryTag(this)"
-                                                        style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; min-width: 24px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 18px; font-weight: 800; line-height: 1; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,.25);">×</button>
+                                                        style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; min-width: 24px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 18px; font-weight: 800; line-height: 1; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,.25); cursor: pointer;">×</button>
                                                 </div>
                                                 <h5 class="mb-0 fw-semibold text-warning">Đổi ảnh Tag (Kéo thả hoặc click)</h5>
                                             @else

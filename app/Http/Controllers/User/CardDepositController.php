@@ -40,7 +40,8 @@ class CardDepositController extends Controller
             !in_array($partnerWeb, [
                 'thesieure.com',
                 'cardvip.vn',
-                'doithe1s.vn'
+                'doithe1s.vn',
+                'gachthefast.com'
             ])
         ) {
             return redirect()->route('profile.deposit-card')
@@ -50,7 +51,7 @@ class CardDepositController extends Controller
             $partner_id = config_get('payment.card.partner_id', '');
             $partner_key = config_get('payment.card.partner_key', '');
             $request_id = rand(111111111111, 9999999999999);
-            $response = Http::withHeaders([
+            $response = Http::timeout(10)->connectTimeout(5)->withHeaders([
                 'Content-Type' => 'application/json'
             ])->post("https://$partnerWeb/chargingws/v2", [
                         'telco' => $request->telco,

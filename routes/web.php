@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/services-history', [ProfileController::class, 'servicesHistory'])->name('services-history');
         Route::get('/transaction-history', [ProfileController::class, 'transactionHistory'])->name('transaction-history');
         Route::get('/purchased-accounts', [ProfileController::class, 'purchasedAccounts'])->name('purchased-accounts');
+        Route::get('/purchased-accounts/{id}', [ProfileController::class, 'purchasedAccountDetail'])->name('purchased-account-detail');
 
         Route::get('/purchased-random-accounts', [ProfileController::class, 'purchasedRandomAccounts'])->name('purchased-random-accounts');
         Route::get('/purchased-random-accounts/{batchId}', [ProfileController::class, 'purchasedRandomAccountDetail'])->name('purchased-random-account-detail');
@@ -53,6 +54,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/deposit/card', [ProfileController::class, 'depositCard'])->name('deposit-card');
         Route::get('/deposit/atm', [ProfileController::class, 'depositAtm'])->name('deposit-atm');
         Route::get('/deposit/atm/check', [ProfileController::class, 'checkDepositAtm'])->name('deposit-atm.check');
+        Route::get('/deposit/check-unread', [ProfileController::class, 'checkUnreadDeposit'])->name('deposit.check-unread');
         Route::get('/deposit/usdt', [ProfileController::class, 'depositUsdt'])->name('deposit-usdt');
         Route::post('/deposit/usdt', [ProfileController::class, 'processDepositUsdt']);
         Route::post('/deposit/card', [CardDepositController::class, 'processCardDeposit']);
@@ -86,23 +88,26 @@ Route::middleware('auth')->group(function () {
     Route::post('/installment/{id}/pay', [\App\Http\Controllers\User\InstallmentController::class, 'pay'])->name('installment.pay');
 });
 Route::prefix('category')->name('category.')->group(function () {
-    Route::get('/', [GameCategoryController::class, 'showAll'])->name('show-all');
+    Route::get('/', fn () => redirect()->route('home'))->name('show-all');
+    Route::get('/group', fn () => redirect()->route('home'));
     Route::get('/group/{slug}', [GameCategoryController::class, 'showGroup'])->name('group');
     Route::get('/{slug}', [GameCategoryController::class, 'index'])->name('index');
 });
 Route::prefix('account')->name('account.')->group(function () {
+    Route::get('/', fn () => redirect()->route('home'));
     Route::get('/{id}', [GameAccountController::class, 'show'])->name(name: 'show');
     Route::post('/{id}/purchase', [GameAccountController::class, 'purchase'])->middleware('auth')->name('purchase');
 });
 Route::prefix('service')->name('service.')->group(function () {
-    Route::get('/', [GameServiceController::class, 'showAll'])->name('show-all');
+    Route::get('/', fn () => redirect()->route('home'))->name('show-all');
     Route::get('/{slug}', [GameServiceController::class, 'show'])->name('show');
     Route::post('/{slug}/order', [ServiceOrderController::class, 'processOrder'])->middleware('auth')->name('order');
 });
 
 // Routes for random categories
 Route::prefix('random')->name('random.')->group(function () {
-    Route::get('/', [RandomCategoryController::class, 'showAll'])->name('show-all');
+    Route::get('/', fn () => redirect()->route('home'))->name('show-all');
+    Route::get('/group', fn () => redirect()->route('home'));
     Route::get('/account/{id}', [RandomAccountController::class, 'show'])->name('account.show');
     Route::post('/account/{id}/purchase', [RandomAccountController::class, 'purchase'])->middleware('auth')->name('account.purchase');
     Route::get('/{slug}', [RandomCategoryController::class, 'index'])->name('index');
@@ -128,3 +133,38 @@ Route::prefix('tin-tuc')->name('news.')->group(function () {
     Route::get('/', [NewsController::class, 'index'])->name('index');
     Route::get('/{slug}', [NewsController::class, 'show'])->name('show');
 });
+
+// Route phục vụ ảnh từ storage khi cPanel chưa tạo symbolic link hoặc bị chặn symlink
+Route::get('/storage/{path}', function ($path) {
+    $filePath = storage_path('app/public/' . $path);
+    if (!file_exists($filePath)) {
+        abort(404);
+    }
+    return response()->file($filePath, [
+        'Cache-Control' => 'public, max-age=31536000',
+    ]);
+})->where('path', '.*')->name('storage.file');
+
+// Route hỗ trợ Admin tạo lại storage:link tự động trực tiếp trên web
+Route::get('/admin/fix-storage-link', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('storage:link');
+        $output = \Illuminate\Support\Facades\Artisan::output();
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã chạy storage:link thành công!',
+            'output' => $output
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Không thể tạo symlink tự động: ' . $e->getMessage()
+        ], 500);
+    }
+})->middleware(['auth', 'admin'])->name('admin.fix-storage-link');
+
+// Fallback route: redirect any non-existent route to home
+Route::fallback(function () {
+    return redirect()->route('home');
+});
+

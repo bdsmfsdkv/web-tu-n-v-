@@ -2,6 +2,224 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <script>
+        /* Khởi tạo Theme ngay lập tức trước khi render để chống 100% hiện tượng chớp/giật màn hình khi tải lại trang */
+        (function() {
+            try {
+                var theme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) {}
+        })();
+
+        /* ================= 4-DOT PRELOADER ENGINE (SELF-HEALING & ZALO WEBVIEW COMPATIBLE) ================= */
+        (function() {
+            var loaderTimeout = null;
+
+            window.dismissPageLoader = function() {
+                if (loaderTimeout) {
+                    clearTimeout(loaderTimeout);
+                    loaderTimeout = null;
+                }
+                var p = document.getElementById('pagePreloader');
+                if (p) {
+                    p.classList.add('hide-loader');
+                }
+            };
+
+            window.showPageLoader = function() {
+                var p = document.getElementById('pagePreloader');
+                if (p) {
+                    p.classList.remove('hide-loader');
+                    // Safety watchdog: Tự động dập tắt loader sau 3.5s nếu navigation bị hủy hoặc timeout
+                    if (loaderTimeout) clearTimeout(loaderTimeout);
+                    loaderTimeout = setTimeout(window.dismissPageLoader, 3500);
+                }
+            };
+
+            // Tự động tắt loader ngay khi DOM sẵn sàng
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                setTimeout(window.dismissPageLoader, 30);
+            } else {
+                document.addEventListener('DOMContentLoaded', function() {
+                    setTimeout(window.dismissPageLoader, 30);
+                });
+                window.addEventListener('load', window.dismissPageLoader);
+            }
+
+            // Tương thích tuyệt đối bfcache (Back/Forward) & Zalo/Facebook in-app WebView
+            window.addEventListener('pageshow', function() {
+                window.dismissPageLoader();
+            });
+
+            // Hard Failsafe Watchdog: Cam kết tối đa 350ms sau khi trang bắt đầu load là PHẢI ẩn loader
+            setTimeout(window.dismissPageLoader, 350);
+        })();
+    </script>
+    <style id="critical-baseline-css">
+        /* 4-Dot Antd Preloader */
+        .kc-preloader {
+            position: fixed !important;
+            inset: 0 !important;
+            z-index: 99999 !important;
+            background: rgba(255, 255, 255, 0.96) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.22s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.22s cubic-bezier(0.25, 1, 0.5, 1) !important;
+            pointer-events: none !important;
+        }
+
+        [data-theme="dark"] .kc-preloader {
+            background: rgba(18, 18, 18, 0.96) !important;
+        }
+
+        .kc-preloader.hide-loader {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
+        .antd-spin {
+            position: relative;
+            display: inline-block;
+            width: 38px;
+            height: 38px;
+            transform: rotate(45deg);
+            animation: antdSpinRotate 1.2s infinite linear;
+            transform-origin: 50% 50%;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        .antd-spin i {
+            position: absolute;
+            display: block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: var(--primary, #dc2626);
+            transform: scale(0.75);
+            transform-origin: 50% 50%;
+            opacity: 0.35;
+            animation: antdSpinDot 1s infinite linear alternate;
+        }
+
+        .antd-spin i:nth-child(1) { top: 0; left: 0; }
+        .antd-spin i:nth-child(2) { top: 0; right: 0; animation-delay: 0.4s; }
+        .antd-spin i:nth-child(3) { right: 0; bottom: 0; animation-delay: 0.8s; }
+        .antd-spin i:nth-child(4) { bottom: 0; left: 0; animation-delay: 1.2s; }
+
+        @keyframes antdSpinRotate {
+            to { transform: rotate(405deg); }
+        }
+
+        @keyframes antdSpinDot {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Zero-FOUC & Zero-CLS Theme & Layout Baseline */
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: #ffffff;
+            color: #1f2937;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        [data-theme="dark"],
+        [data-theme="dark"] body {
+            background-color: #121212 !important;
+            color: #f3f4f6 !important;
+        }
+
+        /* Fixed navbar baseline to prevent jump */
+        nav.navbar {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            height: 64px !important;
+            min-height: 64px !important;
+            z-index: 1000 !important;
+            background: #ffffff !important;
+            border-bottom: 1px solid #e5e7eb !important;
+            box-sizing: border-box !important;
+        }
+
+        [data-theme="dark"] nav.navbar {
+            background: #171717 !important;
+            border-color: #2a2a2a !important;
+        }
+
+        .nav-container {
+            width: 100% !important;
+            max-width: 1360px !important;
+            height: 64px !important;
+            min-height: 64px !important;
+            margin: 0 auto !important;
+            padding: 0 20px !important;
+            display: grid !important;
+            grid-template-columns: auto minmax(0, 1fr) auto !important;
+            align-items: center !important;
+            box-sizing: border-box !important;
+        }
+
+        main {
+            padding-top: 64px !important;
+            flex: 1 0 auto !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Fixed icon box size to prevent button expansion */
+        .iconify, svg.iconify, i.fa-solid, i.fa-regular, i.fa-brands, i.fab, i.fas, i.far {
+            display: inline-block !important;
+            width: 1em !important;
+            height: 1em !important;
+            line-height: 1 !important;
+            vertical-align: -0.125em !important;
+            fill: currentColor;
+            flex-shrink: 0 !important;
+            box-sizing: content-box !important;
+        }
+
+        .nav-item-icon {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 1.15em !important;
+            height: 1.15em !important;
+            flex-shrink: 0 !important;
+        }
+
+        .nav-arrow {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 0.8em !important;
+            height: 0.8em !important;
+            flex-shrink: 0 !important;
+        }
+
+        @media (max-width: 1199px) {
+            nav.navbar, .nav-container {
+                height: 56px !important;
+                min-height: 56px !important;
+            }
+            main {
+                padding-top: 56px !important;
+            }
+        }
+
+        img {
+            image-rendering: auto;
+        }
+    </style>
     <meta name="format-detection" content="telephone=no" />
     <meta name="robots" content="index, follow" />
 
@@ -38,24 +256,28 @@
     <link rel="dns-prefetch" href="//fonts.gstatic.com" />
     <link rel="dns-prefetch" href="//cdn.jsdelivr.net" />
     <link rel="dns-prefetch" href="//code.jquery.com" />
-    <link rel="dns-prefetch" href="//code.iconify.design" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap">
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/antd@4.24.16/dist/antd.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lelinh014756/fui-toast-js@master/assets/css/toast@1.0.1/fuiToast.min.css">
 
     {{-- Local CSS uses filemtime so localhost and production never keep an old menu file after deployment. --}}
     <link href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}" rel="stylesheet">
+    <link href="{{ asset('css/header-layout.css') }}?v={{ filemtime(public_path('css/header-layout.css')) }}" rel="stylesheet">
     <link href="{{ asset('css/legacy-compat.css') }}?v={{ filemtime(public_path('css/legacy-compat.css')) }}" rel="stylesheet">
     <link href="{{ asset('css/ui-fixes.css') }}?v={{ filemtime(public_path('css/ui-fixes.css')) }}" rel="stylesheet">
+    <link href="{{ asset('css/modern-enhancements.css') }}?v={{ filemtime(public_path('css/modern-enhancements.css')) }}" rel="stylesheet">
 
+    {{-- Local pre-bundled offline Iconify icons: 0ms delay, zero network fetch, zero layout shift --}}
+    <script src="{{ asset('js/iconify-bundle.min.js') }}?v={{ filemtime(public_path('js/iconify-bundle.min.js')) }}"></script>
     <script defer src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script defer src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
     <script>
         window.__defaultTheme = 'light';
@@ -84,6 +306,19 @@
     @endif
 
     @stack('css')
+
+    {{-- Preload banner image so it loads early and triggers window.load --}}
+    @php
+        $preloadBanners = json_decode(config_get('site_banner'), true);
+        if (!is_array($preloadBanners) && !empty(config_get('site_banner'))) {
+            $preloadBanners = [config_get('site_banner')];
+        }
+        $firstBanner = !empty($preloadBanners) ? $preloadBanners[0] : null;
+    @endphp
+    @if($firstBanner)
+    <link rel="preload" as="image" href="{{ asset($firstBanner) }}" fetchpriority="high">
+    @endif
+
     <link href="{{ asset('css/mobile-header-final.css') }}?v={{ filemtime(public_path('css/mobile-header-final.css')) }}" rel="stylesheet">
     <link href="{{ asset('css/navbar-hover-hotfix.css') }}?v={{ filemtime(public_path('css/navbar-hover-hotfix.css')) }}" rel="stylesheet">
 
@@ -141,7 +376,8 @@
         }
 
         iframe.goog-te-banner-frame { display: none !important; }
-        body { top: 0px !important; }
+        #goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
+        body { top: 0px !important; position: static !important; }
         .goog-tooltip,
         .goog-tooltip:hover { display: none !important; }
         .goog-text-highlight {
@@ -151,17 +387,7 @@
         }
         .goog-te-gadget { font-size: 0px !important; }
         .skiptranslate { display: none !important; }
-
-        /* Chống giật chữ khi đang dịch */
-        html.gt-translating body {
-            visibility: hidden !important;
-            opacity: 0 !important;
-        }
-        html.gt-translated body {
-            visibility: visible !important;
-            opacity: 1 !important;
-            transition: opacity 0.15s ease-in-out !important;
-        }
+        font > font { font: inherit !important; color: inherit !important; line-height: inherit !important; }
 
         /* Guest mobile header: keep Login/Register beside theme, never inside hamburger. */
         @media (max-width: 1199px) {
@@ -219,8 +445,8 @@
                 gap: 4px !important;
             }
             html body nav.navbar > .nav-container > .nav-brand img {
-                max-width: 86px !important;
-                height: 32px !important;
+                max-width: 120px !important;
+                height: 35px !important;
             }
             html body nav.navbar > .nav-container > .nav-user { gap: 4px !important; }
             html body nav.navbar > .nav-container > .nav-user > .nav-guest-actions { gap: 3px !important; }
@@ -259,7 +485,6 @@
             ov.style.display = 'block';
             md.style.display = 'block';
             switchAuthPanel(panel || 'login');
-            document.body.style.overflow = 'hidden';
         }
 
         function closeAuthModal() {
@@ -267,7 +492,6 @@
             var md = document.getElementById('authModal');
             if (ov) ov.style.display = 'none';
             if (md) md.style.display = 'none';
-            document.body.style.overflow = '';
         }
 
         function switchAuthPanel(panel) {
@@ -370,21 +594,6 @@
 
             if (savedLang !== 'vi') {
                 ensureGoogleTranslateLoaded();
-                document.documentElement.classList.add('gt-translating');
-                var reveal = function () {
-                    document.documentElement.classList.remove('gt-translating');
-                    document.documentElement.classList.add('gt-translated');
-                };
-                var observer = new MutationObserver(function (mutations, obs) {
-                    if (document.documentElement.classList.contains('translated-ltr') ||
-                        document.documentElement.classList.contains('translated-rtl') ||
-                        document.body && document.body.classList.contains('translated-ltr')) {
-                        obs.disconnect();
-                        reveal();
-                    }
-                });
-                observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-                setTimeout(reveal, 1200);
             }
 
             if (savedLang !== 'vi' && currentCookie !== cookieVal) {

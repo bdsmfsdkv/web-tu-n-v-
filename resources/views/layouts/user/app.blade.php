@@ -1,7 +1,11 @@
 <!DOCTYPE html>
-<html lang="vi" data-theme="light">
+<html lang="vi">
 @include('layouts.user.head')
 <body style="min-height:100vh;display:flex;flex-direction:column;margin:0;">
+    <!-- 4-Dot Antd Preloader -->
+    <div id="pagePreloader" class="kc-preloader">
+        <span class="antd-spin"><i></i><i></i><i></i><i></i></span>
+    </div>
     <div id="fui-toast"></div>
     <!-- Navbar -->
     @include('layouts.user.header')
@@ -13,7 +17,7 @@
     @include('layouts.user.footer')
 
     <!-- Deposit Method Modal -->
-    <div id="depositMethodModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:10000;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);" onclick="if(event.target===this)this.style.display='none'">
+    <div id="depositMethodModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.65);z-index:10000;align-items:flex-end;justify-content:center;" onclick="if(event.target===this)this.style.display='none'">
         <div class="deposit-modal-content" style="border-radius:16px 16px 0 0;padding:24px 20px 32px;width:100%;max-width:480px;animation:slideUpModal .25s ease-out;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
                 <h3 class="deposit-modal-title" style="font-size:1.1rem;font-weight:700;margin:0;">Chọn phương thức nạp</h3>
@@ -82,34 +86,69 @@
         [data-theme="dark"] .atm-icon-bg { background: rgba(22, 163, 74, 0.1); }
     </style>
 
-    <!-- Floating Support -->
-    <div class="floating-support">
-        <a href="https://zalo.me/{{ config_get('zalo', '0123456789') }}" target="_blank" rel="noopener noreferrer" class="support-item zalo" title="Hỗ trợ Zalo" aria-label="Hỗ trợ Zalo">
-            <img src="https://shopaccgamev2.tuanori.vn/images/zalo.webp" alt="Zalo">
-            <span class="support-text">Chat Zalo</span>
-        </a>
-        <a href="{{ config_get('facebook', 'https://facebook.com') }}" target="_blank" rel="noopener noreferrer" class="support-item messenger" title="Hỗ trợ Facebook" aria-label="Hỗ trợ Facebook">
-            <img src="https://shopaccgamev2.tuanori.vn/images/facebook.webp" alt="Facebook">
-            <span class="support-text">Facebook</span>
-        </a>
-        <a href="tel:{{ config_get('phone', '0123456789') }}" class="support-item hotline" title="Hotline">
-            <div class="phone-icon-wrapper">
-                <span class="iconify" data-icon="ant-design:phone-filled"></span>
+    @if(config_get('floating_contact_enabled', true))
+    <!-- Collapsible Floating Support Widget -->
+    <div class="floating-support" id="floatingSupport">
+        <div class="support-items-list" id="supportItemsList">
+            <a href="https://zalo.me/{{ config_get('zalo', '0123456789') }}" target="_blank" rel="noopener noreferrer" class="support-item zalo" title="Hỗ trợ Zalo" aria-label="Hỗ trợ Zalo">
+                <img src="https://shopaccgamev2.tuanori.vn/images/zalo.webp" alt="Zalo" width="24" height="24" loading="lazy" decoding="async">
+                <span class="support-text">Chat Zalo</span>
+            </a>
+            <a href="{{ config_get('facebook', 'https://facebook.com') }}" target="_blank" rel="noopener noreferrer" class="support-item messenger" title="Hỗ trợ Facebook" aria-label="Hỗ trợ Facebook">
+                <img src="https://shopaccgamev2.tuanori.vn/images/facebook.webp" alt="Facebook" width="24" height="24" loading="lazy" decoding="async">
+                <span class="support-text">Facebook</span>
+            </a>
+            <a href="tel:{{ config_get('phone', '0123456789') }}" class="support-item hotline" title="Hotline" aria-label="Hotline">
+                <i class="fa-solid fa-phone"></i>
+                <span class="support-text">Hotline: {{ config_get('phone', '0123456789') }}</span>
+            </a>
+        </div>
+
+        <button type="button" class="floating-support-toggle" id="floatingSupportToggle" onclick="window.toggleFloatingSupport && window.toggleFloatingSupport(event)" aria-expanded="false" aria-label="Liên hệ hỗ trợ" title="Liên hệ CSKH">
+            <div class="toggle-icon-wrap">
+                <i class="fa-solid fa-headset icon-main"></i>
+                <i class="fa-solid fa-xmark icon-close"></i>
             </div>
-            <span class="support-text">{{ config_get('phone', '0123456789') }}</span>
-        </a>
+            <span class="support-online-dot"></span>
+        </button>
     </div>
 
     <style>
         .floating-support {
             position: fixed;
-            bottom: 80px;
-            right: 24px;
+            bottom: 75px;
+            right: 20px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            z-index: 9999;
+            align-items: center;
+            z-index: 99999;
+            pointer-events: none;
+            user-select: none;
         }
+
+        .support-items-list {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(20px) scale(0.85);
+            transform-origin: bottom center;
+            transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                        visibility 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .floating-support.is-open .support-items-list {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+
         .support-item {
             position: relative;
             width: 44px;
@@ -119,130 +158,320 @@
             align-items: center;
             justify-content: center;
             text-decoration: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+            opacity: 0;
+            transform: translateY(12px) scale(0.7);
+            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                        box-shadow 0.22s ease,
+                        opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                        border-color 0.2s ease;
+            pointer-events: none;
         }
+
+        .floating-support.is-open .support-item {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        /* Staggered entry animation */
+        .floating-support.is-open .support-item.hotline {
+            transition-delay: 0.03s;
+        }
+        .floating-support.is-open .support-item.messenger {
+            transition-delay: 0.07s;
+        }
+        .floating-support.is-open .support-item.zalo {
+            transition-delay: 0.11s;
+        }
+
+        .support-item:hover {
+            transform: translateY(-2px) scale(1.08);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .support-item:active {
+            transform: scale(0.96);
+        }
+
         .support-item img {
+            display: block;
             width: 24px;
             height: 24px;
             object-fit: contain;
+            pointer-events: none;
         }
-        .support-item.zalo {
-            background: #fff;
-        }
-        .support-item.messenger {
-            background: #fff;
-        }
+
         .support-item.hotline {
             background: #ef4444;
-            color: white;
-            animation: pulse-red 2s infinite;
+            color: #ffffff;
+            border-color: #dc2626;
+            font-size: 1.05rem;
         }
-        .phone-icon-wrapper {
-            font-size: 24px;
-            display: flex;
-            align-items: center;
+        .support-item.hotline:hover {
+            background: #dc2626;
         }
-        .support-item:hover {
-            transform: translateY(-4px) scale(1.05);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-        }
+
         .support-text {
             position: absolute;
-            right: 100%;
-            margin-right: 12px;
-            background: #fff;
-            color: #1f2937;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 13px;
+            right: calc(100% + 12px);
+            top: 50%;
+            transform: translateY(-50%) translateX(6px);
+            background: #1e293b;
+            color: #ffffff;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 12.5px;
             font-weight: 600;
             white-space: nowrap;
             opacity: 0;
             visibility: hidden;
-            transform: translateX(10px);
-            transition: all 0.3s;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
             pointer-events: none;
         }
+
         .support-text::after {
             content: '';
             position: absolute;
             top: 50%;
-            right: -4px;
-            transform: translateY(-50%);
-            border-width: 5px 0 5px 5px;
+            left: 100%;
+            margin-top: -4px;
+            border-width: 4px 0 4px 5px;
             border-style: solid;
-            border-color: transparent transparent transparent #fff;
+            border-color: transparent transparent transparent #1e293b;
         }
+
         .support-item:hover .support-text {
             opacity: 1;
             visibility: visible;
-            transform: translateX(0);
+            transform: translateY(-50%) translateX(0);
         }
-        @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+
+        .floating-support-toggle {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: #ffffff;
+            border: 2px solid #ffffff;
+            box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            outline: none;
+            pointer-events: auto;
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                        background 0.25s ease,
+                        box-shadow 0.25s ease;
+        }
+
+        .floating-support-toggle:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
+        }
+
+        .floating-support-toggle:active {
+            transform: scale(0.94);
+        }
+
+        .floating-support.is-open .floating-support-toggle {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+        }
+
+        /* Radar Pulse Animation when closed */
+        .floating-support:not(.is-open) .floating-support-toggle::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid rgba(239, 68, 68, 0.6);
+            animation: supportPulse 2s infinite cubic-bezier(0.24, 0, 0.38, 1);
+            pointer-events: none;
+        }
+
+        @keyframes supportPulse {
+            0% {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
+            70% {
+                transform: scale(1.35);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1.45);
+                opacity: 0;
+            }
+        }
+
+        .toggle-icon-wrap {
+            position: relative;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            pointer-events: none;
+        }
+
+        .toggle-icon-wrap .icon-main,
+        .toggle-icon-wrap .icon-close {
+            position: absolute;
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                        opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .toggle-icon-wrap .icon-main {
+            opacity: 1;
+            transform: rotate(0) scale(1);
+        }
+
+        .toggle-icon-wrap .icon-close {
+            opacity: 0;
+            transform: rotate(-90deg) scale(0.5);
+        }
+
+        .floating-support.is-open .toggle-icon-wrap .icon-main {
+            opacity: 0;
+            transform: rotate(90deg) scale(0.5);
+        }
+
+        .floating-support.is-open .toggle-icon-wrap .icon-close {
+            opacity: 1;
+            transform: rotate(0) scale(1);
+        }
+
+        .support-online-dot {
+            position: absolute;
+            top: 1px;
+            right: 1px;
+            width: 11px;
+            height: 11px;
+            background: #22c55e;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        [data-theme="dark"] .support-item {
+            background: #27272a;
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+        [data-theme="dark"] .support-item.hotline {
+            background: #ef4444;
+            color: #ffffff;
+            border-color: #dc2626;
         }
         [data-theme="dark"] .support-text {
-            background: #1f2937;
-            color: #f3f4f6;
-            border: 1px solid #374151;
+            background: #0f172a;
+            color: #f8fafc;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         [data-theme="dark"] .support-text::after {
-            border-color: transparent transparent transparent #1f2937;
+            border-color: transparent transparent transparent #0f172a;
         }
+
         @media (max-width: 768px) {
             .floating-support {
-                bottom: 70px;
-                right: 16px;
-                gap: 10px;
+                bottom: 68px;
+                right: 14px;
+            }
+            .floating-support-toggle {
+                width: 42px;
+                height: 42px;
             }
             .support-item {
-                width: 40px;
-                height: 40px;
+                width: 38px;
+                height: 38px;
             }
-            .support-item img, .phone-icon-wrapper {
-                font-size: 20px;
+            .support-item img {
                 width: 20px;
                 height: 20px;
             }
             .support-text {
-                display: none;
+                display: none !important;
             }
         }
     </style>
 
-    <!-- Back to Top -->
-    <button class="back-to-top" id="backToTop" title="Lên đầu trang" aria-label="Lên đầu trang">
-        <span class="iconify" data-icon="ant-design:arrow-up-outlined"></span>
-    </button>
-    
-    <script src="https://cdn.jsdelivr.net/gh/lelinh014756/fui-toast-js@master/assets/js/toast@1.0.1/fuiToast.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-    <script src="{{ asset('js/app.js') }}?v={{ filemtime(public_path('js/app.js')) }}"></script>
-    <script src="{{ asset('assets/js/discount-code.js') }}?v={{ filemtime(public_path('assets/js/discount-code.js')) }}"></script>
     <script>
     (function() {
-      function hidePreloader() {
-        var p = document.getElementById('pagePreloader');
-        if (p && p.parentNode) {
-          p.style.opacity = '0';
-          setTimeout(function() {
-            p.remove();
-          }, 200);
+        window.toggleFloatingSupport = function(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            var supportWrap = document.getElementById('floatingSupport');
+            var supportToggle = document.getElementById('floatingSupportToggle');
+            if (supportWrap) {
+                var isOpen = supportWrap.classList.toggle('is-open');
+                if (supportToggle) {
+                    supportToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                }
+            }
+        };
+
+        function initFloatingSupport() {
+            var supportWrap = document.getElementById('floatingSupport');
+            var supportToggle = document.getElementById('floatingSupportToggle');
+            if (!supportWrap || !supportToggle) return;
+
+            // Handle outside click to close
+            document.addEventListener('click', function(e) {
+                if (supportWrap.classList.contains('is-open') && !supportWrap.contains(e.target)) {
+                    supportWrap.classList.remove('is-open');
+                    supportToggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            // Handle ESC key to close
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && supportWrap.classList.contains('is-open')) {
+                    supportWrap.classList.remove('is-open');
+                    supportToggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            // Close when clicking any contact link
+            var items = supportWrap.querySelectorAll('.support-item');
+            items.forEach(function(item) {
+                item.addEventListener('click', function() {
+                    setTimeout(function() {
+                        supportWrap.classList.remove('is-open');
+                        supportToggle.setAttribute('aria-expanded', 'false');
+                    }, 150);
+                });
+            });
         }
-      }
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', hidePreloader);
-      } else {
-        hidePreloader();
-      }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initFloatingSupport);
+        } else {
+            initFloatingSupport();
+        }
     })();
-  </script>
-    <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"ff8b28eff4d24470ab279ba48041523b","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+    </script>
+    @endif
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop" title="Lên đầu trang" aria-label="Lên đầu trang">
+                        <span class="iconify" data-icon="ant-design:arrow-up-outlined"></span>
+    </button>
+    
+    <script defer src="https://cdn.jsdelivr.net/gh/lelinh014756/fui-toast-js@master/assets/js/toast@1.0.1/fuiToast.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <script defer src="{{ asset('js/app.js') }}?v={{ filemtime(public_path('js/app.js')) }}"></script>
+    <script defer src="{{ asset('assets/js/discount-code.js') }}?v={{ filemtime(public_path('assets/js/discount-code.js')) }}"></script>
+
+
+
 
     @unless(Auth::check() && Auth::user()->role === 'admin')
     <!-- Live Purchase Toast -->
@@ -460,282 +689,6 @@
         });
     </script>
     @endunless
-
-    @auth
-    <!-- Global Realtime Deposit Notification for Logged-in User -->
-    @if(!request()->routeIs('profile.deposit-atm'))
-    <div id="global-deposit-modal" class="deposit-success-modal" style="display: none;">
-        <div class="dsm-backdrop"></div>
-        <div class="dsm-dialog">
-            <div class="dsm-badge-icon">
-                <div class="dsm-icon-ring"></div>
-                <i class="fa-solid fa-check"></i>
-            </div>
-            <h3 class="dsm-title">NẠP TIỀN THÀNH CÔNG!</h3>
-            <p class="dsm-subtitle">Giao dịch của bạn đã được ghi nhận và cộng tiền vào tài khoản</p>
-            
-            <div class="dsm-amount-card">
-                <div class="dsm-amount-label">Số tiền cộng vào tài khoản</div>
-                <div class="dsm-amount-value" id="global-dsm-amount">+0 đ</div>
-            </div>
-
-            <div class="dsm-details">
-                <div class="dsm-row">
-                    <span>Ngân hàng</span>
-                    <strong id="global-dsm-bank">MBBank</strong>
-                </div>
-                <div class="dsm-row">
-                    <span>Mã giao dịch</span>
-                    <strong id="global-dsm-txid">---</strong>
-                </div>
-                <div class="dsm-row">
-                    <span>Số dư mới</span>
-                    <strong id="global-dsm-balance" style="color: #10b981;">0 đ</strong>
-                </div>
-                <div class="dsm-row">
-                    <span>Thời gian</span>
-                    <span id="global-dsm-time" style="color: #64748b;">Vừa xong</span>
-                </div>
-            </div>
-
-            <div class="dsm-actions">
-                <button type="button" class="dsm-btn dsm-btn-primary" id="global-dsm-btn-close">
-                    <i class="fa-solid fa-gamepad"></i> Trải nghiệm dịch vụ ngay
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <style>
-        .deposit-success-modal {
-            position: fixed;
-            inset: 0;
-            z-index: 999999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-        }
-        .dsm-backdrop {
-            position: absolute;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-            animation: fadeIn 0.3s ease;
-        }
-        .dsm-dialog {
-            position: relative;
-            width: 100%;
-            max-width: 440px;
-            background: #ffffff;
-            border-radius: 20px;
-            padding: 32px 24px 24px;
-            text-align: center;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        [data-theme="dark"] .dsm-dialog {
-            background: #1e293b;
-            color: #f8fafc;
-            border-color: #334155;
-        }
-        .dsm-badge-icon {
-            width: 72px;
-            height: 72px;
-            margin: -60px auto 16px;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 32px;
-            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
-            position: relative;
-        }
-        .dsm-icon-ring {
-            position: absolute;
-            inset: -6px;
-            border-radius: 50%;
-            border: 2px dashed #10b981;
-            animation: spin 8s linear infinite;
-        }
-        .dsm-title {
-            font-size: 1.35rem;
-            font-weight: 800;
-            color: #10b981;
-            margin-bottom: 6px;
-            letter-spacing: 0.5px;
-        }
-        .dsm-subtitle {
-            font-size: 0.85rem;
-            color: #64748b;
-            margin-bottom: 20px;
-        }
-        [data-theme="dark"] .dsm-subtitle {
-            color: #94a3b8;
-        }
-        .dsm-amount-card {
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-            border: 1px solid #bbf7d0;
-            border-radius: 14px;
-            padding: 14px;
-            margin-bottom: 18px;
-        }
-        [data-theme="dark"] .dsm-amount-card {
-            background: rgba(16, 185, 129, 0.1);
-            border-color: rgba(16, 185, 129, 0.25);
-        }
-        .dsm-amount-label {
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            color: #059669;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-        }
-        [data-theme="dark"] .dsm-amount-label {
-            color: #34d399;
-        }
-        .dsm-amount-value {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #047857;
-        }
-        [data-theme="dark"] .dsm-amount-value {
-            color: #10b981;
-        }
-        .dsm-details {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            font-size: 0.88rem;
-            text-align: left;
-        }
-        [data-theme="dark"] .dsm-details {
-            background: #0f172a;
-        }
-        .dsm-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: #475569;
-        }
-        [data-theme="dark"] .dsm-row {
-            color: #cbd5e1;
-        }
-        .dsm-row strong {
-            color: #0f172a;
-        }
-        [data-theme="dark"] .dsm-row strong {
-            color: #f1f5f9;
-        }
-        .dsm-actions {
-            display: flex;
-            gap: 10px;
-        }
-        .dsm-btn {
-            flex: 1;
-            padding: 12px 18px;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .dsm-btn-primary {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-        .dsm-btn-primary:hover {
-            opacity: 0.92;
-            transform: translateY(-1px);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes popIn {
-            0% { opacity: 0; transform: scale(0.8); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            let sessionInitTime = new Date().toISOString();
-            let checkTimer = setInterval(function() {
-                fetch('{{ route('profile.deposit-atm.check') }}?since=' + encodeURIComponent(sessionInitTime), {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(r => r.json())
-                .then(res => {
-                    if (res.success && res.found && res.deposit) {
-                        sessionInitTime = new Date().toISOString();
-                        clearInterval(checkTimer);
-                        
-                        document.getElementById('global-dsm-amount').textContent = '+' + res.deposit.amount_formatted;
-                        document.getElementById('global-dsm-bank').textContent = res.deposit.bank || 'Ngân hàng';
-                        document.getElementById('global-dsm-txid').textContent = res.deposit.transaction_id || '---';
-                        document.getElementById('global-dsm-balance').textContent = (res.new_balance_formatted || '0') + ' đ';
-                        document.getElementById('global-dsm-time').textContent = res.deposit.created_at || 'Vừa xong';
-
-                        document.getElementById('global-deposit-modal').style.display = 'flex';
-
-                        // Sounds + Confetti
-                        try {
-                            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                            const osc = audioCtx.createOscillator();
-                            const gain = audioCtx.createGain();
-                            osc.connect(gain);
-                            gain.connect(audioCtx.destination);
-                            osc.type = 'sine';
-                            osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
-                            osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1);
-                            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
-                            osc.start();
-                            osc.stop(audioCtx.currentTime + 0.5);
-                        } catch (e) {}
-
-                        if (typeof confetti === 'function') {
-                            confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
-                        }
-
-                        document.querySelectorAll('[data-user-balance]').forEach(el => {
-                            el.textContent = res.new_balance_formatted;
-                        });
-                    }
-                })
-                .catch(() => {});
-            }, 6000);
-
-            document.getElementById('global-dsm-btn-close')?.addEventListener('click', function() {
-                document.getElementById('global-deposit-modal').style.display = 'none';
-            });
-        });
-    </script>
-    @endif
-    @endauth
     
     @stack('scripts')
 </body>

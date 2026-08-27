@@ -3,7 +3,7 @@
 @section('title', $title)
 
 @section('content')
-    <section class="profile-section">
+    <section class="profile-section" style="padding-bottom: 90px;">
         <div class="container">
             <div class="profile-container">
                 <div class="profile-header">
@@ -38,9 +38,43 @@
                                 <div class="transaction-history">
                                     <style>
                                         /* Custom Modal CSS */
-                                        .modal { display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
-                                        .modal__content { background-color: #fff; margin: 10% auto; width: 90%; max-width: 500px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); animation: modalFadeIn 0.3s; overflow: hidden; display: flex; flex-direction: column; }
-                                        @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+                                        .modal {
+                                            position: fixed;
+                                            z-index: 1050;
+                                            inset: 0;
+                                            width: 100%;
+                                            height: 100%;
+                                            overflow: auto;
+                                            background-color: rgba(15, 23, 42, 0.65);
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            opacity: 0;
+                                            visibility: hidden;
+                                            pointer-events: none;
+                                            transition: opacity 0.2s ease, visibility 0.2s ease;
+                                        }
+                                        .modal.active, .modal.show {
+                                            opacity: 1;
+                                            visibility: visible;
+                                            pointer-events: auto;
+                                        }
+                                        .modal__content {
+                                            background-color: #fff;
+                                            margin: auto;
+                                            width: 90%;
+                                            max-width: 500px;
+                                            border-radius: 12px;
+                                            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+                                            overflow: hidden;
+                                            display: flex;
+                                            flex-direction: column;
+                                            transform: scale(0.95) translateY(8px);
+                                            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+                                        }
+                                        .modal.active .modal__content, .modal.show .modal__content {
+                                            transform: scale(1) translateY(0);
+                                        }
                                         .modal__header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e5e7eb; background-color: #f8fafc; }
                                         .modal__title { margin: 0; font-size: 1.25rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; }
                                         .modal__close { background: none; border: none; font-size: 1.5rem; color: #64748b; cursor: pointer; line-height: 1; padding: 0; transition: color 0.2s; }
@@ -254,14 +288,12 @@
 
         // Function to open service modal
         function openServiceModal() {
-            document.getElementById('serviceDetailsModal').style.display = 'block';
-            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+            document.getElementById('serviceDetailsModal').classList.add('active');
         }
 
         // Function to close service modal
         function closeServiceModal() {
-            document.getElementById('serviceDetailsModal').style.display = 'none';
-            document.body.style.overflow = ''; // Restore scrolling
+            document.getElementById('serviceDetailsModal').classList.remove('active');
         }
     </script>
 @endpush

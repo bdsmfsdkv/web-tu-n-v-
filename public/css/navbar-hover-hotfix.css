@@ -602,3 +602,77 @@ html[data-theme="dark"] body nav.navbar #navLinks > li:not(.open):not(.menu-open
 body[data-theme="dark"] nav.navbar #navLinks > li:not(.open):not(.menu-open):not(:has(> .mega-menu:hover)) > .nav-menu-trigger:not(.active):not(:hover):not(:focus-visible) {
     color: #e5e7eb !important;
 }
+
+/* Account/profile & Navbar micro-transitions */
+html body nav.navbar .nav-user > .ant-header-lang-dropdown,
+html body #avatarDropdown .profile-language-section {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+html body nav.navbar {
+    --nav-fast: 140ms;
+    --nav-normal: 180ms;
+    --nav-ease: cubic-bezier(.2,.8,.2,1);
+}
+
+html body nav.navbar .theme-toggle,
+html body nav.navbar .nav-toggle,
+html body nav.navbar .nav-avatar,
+html body nav.navbar .btn-nav-login,
+html body nav.navbar .btn-nav-register,
+html body nav.navbar .btn-mobile-login,
+html body nav.navbar .btn-mobile-reg,
+html body #avatarDropdown .dropdown-item,
+html body #avatarDropdown .dropdown-btn-deposit {
+    transition:
+        color var(--nav-fast) ease,
+        background-color var(--nav-fast) ease,
+        border-color var(--nav-fast) ease,
+        box-shadow var(--nav-normal) ease,
+        transform var(--nav-normal) var(--nav-ease),
+        opacity var(--nav-fast) ease !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    html body nav.navbar .theme-toggle:hover,
+    html body nav.navbar .nav-toggle:hover,
+    html body nav.navbar .nav-avatar:hover {
+        border-color: rgba(220,38,38,.28) !important;
+        background: rgba(220,38,38,.055) !important;
+        box-shadow: 0 5px 14px rgba(15,23,42,.07) !important;
+    }
+
+    html body #avatarDropdown .dropdown-item:hover {
+        color: #dc2626 !important;
+        background: #fff7f7 !important;
+        border-color: rgba(220,38,38,.18) !important;
+        transform: translate3d(2px,0,0) !important;
+    }
+
+    html body #avatarDropdown .dropdown-btn-deposit:hover {
+        filter: none !important;
+        transform: translate3d(0,-1px,0) !important;
+        box-shadow: 0 7px 16px rgba(220,38,38,.18) !important;
+    }
+}
+
+@media (hover: hover) and (pointer: fine) {
+    [data-theme="dark"] body #avatarDropdown .dropdown-item:hover {
+        background: #2a1d1d !important;
+        border-color: #4b2427 !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html body nav.navbar .theme-toggle,
+    html body nav.navbar .nav-toggle,
+    html body nav.navbar .nav-avatar,
+    html body #avatarDropdown * {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+        transition-delay: 0s !important;
+    }
+}
+

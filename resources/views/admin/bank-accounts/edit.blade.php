@@ -367,6 +367,17 @@
                             </div>
 
                             <div class="col-md-6 col-12 mb-3">
+                                <label class="form-label fw-semibold">Tên chủ tài khoản</label>
+                                <input type="text" name="account_name"
+                                    value="{{ old('account_name', $bankAccount->account_name) }}"
+                                    class="form-control @error('account_name') is-invalid @enderror"
+                                    placeholder="Ví dụ: NGUYEN VAN A">
+                                @error('account_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6 col-12 mb-3">
                                 <label class="form-label fw-semibold">Chi nhánh ngân hàng</label>
                                 <input type="text" name="branch" value="{{ old('branch', $bankAccount->branch) }}"
                                     class="form-control" placeholder="Hội sở / Chi nhánh">

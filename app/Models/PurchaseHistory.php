@@ -42,4 +42,14 @@ class PurchaseHistory extends Model
     {
         return $this->belongsTo(GameAccount::class);
     }
+
+    protected static function booted()
+    {
+        $forgetPurchasesCache = function () {
+            \Illuminate\Support\Facades\Cache::forget('home_recent_purchases');
+        };
+
+        static::saved($forgetPurchasesCache);
+        static::deleted($forgetPurchasesCache);
+    }
 }

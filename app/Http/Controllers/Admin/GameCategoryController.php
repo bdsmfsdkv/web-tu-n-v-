@@ -55,6 +55,8 @@ class GameCategoryController extends Controller
                 'flash_sale_old_price' => 'nullable|numeric|min:0',
                 'flash_sale_new_price' => 'nullable|numeric|min:0',
                 'flash_sale_end_time' => 'nullable|date',
+                'custom_stock_count' => 'nullable|integer|min:0',
+                'custom_sold_count' => 'nullable|integer|min:0',
             ]);
 
             DB::beginTransaction();
@@ -63,6 +65,8 @@ class GameCategoryController extends Controller
             $data['slug'] = Str::slug($request->name);
             $data['active'] = $request->boolean('active');
             $data['is_flash_sale'] = $request->has('is_flash_sale');
+            $data['custom_stock_count'] = $request->filled('custom_stock_count') ? (int)$request->custom_stock_count : null;
+            $data['custom_sold_count'] = $request->filled('custom_sold_count') ? (int)$request->custom_sold_count : null;
 
             if ($request->hasFile('thumbnail')) {
                 $data['thumbnail'] = UploadHelper::upload($request->file('thumbnail'), self::UPLOAD_DIR);
@@ -82,7 +86,7 @@ class GameCategoryController extends Controller
             return redirect()->back()
                 ->withErrors($e->errors())
                 ->withInput();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Error creating game category: ' . $e->getMessage());
             return redirect()->back()
@@ -116,6 +120,8 @@ class GameCategoryController extends Controller
                 'flash_sale_old_price' => 'nullable|numeric|min:0',
                 'flash_sale_new_price' => 'nullable|numeric|min:0',
                 'flash_sale_end_time' => 'nullable|date',
+                'custom_stock_count' => 'nullable|integer|min:0',
+                'custom_sold_count' => 'nullable|integer|min:0',
             ]);
 
             DB::beginTransaction();
@@ -124,6 +130,8 @@ class GameCategoryController extends Controller
             $data['slug'] = Str::slug($request->name);
             $data['active'] = $request->boolean('active');
             $data['is_flash_sale'] = $request->has('is_flash_sale');
+            $data['custom_stock_count'] = $request->filled('custom_stock_count') ? (int)$request->custom_stock_count : null;
+            $data['custom_sold_count'] = $request->filled('custom_sold_count') ? (int)$request->custom_sold_count : null;
 
             if ($request->hasFile('thumbnail')) {
                 // Delete old thumbnail if exists
@@ -169,7 +177,7 @@ class GameCategoryController extends Controller
             return redirect()->back()
                 ->withErrors($e->errors())
                 ->withInput();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Error updating game category: ' . $e->getMessage());
             return redirect()->back()
@@ -178,35 +186,56 @@ class GameCategoryController extends Controller
         }
     }
 
-    public function destroy(GameCategory $category)
+    public function destroy($category)
     {
         try {
+            $category = $category instanceof GameCategory ? $category : GameCategory::findOrFail($category);
             DB::beginTransaction();
 
-            // Kiểm tra ràng buộc kinh doanh an toàn: nếu có tài khoản game thuộc danh mục thì từ chối xóa vật lý
-            if ($category->accounts()->count() > 0) {
-                DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không thể xóa danh mục này vì còn tài khoản game liên quan! Bạn có thể tắt trạng thái Hoạt động để ẩn danh mục.'
-                ], 422);
+            // Xóa ảnh của các tài khoản game liên quan trước khi cascade delete
+            $accounts = $category->accounts()->get(['id', 'thumb', 'images']);
+            $imagesToDelete = [];
+            foreach ($accounts as $account) {
+                if ($account->thumb) {
+                    $imagesToDelete[] = $account->thumb;
+                }
+                if ($account->images) {
+                    $images = is_array($account->images) ? $account->images : (json_decode($account->images, true) ?: []);
+                    foreach ($images as $img) {
+                        if ($img) {
+                            $imagesToDelete[] = $img;
+                        }
+                    }
+                }
             }
+
+            // Xóa các tài khoản game thuộc danh mục
+            $category->accounts()->delete();
 
             // Xóa các liên kết flash sale nếu có
             \App\Models\FlashSaleItem::where('item_type', 'game')->where('item_id', $category->id)->delete();
 
             // Delete thumbnail if exists
             if ($category->thumbnail) {
-                UploadHelper::deleteByUrl($category->thumbnail);
+                $imagesToDelete[] = $category->thumbnail;
             }
 
             if ($category->tag_image) {
-                UploadHelper::deleteByUrl($category->tag_image);
+                $imagesToDelete[] = $category->tag_image;
             }
 
             $category->delete();
 
             DB::commit();
+
+            // Cleanup images outside transaction
+            foreach (array_unique($imagesToDelete) as $imgUrl) {
+                try {
+                    UploadHelper::deleteByUrl($imgUrl);
+                } catch (\Throwable $e) {
+                    Log::warning('Failed to delete category/account image during category destroy: ' . $imgUrl);
+                }
+            }
 
             return response()->json([
                 'success' => true,

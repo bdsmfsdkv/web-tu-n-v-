@@ -16,14 +16,18 @@ class UploadHelper
      */
     public static function ensureDirectoryExists(string $path): string
     {
-        $fullPath = Storage::path($path);
+        try {
+            $fullPath = Storage::path($path);
+        } catch (\Throwable $e) {
+            $fullPath = storage_path('app/' . ltrim($path, '/'));
+        }
 
         if (!file_exists($fullPath)) {
             // Lưu umask hiện tại
             $oldUmask = umask(0);
 
             // Tạo thư mục với quyền 0755
-            mkdir($fullPath, 0755, true);
+            @mkdir($fullPath, 0755, true);
 
             // Khôi phục umask ban đầu
             umask($oldUmask);
@@ -72,7 +76,7 @@ class UploadHelper
         } catch (\Throwable $e) {
             if (str_contains($e->getMessage(), 'finfo') || !class_exists('finfo')) {
                 Log::error('Upload failed due to missing PHP fileinfo extension: ' . $e->getMessage());
-                throw new \RuntimeException('Máy chủ thiếu module PHP fileinfo (finfo). Vui lòng kích hoạt extension=fileinfo trong php.ini.', 0, $e);
+                throw new \RuntimeException('Máy chủ Hosting cPanel chưa bật extension PHP "fileinfo" (finfo). Vui lòng vào cPanel > Select PHP Version > Extensions > Tích chọn "fileinfo".', 0, $e);
             }
             Log::error('Error uploading file: ' . $e->getMessage());
             throw $e;
@@ -115,10 +119,30 @@ class UploadHelper
             if (preg_match('/^https?:\/\//i', $url) && !str_contains($url, '/storage/')) {
                 return false;
             }
-            $path = str_replace('/storage', 'public', parse_url($url, PHP_URL_PATH) ?? $url);
+            $parsedPath = parse_url($url, PHP_URL_PATH) ?? $url;
+            $path = str_replace('/storage/', '', $parsedPath);
             $path = ltrim($path, '/');
-            return Storage::delete($path);
-        } catch (\Exception $e) {
+            if (str_starts_with($path, 'storage/')) {
+                $path = substr($path, 8);
+            }
+
+            $deleted = false;
+
+            // Thử xóa qua Storage facade nếu finfo có sẵn
+            try {
+                $deletedPublic = Storage::disk('public')->delete($path);
+                $deletedRoot = Storage::delete('public/' . $path);
+                $deleted = $deletedPublic || $deletedRoot;
+            } catch (\Throwable $e) {
+                // Fallback nếu Storage driver lỗi (ví dụ thiếu finfo)
+                $directPath = storage_path('app/public/' . $path);
+                if (file_exists($directPath)) {
+                    $deleted = @unlink($directPath);
+                }
+            }
+
+            return $deleted;
+        } catch (\Throwable $e) {
             Log::error('Error deleting file: ' . $e->getMessage());
             return false;
         }

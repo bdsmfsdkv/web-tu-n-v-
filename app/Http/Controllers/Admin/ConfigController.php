@@ -53,6 +53,7 @@ class ConfigController extends Controller
             'tiktok' => config_get('tiktok', ''),
             'working_hours' => config_get('working_hours', '8:00 - 22:00'),
             'home_notification' => config_get('home_notification', ''),
+            'floating_contact_enabled' => config_get('floating_contact_enabled', true),
             'welcome_modal' => config_get('welcome_modal', true),
             'welcome_modal_snooze' => config_get('welcome_modal_snooze', true),
             'welcome_modal_snooze_hours' => config_get('welcome_modal_snooze_hours', 2),
@@ -274,6 +275,7 @@ class ConfigController extends Controller
             'tiktok' => config_get('tiktok', ''),
             'working_hours' => config_get('working_hours', '8:00 - 22:00'),
             'home_notification' => config_get('home_notification', ''),
+            'floating_contact_enabled' => config_get('floating_contact_enabled', true),
             'welcome_modal' => config_get('welcome_modal', true),
             'welcome_modal_snooze' => config_get('welcome_modal_snooze', true),
             'welcome_modal_snooze_hours' => config_get('welcome_modal_snooze_hours', 2),
@@ -298,6 +300,7 @@ class ConfigController extends Controller
             'tiktok' => 'nullable|string|max:255',
             'working_hours' => 'nullable|string|max:100',
             'home_notification' => 'nullable|string',
+            'floating_contact_enabled' => 'nullable|boolean',
             'welcome_modal' => 'nullable|boolean',
             'welcome_modal_snooze' => 'nullable|boolean',
             'welcome_modal_snooze_hours' => 'required|numeric|min:0.1|max:720',
@@ -317,6 +320,7 @@ class ConfigController extends Controller
             config_set('tiktok', $request->tiktok);
             config_set('working_hours', $request->working_hours);
             config_set('home_notification', $request->home_notification);
+            config_set('floating_contact_enabled', $request->has('floating_contact_enabled') ? true : false);
             config_set('welcome_modal', $request->has('welcome_modal') ? true : false);
             config_set('welcome_modal_snooze', $request->has('welcome_modal_snooze') ? true : false);
             config_set('welcome_modal_snooze_hours', $request->welcome_modal_snooze_hours);
@@ -445,7 +449,7 @@ class ConfigController extends Controller
     {
         $request->validate([
             'card_active' => 'nullable|boolean',
-            'partner_website_card' => 'string|in:thesieure.com,cardvip.vn,doithe1s.vn',
+            'partner_website_card' => 'string|in:thesieure.com,cardvip.vn,doithe1s.vn,gachthefast.com',
             'partner_id_card' => 'nullable|string|max:100',
             'partner_key_card' => 'nullable|string|max:100',
             'discount_percent_card' => 'nullable|integer|between:0,99',

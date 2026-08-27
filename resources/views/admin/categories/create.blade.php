@@ -111,6 +111,31 @@
                             </div>
 
                             <div class="col-12 mt-2 mb-3">
+                                <h6 class="fw-bold border-bottom pb-2 text-primary">
+                                    <i class="ti ti-adjustments-horizontal me-1"></i> Tùy chỉnh số lượng hiển thị (Còn / Đã bán)
+                                </h6>
+                            </div>
+                            
+                            <div class="col-lg-6 col-sm-6 col-12">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">
+                                        <i class="ti ti-package text-success me-1"></i> Số lượng CÒN hiển thị
+                                    </label>
+                                    <input type="number" name="custom_stock_count" class="form-control" value="{{ old('custom_stock_count') }}" placeholder="Để trống sẽ tự đếm theo số acc có sẵn thực tế">
+                                    <small class="text-muted">Nhập số lượng muốn hiển thị ở mục "Còn". Để trống = Tự động đếm.</small>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-6 col-12">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">
+                                        <i class="ti ti-shopping-cart text-danger me-1"></i> Số lượng ĐÃ BÁN hiển thị
+                                    </label>
+                                    <input type="number" name="custom_sold_count" class="form-control" value="{{ old('custom_sold_count') }}" placeholder="Để trống sẽ tự đếm theo số acc đã bán thực tế">
+                                    <small class="text-muted">Nhập số lượng muốn hiển thị ở mục "Đã bán". Để trống = Tự động đếm.</small>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-2 mb-3">
                                 <h6 class="fw-bold border-bottom pb-2">Hình ảnh</h6>
                             </div>
 

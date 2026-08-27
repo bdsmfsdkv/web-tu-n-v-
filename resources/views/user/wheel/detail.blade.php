@@ -13,7 +13,7 @@
     @if($wheel->pointer_image)
         <link rel="preload" as="image" href="{{ asset($wheel->pointer_image) }}" fetchpriority="high">
     @endif
-    <link rel="stylesheet" href="{{ asset('assets/css/wheel.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/wheel.css') }}?v={{ file_exists(public_path('assets/css/wheel.css')) ? filemtime(public_path('assets/css/wheel.css')) : time() }}">
 @endpush
 
 @section('content')
@@ -38,7 +38,7 @@
 
         <div class="layout-grid">
             <!-- Left Panel -->
-            <div class="left-panel-stack" style="display: flex; flex-direction: column; gap: 24px;">
+            <div class="left-panel-stack">
                 <!-- Main Wheel Card -->
                 <div class="main-card">
                     <div class="wheel-arena-wrapper">
@@ -72,8 +72,10 @@
                             <option value="10">QUAY X 10/ {{ number_format($wheel->price_per_spin * 10) }}</option>
                         </select>
 
-                        <button type="button" class="btn-white" id="trial-btn" disabled>CHƠI THỬ</button>
-                        <button type="button" class="btn-blue" id="spin-btn" disabled>QUAY NGAY</button>
+                        <div class="action-buttons-group">
+                            <button type="button" class="btn-white" id="trial-btn" disabled>CHƠI THỬ</button>
+                            <button type="button" class="btn-blue" id="spin-btn" disabled>QUAY NGAY</button>
+                        </div>
                     </div>
                 </div>
 

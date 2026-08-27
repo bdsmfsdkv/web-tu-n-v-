@@ -102,6 +102,18 @@
                             </div>
 
                             <div class="col-lg-12">
+                                <div class="card p-3 mb-3 border bg-light">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="floating_contact_enabled" name="floating_contact_enabled" value="1" {{ !empty($configs['floating_contact_enabled']) ? 'checked' : '' }}>
+                                        <label class="form-check-label fw-bold text-dark" for="floating_contact_enabled">
+                                            <i class="fa-solid fa-headset text-primary me-1"></i> Bật / Tắt nút liên hệ nổi (Floating Contact Widget)
+                                        </label>
+                                    </div>
+                                    <small class="form-text text-muted mt-1">Khi bật, nút liên hệ hỗ trợ thu gọn (Zalo, Facebook, Hotline) sẽ hiển thị ở góc màn hình.</small>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-12">
                                 <div class="mb-3 mt-2 border-top pt-4">
                                     <h5 class="mb-3">Popup thông báo website</h5>
                                     <label class="form-label">Nội dung popup</label>

@@ -250,19 +250,23 @@
     function buyAccount(accountId) {
         const modal = document.getElementById('purchaseModal');
         if (modal) {
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-            initDiscountHandler('random_account', accountId, {{ $account->price }});
+            modal.classList.add('active');
+            if (typeof initDiscountHandler === 'function') {
+                initDiscountHandler('random_account', accountId, {{ $account->price }});
+            }
         }
     }
 
     function closePurchaseModal() {
         const modal = document.getElementById('purchaseModal');
         if (modal) {
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
+            modal.classList.remove('active');
         }
     }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closePurchaseModal();
+    });
 
     function submitPurchase() {
         const accountId = {{ $account->id }};
@@ -284,20 +288,31 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             body: JSON.stringify({
-                discount_code: finalDiscountCode
+                discount_code: finalDiscountCode,
+                return_url: @json($categoryUrl)
             })
         })
-        .then(response => response.json())
+        .then(async response => {
+            const data = await response.json().catch(() => null);
+            if (!data) {
+                throw new Error('Máy chủ trả về dữ liệu không hợp lệ.');
+            }
+            return data;
+        })
         .then(data => {
             if (data.success) {
                 if (typeof FuiToast !== 'undefined') {
                     FuiToast.success(data.message || 'Mua tài khoản thành công!');
                 }
                 setTimeout(() => {
-                    window.location.href = data.redirect_url || '{{ route('profile.purchased-random-accounts') }}';
+                    sessionStorage.setItem('refreshPurchaseSource', '1');
+                    sessionStorage.setItem('purchaseReturnScrollY', '0');
+                    window.location.assign(data.redirect_url || '{{ route('profile.purchased-random-accounts') }}');
                 }, 1500);
             } else {
                 if (typeof FuiToast !== 'undefined') {
@@ -312,7 +327,7 @@
         .catch(error => {
             console.error('Error:', error);
             if (typeof FuiToast !== 'undefined') {
-                FuiToast.error('Đã xảy ra lỗi kết nối, vui lòng thử lại sau!');
+                FuiToast.error(error.message || 'Đã xảy ra lỗi kết nối, vui lòng thử lại sau!');
             }
             if (submitBtn) {
                 submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> XÁC NHẬN MUA';

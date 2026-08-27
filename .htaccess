@@ -1,5 +1,11 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # Redirect /public/xxx to /xxx
+    RewriteCond %{THE_REQUEST} \s/public/([^\s?]*) [NC]
+    RewriteRule ^ /%1 [L,R=301]
+
+    # Rewrite all requests to public folder
     RewriteCond %{REQUEST_URI} !^/public(?:/|$)
     RewriteRule ^(.*)$ public/$1 [L,QSA]
 </IfModule>

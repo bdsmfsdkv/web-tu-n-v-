@@ -91,11 +91,11 @@
                                 <div class="mb-3">
                                     <label class="form-label">Ảnh đại diện <span class="text-danger">*</span></label>
                                     <div class="image-upload" style="position: relative; border: 1px dashed #4680ff; background: rgba(70, 128, 255, 0.05); padding: 20px; border-radius: 8px; text-align: center;">
-                                        <input type="file" name="thumbnail" class="form-control @error('thumbnail') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="previewImage(this, 'preview-thumbnail')">
+                                        <input type="file" name="thumbnail" class="form-control @error('thumbnail') is-invalid @enderror" accept="image/jpeg,image/png,image/gif,image/webp" required style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="previewImage(this, 'preview-thumbnail')">
                                         <div class="image-uploads mt-2">
                                             <i class="ti ti-photo-plus text-primary" style="font-size: 40px;"></i>
                                             <h5 class="mt-2 mb-0 fw-semibold">Kéo thả hoặc click để tải ảnh lên</h5>
-                                            <p class="text-muted small">Hỗ trợ JPG, PNG, GIF, WebP · tối đa 64 MB</p>
+                                            <p class="text-muted small">Hỗ trợ JPG, PNG, GIF, WebP · tối đa 20 MB</p>
                                         </div>
                                     </div>
                                     @error('thumbnail')
@@ -119,11 +119,11 @@
                                 <div class="mb-3">
                                     <label class="form-label">Ảnh vòng quay <span class="text-danger">*</span></label>
                                     <div class="image-upload" style="position: relative; border: 1px dashed #20c997; background: rgba(32, 201, 151, 0.05); padding: 20px; border-radius: 8px; text-align: center;">
-                                        <input type="file" name="wheel_image" class="form-control @error('wheel_image') is-invalid @enderror" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="previewImage(this, 'preview-wheel')">
+                                        <input type="file" name="wheel_image" class="form-control @error('wheel_image') is-invalid @enderror" accept="image/jpeg,image/png,image/gif,image/webp" required style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="previewImage(this, 'preview-wheel')">
                                         <div class="image-uploads mt-2">
                                             <i class="ti ti-loader text-success" style="font-size: 40px;"></i>
                                             <h5 class="mt-2 mb-0 fw-semibold text-success">Kéo thả hoặc click để tải ảnh vòng quay lên</h5>
-                                            <p class="text-muted small">Hỗ trợ JPG, PNG, GIF, WebP · tối đa 64 MB</p>
+                                            <p class="text-muted small">Hỗ trợ JPG, PNG, GIF, WebP · tối đa 20 MB</p>
                                         </div>
                                     </div>
                                     @error('wheel_image')
@@ -286,21 +286,40 @@
         document.addEventListener('DOMContentLoaded', function() {
             const updateProbabilityTotals = function() {
                 const activeCards = Array.from(document.querySelectorAll('.reward-active:checked')).map(input => input.closest('.card'));
-                const total = activeCards.reduce((sum, card) => sum + (Number(card.querySelector('[name$="[probability]"]').value) || 0), 0);
-                const trialTotal = activeCards.reduce((sum, card) => sum + (Number(card.querySelector('[name$="[trial_probability]"]').value) || 0), 0);
+                const total = activeCards.reduce((sum, card) => {
+                    const probInput = card ? card.querySelector('input[name$="[probability]"]:not([name*="trial"])') : null;
+                    return sum + (Number(probInput ? probInput.value : 0) || 0);
+                }, 0);
+                const trialTotal = activeCards.reduce((sum, card) => {
+                    const trialInput = card ? card.querySelector('input[name$="[trial_probability]"]') : null;
+                    return sum + (Number(trialInput ? trialInput.value : 0) || 0);
+                }, 0);
                 const probabilityTotal = document.getElementById('probabilityTotal');
                 const trialProbabilityTotal = document.getElementById('trialProbabilityTotal');
-                probabilityTotal.textContent = total.toFixed(1).replace('.0', '') + '%';
-                trialProbabilityTotal.textContent = trialTotal.toFixed(1).replace('.0', '') + '%';
-                probabilityTotal.className = Math.abs(total - 100) < 0.001 ? 'text-success' : 'text-danger';
-                trialProbabilityTotal.className = Math.abs(trialTotal - 100) < 0.001 ? 'text-success' : 'text-danger';
-                document.querySelectorAll('[name$="[probability]"]').forEach(input => {
-                    const probability = Number(input.value);
-                    input.nextElementSibling.textContent = probability > 0 ? `Trung bình khoảng 1/${Math.round(100 / probability).toLocaleString('vi-VN')} lượt` : 'Không bao giờ ra';
+                if (probabilityTotal) {
+                    probabilityTotal.textContent = total.toFixed(1).replace('.0', '') + '%';
+                    probabilityTotal.className = Math.abs(total - 100) < 0.001 ? 'text-success fw-bold' : 'text-danger fw-bold';
+                }
+                if (trialProbabilityTotal) {
+                    trialProbabilityTotal.textContent = trialTotal.toFixed(1).replace('.0', '') + '%';
+                    trialProbabilityTotal.className = Math.abs(trialTotal - 100) < 0.001 ? 'text-success' : 'text-danger';
+                }
+                document.querySelectorAll('.card-body').forEach(card => {
+                    const probInput = card.querySelector('input[name$="[probability]"]:not([name*="trial"])');
+                    const hint = card.querySelector('.probability-hint');
+                    if (probInput && hint) {
+                        const probability = Number(probInput.value) || 0;
+                        hint.textContent = probability > 0 ? `Trung bình khoảng 1/${Math.round(100 / probability).toLocaleString('vi-VN')} lượt` : 'Không bao giờ ra';
+                    }
                 });
             };
             window.previewImage = function(input, previewId) {
                 if (!input.files || !input.files[0]) return;
+                if (input.files[0].size > 20 * 1024 * 1024) {
+                    input.value = '';
+                    alert('Ảnh không được vượt quá 20 MB.');
+                    return;
+                }
                 const preview = document.getElementById(previewId);
                 preview.src = URL.createObjectURL(input.files[0]);
                 preview.style.display = 'block';
@@ -308,7 +327,7 @@
                     document.getElementById('pointer-default-preview').style.display = 'none';
                 }
             };
-            document.querySelectorAll('[name$="[probability]"], [name$="[trial_probability]"]').forEach(input => input.addEventListener('input', updateProbabilityTotals));
+            document.querySelectorAll('input[name$="[probability]"], input[name$="[trial_probability]"]').forEach(input => input.addEventListener('input', updateProbabilityTotals));
             document.querySelectorAll('.reward-active').forEach(input => input.addEventListener('change', updateProbabilityTotals));
             updateProbabilityTotals();
 

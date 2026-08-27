@@ -29,3 +29,18 @@ Route::post('/discount-codes/validate', [DiscountCodeController::class, 'validat
 
 // SePay Webhook
 Route::post('/webhook/sepay', [SepayWebhookController::class, 'handle'])->name('api.webhook.sepay');
+
+// Health Check Endpoint (safe response, no credentials/errors leaked)
+Route::get('/health', function () {
+    $dbOk = true;
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+    } catch (\Throwable $e) {
+        $dbOk = false;
+    }
+
+    return response()->json([
+        'status' => $dbOk ? 'ok' : 'degraded',
+    ], $dbOk ? 200 : 503);
+})->name('api.health');
+

@@ -37,7 +37,10 @@ class LuckyCategoryController extends Controller
     // Hiển thị chi tiết vòng quay
     public function index($slug)
     {
-        $wheel = LuckyWheel::where('slug', $slug)->where('active', 1)->firstOrFail();
+        $wheel = LuckyWheel::where('slug', $slug)->where('active', 1)->first();
+        if (!$wheel) {
+            return redirect()->route('home');
+        }
 
         // Lấy 10 lượt quay gần nhất của vòng quay này để hiển thị công khai ở khối "NHẬT KÝ"
         $history = LuckyWheelHistory::with('user:id,username')

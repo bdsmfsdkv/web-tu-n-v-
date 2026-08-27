@@ -15,9 +15,27 @@ class ResourceWithdrawalController extends Controller
      */
     public function index(\Illuminate\Http\Request $request)
     {
-        $withdrawals = WithdrawalHistory::with(['user', 'rewardItem'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+        $query = WithdrawalHistory::with(['user', 'rewardItem']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('character_name', 'like', "%{$search}%")
+                  ->orWhere('id', $search)
+                  ->orWhereHas('user', function ($uq) use ($search) {
+                      $uq->where('username', 'like', "%{$search}%")
+                         ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $perPage = (int) $request->input('per_page', 20);
+        if (!in_array($perPage, [10, 20, 25, 50, 100])) {
+            $perPage = 20;
+        }
+
+        $withdrawals = $query->orderBy('created_at', 'desc')
+            ->paginate($perPage);
 
         return view('admin.history.resource-withdrawal-history', compact('withdrawals'));
     }

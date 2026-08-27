@@ -200,18 +200,6 @@ class RandomCategoryAccountController extends Controller
 
     public function destroy(RandomCategoryAccount $account)
     {
-        // Only allow deleting accounts that haven't been sold
-        if ($account->status === 'sold') {
-            if (request()->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không thể xóa tài khoản đã bán!'
-                ], 400);
-            }
-            return redirect()->route('admin.random-accounts.index')
-                ->with('error', 'Không thể xóa tài khoản đã bán!');
-        }
-
         try {
             DB::beginTransaction();
 

@@ -25,7 +25,7 @@
                     @endif
                 </div>
             @else
-                            <!-- Comparison Block -->
+            <!-- Comparison Block -->
             <div id="comparison-card" class="card border border-dashed shadow-sm mb-4">
                 <div class="card-header border-bottom-0 pb-0 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold"><i class="ti ti-scale text-primary me-2"></i>So sánh 2 kỳ</h5>

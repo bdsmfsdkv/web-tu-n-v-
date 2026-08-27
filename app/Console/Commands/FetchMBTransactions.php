@@ -152,7 +152,8 @@ class FetchMBTransactions extends Command
 
                     $id = get_id_bank($prefix, $content);
 
-                    if ($amount_in <= 0) {
+                    if ($amount_in < 10000) {
+                        $this->line("Bỏ qua giao dịch dưới mức nạp tối thiểu 10.000đ (" . number_format($amount_in) . "đ): " . $reference_number);
                         $skippedCount++;
                         continue;
                     }

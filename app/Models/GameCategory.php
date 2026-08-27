@@ -20,7 +20,9 @@ class GameCategory extends Model
         'is_flash_sale',
         'flash_sale_old_price',
         'flash_sale_new_price',
-        'flash_sale_end_time'
+        'flash_sale_end_time',
+        'custom_stock_count',
+        'custom_sold_count'
     ];
 
     protected $casts = [
@@ -41,9 +43,11 @@ class GameCategory extends Model
     {
         static::saved(function () {
             \Illuminate\Support\Facades\Cache::forget('home_catalog_data');
+            \Illuminate\Support\Facades\Cache::forget('header_nav_data_v3');
         });
         static::deleted(function () {
             \Illuminate\Support\Facades\Cache::forget('home_catalog_data');
+            \Illuminate\Support\Facades\Cache::forget('header_nav_data_v3');
         });
     }
 }
