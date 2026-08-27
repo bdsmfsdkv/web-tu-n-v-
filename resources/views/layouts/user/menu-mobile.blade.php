@@ -8,8 +8,8 @@
             </a>
         </li>
         <li class="menu-mobile__item">
-            <a href="{{ route('category.show-all') }}"
-                class="menu-mobile__link {{ request()->routeIs('category*') ? 'active' : '' }}">
+            <a href="{{ route('home') }}"
+                class="menu-mobile__link {{ request()->is('/') ? 'active' : '' }}">
                 <i class="fas fa-gamepad"></i>
                 <span>Tài khoản</span>
             </a>
@@ -87,7 +87,7 @@
             <h3 class="mobile-overlay-menu__section-title">Danh mục</h3>
             <ul class="mobile-overlay-menu__links">
                 <li>
-                    <a href="{{ route('category.show-all') }}" class="mobile-overlay-menu__link">
+                    <a href="{{ route('home') }}" class="mobile-overlay-menu__link">
                         <i class="fas fa-gamepad"></i> Tài khoản Game
                     </a>
                 </li>

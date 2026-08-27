@@ -1,0 +1,42 @@
+/* Keep the wheel perfectly centered, especially on mobile */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+.wheel-arena-wrapper {
+    width: min(100%, 500px) !important;
+    max-width: calc(100vw - 60px) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    align-self: center !important;
+    flex: 0 0 auto;
+}
+
+.wheel-image-container {
+    left: 50%;
+    right: auto;
+    width: calc(100% - 40px);
+    transform: translateX(-50%);
+}
+
+.center-pointer-core {
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+}
+
+@media (max-width: 767px) {
+    .main-card {
+        width: 100%;
+        padding: 20px 10px;
+        overflow: hidden;
+    }
+
+    .wheel-arena-wrapper {
+        width: min(100%, 500px) !important;
+        max-width: calc(100vw - 40px) !important;
+        margin: 0 auto 24px !important;
+    }
+}
