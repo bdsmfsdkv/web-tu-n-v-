@@ -10,7 +10,7 @@
                     @foreach ($services as $service)
                         @if ($service->active)
                             <a href="{{ route('service.show', ['slug' => $service->slug]) }}" class="category__item">
-                                <img src="{{ asset($service->thumbnail) }}" alt="{{ $service->name }}" class="category__img" />
+                                <img src="{{ asset($service->thumbnail) }}?v={{ $service->updated_at?->timestamp ?? 1 }}" alt="{{ $service->name }}" class="category__img" loading="{{ $loop->index < 6 ? 'eager' : 'lazy' }}" decoding="async" />
                                 <h2 class="category__title">{{ strtoupper($service->name) }}</h2>
                                 <p class="category__desc">Tổng giao dịch: {{ number_format($service->orderCount) }}</p>
                                 <p class="text category__action">Thuê ngay</p>

@@ -11,7 +11,7 @@
                 @if ($categories->count() > 0)
                     @foreach ($categories as $category)
                         <a href="{{ route('random.index', ['slug' => $category->slug]) }}" class="category__item">
-                            <img src="{{ asset($category->thumbnail) }}" alt="{{ $category->name }}" class="category__img" />
+                            <img src="{{ asset($category->thumbnail) }}?v={{ $category->updated_at?->timestamp ?? 1 }}" alt="{{ $category->name }}" class="category__img" loading="{{ $loop->index < 6 ? 'eager' : 'lazy' }}" decoding="async" />
                             <h2 class="category__title">{{ strtoupper($category->name) }}</h2>
                             <p class="category__desc">Tổng tài khoản: {{ number_format($category->allAccount) }}</p>
                             <p class="category__desc">Acc đã bán: {{ number_format($category->soldCount) }}</p>

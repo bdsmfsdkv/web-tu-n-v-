@@ -70,13 +70,7 @@
 <IfModule mod_headers.c>
     <FilesMatch "\.(avif|gif|jpe?g|png|svg|webp|ico|css|js|woff2?|ttf|otf|eot)$">
         Header set Cache-Control "public, max-age=31536000, immutable"
-        Header unset ETag
-        FileETag None
     </FilesMatch>
-
-    # Uploaded images may change from admin; force browser/CDN revalidation.
-    SetEnvIf Request_URI "^/storage/" uploaded_asset
-    Header set Cache-Control "public, max-age=0, must-revalidate" env=uploaded_asset
 
     # Correct caching behaviour behind proxies once compression is on.
     Header append Vary Accept-Encoding

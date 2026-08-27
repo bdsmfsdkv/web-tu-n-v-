@@ -135,13 +135,40 @@ Route::prefix('tin-tuc')->name('news.')->group(function () {
 });
 
 // Route phục vụ ảnh từ storage khi cPanel chưa tạo symbolic link hoặc bị chặn symlink
-Route::get('/storage/{path}', function ($path) {
+Route::get('/storage/{path}', function ($path, \Illuminate\Http\Request $request) {
     $filePath = storage_path('app/public/' . $path);
     if (!file_exists($filePath)) {
         abort(404);
     }
+
+    $lastModified = filemtime($filePath);
+    $etag = '"' . md5($filePath . $lastModified) . '"';
+
+    $ifNoneMatch = $request->header('If-None-Match');
+    $ifModifiedSince = $request->header('If-Modified-Since');
+
+    if (($ifNoneMatch && trim($ifNoneMatch) === $etag) ||
+        ($ifModifiedSince && strtotime($ifModifiedSince) >= $lastModified)) {
+        return response('', 304);
+    }
+
+    $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+    $mimeType = match($extension) {
+        'webp' => 'image/webp',
+        'png' => 'image/png',
+        'jpg', 'jpeg' => 'image/jpeg',
+        'gif' => 'image/gif',
+        'svg' => 'image/svg+xml',
+        'ico' => 'image/x-icon',
+        'avif' => 'image/avif',
+        default => @mime_content_type($filePath) ?: 'application/octet-stream',
+    };
+
     return response()->file($filePath, [
-        'Cache-Control' => 'public, max-age=31536000',
+        'Content-Type' => $mimeType,
+        'Cache-Control' => 'public, max-age=31536000, immutable',
+        'ETag' => $etag,
+        'Last-Modified' => gmdate('D, d M Y H:i:s', $lastModified) . ' GMT',
     ]);
 })->where('path', '.*')->name('storage.file');
 

@@ -388,7 +388,7 @@
                 @if ($wheel->active)
                     <a href="{{ route('lucky.index', ['slug' => $wheel->slug]) }}" class="category-card wheel-card">
                         <div class="category-img">
-                            <img loading="lazy" decoding="async" src="{{ asset($wheel->thumbnail) }}" alt="{{ $wheel->name }}">
+                            <img loading="lazy" decoding="async" src="{{ asset($wheel->thumbnail) }}?v={{ $wheel->updated_at?->timestamp ?? 1 }}" alt="{{ $wheel->name }}">
                             <div class="wheel-spin-badge"><i class="fa-solid fa-dharmachakra fa-spin-pulse me-1"></i> VÒNG QUAY</div>
                         </div>
                         <div class="category-body">
@@ -434,7 +434,7 @@
                 @if ($service->active)
                     <a href="{{ route('service.show', ['slug' => $service->slug]) }}" class="category-card service-card">
                         <div class="category-img">
-                            <img loading="lazy" decoding="async" src="{{ asset($service->thumbnail) }}" alt="{{ $service->name }}">
+                            <img loading="lazy" decoding="async" src="{{ asset($service->thumbnail) }}?v={{ $service->updated_at?->timestamp ?? 1 }}" alt="{{ $service->name }}">
                         </div>
                         <div class="category-body">
                             <div class="category-name">{{ $service->name }}</div>
