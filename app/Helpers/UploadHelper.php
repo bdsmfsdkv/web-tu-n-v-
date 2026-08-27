@@ -56,20 +56,40 @@ class UploadHelper
                 Log::warning('PHP extension "fileinfo" (finfo) is not enabled in this runtime environment.');
             }
 
-            // Tạo tên file nếu không được chỉ định
+            // Tạo tên file và xử lý tối ưu ảnh WebP nếu là ảnh
+            $isImage = str_starts_with($file->getMimeType() ?: '', 'image/');
+            $canConvertToWebp = $isImage && extension_loaded('gd') && function_exists('imagewebp') && function_exists('imagecreatetruecolor');
+
             if (!$filename) {
-                $ext = $file->getClientOriginalExtension();
-                if (empty($ext)) {
-                    $ext = $file->guessExtension() ?: 'bin';
-                }
-                if ($preserveFilename) {
-                    $filename = $file->getClientOriginalName();
+                if ($canConvertToWebp && !$preserveFilename) {
+                    $filename = time() . '_' . \Illuminate\Support\Str::random(10) . '.webp';
                 } else {
-                    $filename = time() . '_' . \Illuminate\Support\Str::random(10) . '.' . $ext;
+                    $ext = $file->getClientOriginalExtension();
+                    if (empty($ext)) {
+                        $ext = $file->guessExtension() ?: 'bin';
+                    }
+                    if ($preserveFilename) {
+                        $filename = $file->getClientOriginalName();
+                    } else {
+                        $filename = time() . '_' . \Illuminate\Support\Str::random(10) . '.' . $ext;
+                    }
                 }
             }
 
-            // Upload file
+            // Nếu hỗ trợ WebP và không yêu cầu giữ nguyên tên file gốc
+            if ($canConvertToWebp && !$preserveFilename && str_ends_with(strtolower($filename), '.webp')) {
+                $targetDirectory = storage_path('app/public/' . ltrim($directory, '/'));
+                if (!file_exists($targetDirectory)) {
+                    @mkdir($targetDirectory, 0755, true);
+                }
+                $targetFile = rtrim($targetDirectory, '/') . '/' . $filename;
+                
+                if (self::compressToWebp($file->getRealPath(), $targetFile, 1200, 82)) {
+                    return Storage::url('public/' . trim($directory, '/') . '/' . $filename);
+                }
+            }
+
+            // Upload tiêu chuẩn nếu không chuyển WebP
             $path = $file->storeAs('public/' . $directory, $filename);
 
             return Storage::url($path);
@@ -80,6 +100,73 @@ class UploadHelper
             }
             Log::error('Error uploading file: ' . $e->getMessage());
             throw $e;
+        }
+    }
+
+    /**
+     * Nén và chuyển đổi ảnh sang WebP (giới hạn max dimension & nén chất lượng)
+     */
+    protected static function compressToWebp(string $sourcePath, string $destinationPath, int $maxDimension = 1200, int $quality = 82): bool
+    {
+        try {
+            $imageInfo = @getimagesize($sourcePath);
+            if (!$imageInfo) {
+                return false;
+            }
+
+            $mime = $imageInfo['mime'] ?? '';
+            $srcWidth = $imageInfo[0] ?? 0;
+            $srcHeight = $imageInfo[1] ?? 0;
+
+            if ($srcWidth <= 0 || $srcHeight <= 0) {
+                return false;
+            }
+
+            $srcImage = match($mime) {
+                'image/jpeg', 'image/jpg' => @imagecreatefromjpeg($sourcePath),
+                'image/png' => @imagecreatefrompng($sourcePath),
+                'image/webp' => @imagecreatefromwebp($sourcePath),
+                'image/gif' => @imagecreatefromgif($sourcePath),
+                default => null,
+            };
+
+            if (!$srcImage) {
+                return false;
+            }
+
+            // Tính toán kích thước mới giữ nguyên tỉ lệ
+            $dstWidth = $srcWidth;
+            $dstHeight = $srcHeight;
+
+            if ($dstWidth > $maxDimension || $dstHeight > $maxDimension) {
+                if ($dstWidth >= $dstHeight) {
+                    $dstHeight = (int) round(($srcHeight * $maxDimension) / $srcWidth);
+                    $dstWidth = $maxDimension;
+                } else {
+                    $dstWidth = (int) round(($srcWidth * $maxDimension) / $srcHeight);
+                    $dstHeight = $maxDimension;
+                }
+            }
+
+            $dstImage = imagecreatetruecolor($dstWidth, $dstHeight);
+
+            // Bảo toàn kênh Alpha cho ảnh PNG / WebP trong suốt
+            imagealphablending($dstImage, false);
+            imagesavealpha($dstImage, true);
+            $transparent = imagecolorallocatealpha($dstImage, 255, 255, 255, 127);
+            imagefilledrectangle($dstImage, 0, 0, $dstWidth, $dstHeight, $transparent);
+
+            imagecopyresampled($dstImage, $srcImage, 0, 0, 0, 0, $dstWidth, $dstHeight, $srcWidth, $srcHeight);
+
+            $result = @imagewebp($dstImage, $destinationPath, $quality);
+
+            imagedestroy($srcImage);
+            imagedestroy($dstImage);
+
+            return $result && file_exists($destinationPath);
+        } catch (\Throwable $e) {
+            Log::warning('WebP compression failed, fallback to original: ' . $e->getMessage());
+            return false;
         }
     }
 

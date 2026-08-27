@@ -11,7 +11,7 @@
                         @if ($category->active)
                             <a href="{{ route('lucky.index', ['slug' => $category->slug]) }}" class="category-card" style="position: relative;">
                                 <div class="category-img">
-                                    <img src="{{ asset($category->thumbnail) }}" alt="{{ $category->name }}">
+                                    <img src="{{ asset($category->thumbnail) }}?v={{ $category->updated_at?->timestamp ?? 1 }}" alt="{{ $category->name }}" loading="{{ $loop->index < 6 ? 'eager' : 'lazy' }}" decoding="async">
                                 </div>
                                 <div class="category-body" style="display: flex; flex-direction: column;">
                                     <div class="category-name">{{ $category->name }}</div>

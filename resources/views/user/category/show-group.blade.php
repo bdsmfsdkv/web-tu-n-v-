@@ -16,10 +16,10 @@
                             @endphp
                             <a href="{{ $categoryUrl }}" class="category-card" style="position: relative;">
                                 @if(isset($category->tag_image) && $category->tag_image)
-                                <img src="{{ $category->tag_image }}" alt="Tag" style="position: absolute; top: 0; right: 0; max-width: 60px; z-index: 10;">
+                                <img src="{{ asset($category->tag_image) }}?v={{ $category->updated_at?->timestamp ?? 1 }}" alt="Tag" style="position: absolute; top: 0; right: 0; max-width: 60px; z-index: 10;" loading="{{ $loop->index < 6 ? 'eager' : 'lazy' }}" decoding="async">
                                 @endif
                                 <div class="category-img">
-                                     <img src="{{ asset($category->thumbnail) }}" alt="{{ $category->name }}">
+                                     <img src="{{ asset($category->thumbnail) }}?v={{ $category->updated_at?->timestamp ?? 1 }}" alt="{{ $category->name }}" loading="{{ $loop->index < 6 ? 'eager' : 'lazy' }}" decoding="async">
                                 </div>
                                 <div class="category-body">
                                     <div class="category-name">{{ $category->name }}</div>
