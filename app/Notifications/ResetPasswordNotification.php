@@ -39,6 +39,12 @@ class ResetPasswordNotification extends Notification
                 'notifiable' => $notifiable,
                 'siteName' => $siteName,
                 'expireMinutes' => $expireMinutes,
+            ])
+            ->text('emails.reset-password-text', [
+                'resetUrl' => $resetUrl,
+                'notifiable' => $notifiable,
+                'siteName' => $siteName,
+                'expireMinutes' => $expireMinutes,
             ]);
     }
 
