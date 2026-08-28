@@ -7,7 +7,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\View\View;
 
@@ -65,35 +64,25 @@ class PasswordResetLinkController extends Controller
             }
 
             try {
+                // Tạo token bằng password broker rồi dùng notification chuẩn của User.
+                // Không gọi Mail::send() trực tiếp để tránh hai luồng gửi reset khác nhau.
                 $token = $broker->createToken($user);
-                $resetUrl = route('password.reset', [
-                    'token' => $token,
-                    'email' => $user->getEmailForPasswordReset(),
-                ]);
 
-                // Local vẫn ghi URL vào log để debug, nhưng giao diện không hiển thị link test.
                 if ($isLocal) {
+                    $resetUrl = route('password.reset', [
+                        'token' => $token,
+                        'email' => $user->getEmailForPasswordReset(),
+                    ]);
+
                     Log::info('LOCAL PASSWORD RESET URL', [
                         'email' => $user->getEmailForPasswordReset(),
                         'url' => $resetUrl,
                     ]);
                 }
 
-                $mailData = [
-                    'siteName' => config('app.name', 'KUNCHEAP'),
-                    'userName' => $user->username ?: ($user->name ?: 'bạn'),
-                    'resetUrl' => $resetUrl,
-                    'expireMinutes' => (int) config('auth.passwords.users.expire', 60),
-                    'supportEmail' => config('mail.from.address', 'admin@kuncheap.site'),
-                ];
+                $user->sendPasswordResetNotification($token);
 
-                Mail::send('emails.password-reset', $mailData, function ($message) use ($validated) {
-                    $message
-                        ->to($validated['email'])
-                        ->subject('KUNCHEAP - Đặt lại mật khẩu');
-                });
-
-                Log::info('Đã gửi email đặt lại mật khẩu HTML qua SMTP', [
+                Log::info('Đã gửi email đặt lại mật khẩu qua ResetPasswordNotification', [
                     'email' => $validated['email'],
                 ]);
 
