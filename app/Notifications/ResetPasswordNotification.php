@@ -10,9 +10,6 @@ class ResetPasswordNotification extends Notification
 {
     use Queueable;
 
-    /**
-     * Token đặt lại mật khẩu.
-     */
     public string $token;
 
     public function __construct(string $token)
@@ -33,12 +30,15 @@ class ResetPasswordNotification extends Notification
         ], false));
 
         $siteName = config_get('site_name', config('app.name', 'Shop Game'));
+        $expireMinutes = (int) config('auth.passwords.users.expire', 60);
 
         return (new MailMessage)
             ->subject('Đặt lại mật khẩu - ' . $siteName)
             ->view('emails.reset-password', [
                 'resetUrl' => $resetUrl,
                 'notifiable' => $notifiable,
+                'siteName' => $siteName,
+                'expireMinutes' => $expireMinutes,
             ]);
     }
 
