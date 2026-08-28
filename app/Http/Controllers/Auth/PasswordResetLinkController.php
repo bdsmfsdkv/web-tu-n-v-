@@ -28,9 +28,7 @@ class PasswordResetLinkController extends Controller
         ]);
 
         $broker = Password::broker();
-        $user = $broker->getUser([
-            'email' => $validated['email'],
-        ]);
+        $user = $broker->getUser(['email' => $validated['email']]);
 
         if (! $user) {
             return back()
@@ -38,10 +36,7 @@ class PasswordResetLinkController extends Controller
                 ->withErrors(['email' => 'Không tìm thấy tài khoản với địa chỉ email này.']);
         }
 
-        $isLocal = app()->environment('local');
-
-        // Chặn hai request quên mật khẩu chạy cùng lúc cho cùng một email.
-        $lock = Cache::lock('forgot-password:'.sha1(strtolower($validated['email'])), 15);
+        $lock = Cache::lock('forgot-password:' . sha1(strtolower($validated['email'])), 15);
 
         if (! $lock->get()) {
             return back()
@@ -51,62 +46,86 @@ class PasswordResetLinkController extends Controller
 
         try {
             $repository = $broker->getRepository();
+            $isDebug = config('app.debug');
 
             if ($repository->recentlyCreatedToken($user)) {
-                // Local cho phép test lại ngay; production vẫn giữ throttle an toàn.
-                if ($isLocal) {
-                    $repository->delete($user);
-                } else {
-                    return back()
-                        ->withInput($request->only('email'))
-                        ->withErrors(['email' => 'Bạn vừa yêu cầu email đặt lại mật khẩu. Vui lòng đợi khoảng 60 giây rồi thử lại.']);
-                }
+                return back()
+                    ->withInput($request->only('email'))
+                    ->withErrors(['email' => 'Bạn vừa yêu cầu email đặt lại mật khẩu. Vui lòng đợi khoảng 60 giây rồi thử lại.']);
             }
 
             try {
-                // Tạo token bằng password broker rồi dùng notification chuẩn của User.
-                // Không gọi Mail::send() trực tiếp để tránh hai luồng gửi reset khác nhau.
                 $token = $broker->createToken($user);
-
-                if ($isLocal) {
-                    $resetUrl = route('password.reset', [
-                        'token' => $token,
-                        'email' => $user->getEmailForPasswordReset(),
-                    ]);
-
-                    Log::info('LOCAL PASSWORD RESET URL', [
-                        'email' => $user->getEmailForPasswordReset(),
-                        'url' => $resetUrl,
-                    ]);
-                }
-
                 $user->sendPasswordResetNotification($token);
 
-                Log::info('Đã gửi email đặt lại mật khẩu qua ResetPasswordNotification', [
-                    'email' => $validated['email'],
+                Log::info('Password reset email sent successfully', [
+                    'user_id' => $user->id,
+                    'email' => $user->getEmailForPasswordReset(),
+                    'mailer' => config('mail.default'),
+                    'host' => config('mail.mailers.smtp.host'),
+                    'port' => config('mail.mailers.smtp.port'),
+                    'scheme' => config('mail.mailers.smtp.scheme'),
+                    'from' => config('mail.from.address'),
                 ]);
 
-                return back()->with('status', 'Đã gửi liên kết đặt lại mật khẩu. Vui lòng kiểm tra hộp thư và cả mục Spam/Thư rác.');
+                return back()->with('status', 'Đã gửi liên kết đặt lại mật khẩu. Vui lòng kiểm tra hộp thư và mục Spam/Thư rác.');
             } catch (\Throwable $e) {
+                $error = $e->getMessage();
+                $previous = $e->getPrevious()?->getMessage();
+
                 try {
                     $repository->delete($user);
                 } catch (\Throwable $cleanupError) {
-                    Log::warning('Không thể dọn token đặt lại mật khẩu sau lỗi', [
+                    Log::warning('Could not clean password reset token after mail failure', [
                         'email' => $validated['email'],
                         'error' => $cleanupError->getMessage(),
                     ]);
                 }
 
-                Log::error('Lỗi xử lý liên kết đặt lại mật khẩu', [
+                Log::error('PASSWORD RESET SMTP FAILURE', [
+                    'user_id' => $user->id,
                     'email' => $validated['email'],
                     'exception' => get_class($e),
-                    'error' => $e->getMessage(),
+                    'error' => $error,
+                    'previous' => $previous,
+                    'mailer' => config('mail.default'),
+                    'host' => config('mail.mailers.smtp.host'),
+                    'port' => config('mail.mailers.smtp.port'),
+                    'scheme' => config('mail.mailers.smtp.scheme'),
+                    'username' => config('mail.mailers.smtp.username'),
+                    'from' => config('mail.from.address'),
                 ]);
+
+                $message = 'Không thể gửi email đặt lại mật khẩu.';
+
+                if ($isDebug) {
+                    $message .= ' Lỗi SMTP: ' . $error;
+                    if ($previous) {
+                        $message .= ' | Chi tiết trước đó: ' . $previous;
+                    }
+                } else {
+                    $message .= ' Vui lòng thử lại sau hoặc liên hệ quản trị viên.';
+                }
 
                 return back()
                     ->withInput($request->only('email'))
-                    ->with('error', 'Không thể gửi email lúc này. Vui lòng thử lại sau.');
+                    ->with('error', $message);
             }
+        } catch (\Throwable $e) {
+            Log::error('PASSWORD RESET UNEXPECTED FAILURE', [
+                'email' => $validated['email'],
+                'exception' => get_class($e),
+                'error' => $e->getMessage(),
+            ]);
+
+            $message = 'Không thể xử lý yêu cầu đặt lại mật khẩu.';
+            if ($isDebug) {
+                $message .= ' Lỗi: ' . $e->getMessage();
+            }
+
+            return back()
+                ->withInput($request->only('email'))
+                ->with('error', $message);
         } finally {
             $lock->release();
         }
